@@ -1,2 +1,3 @@
-# examples
-Example Prismatic components and integrations
+# Prismatic Examples
+
+Example Prismatic components and integrations.

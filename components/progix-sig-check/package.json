@@ -1,0 +1,69 @@
+{
+  "name": "@prismatic-io/progix-sig-check",
+  "private": true,
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.ts",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint --quiet --ext .ts,.js --ignore-pattern '*testapp*' .",
+    "format": "prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}'",
+    "check": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}'",
+    "build": "webpack",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.2.1",
+    "@types/node": "^13.9.3",
+    "@typescript-eslint/eslint-plugin": "^2.25.0",
+    "@typescript-eslint/parser": "^2.25.0",
+    "copy-webpack-plugin": "^5.1.1",
+    "dotenv": "^8.2.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-prettier": "^3.1.2",
+    "jest": "^26.0.1",
+    "ts-jest": "^26.1.0",
+    "ts-loader": "^6.2.2",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  },
+  "eslintConfig": {
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "env": {
+      "node": true
+    },
+    "parserOptions": {
+      "project": [
+        "./tsconfig.json"
+      ]
+    },
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:@typescript-eslint/recommended-requiring-type-checking",
+      "prettier",
+      "prettier/@typescript-eslint"
+    ],
+    "ignorePatterns": [
+      "dist",
+      "node_modules",
+      "jest.config.js",
+      "webpack.config.js"
+    ],
+    "rules": {
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/require-await": "off"
+    }
+  }
+}
