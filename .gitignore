@@ -1,3 +1,6 @@
+# VSCode
+.vscode
+
 # Components
 components/**/node_modules
 components/**/dist

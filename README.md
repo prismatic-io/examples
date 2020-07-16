@@ -16,6 +16,7 @@ For information on the Prismatic platform, check out our [website](https://www.p
 ## Repository Contents
 
 - `components/` contains code for sample custom components, which are a good reference for building your own custom components.
+- `integrations/` contains sample integrations written in YAML.
 
 ## License
 

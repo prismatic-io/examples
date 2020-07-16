@@ -1,0 +1,72 @@
+---
+name: AcmeERP Fuel Integration
+description: >
+  After a rocket is launched, fuel data is sent to this integration via
+  a trigger payload.  The payload is verified, fuel data is converted
+  from pounds to gallons, and XML-formatted data is sent to the
+  customer's AcmeERP instance.
+
+defaultConfigVars:
+  acmeErpEndpoint: https://api.acmeerp.com/
+  secret: secret
+
+trigger:
+  slug: trigger
+  description: Expects a data payload and X-Progix-Signature header
+
+steps:
+  - slug: verifysignature
+    description: Verify taht the X-Progix-Signature is valid
+    action:
+      key: verifySignature
+      componentKey: progix-sig-check
+    inputs:
+      signature: outputs.trigger.all.headers."x-progix-signature"
+      body: outputs.trigger.all.body
+      secret: configVars.secret
+
+  - slug: compute_gallons_fuel
+    description: Convert incoming fuel data from pounds to gallons
+    action:
+      key: runCode
+      componentKey: code
+    inputs:
+      code: |
+        'module.exports = async (context, params) => {
+          const gallonsToPoundsConversion = {
+            Hydrazine: 8.38,
+            Kerosene: 6.68,
+            Nitromethane: 9.49,
+            O2: 9.52,
+          };
+          const fuelUsed = JSON.parse(params.trigger.all.body).fuelUsed;
+          return {
+            fuelGallonsUsed: fuelUsed.reduce((obj, item) => {
+              return {
+                ...obj,
+                [item.type]: item.pounds / gallonsToPoundsConversion[item.type],
+              };
+            }, {}),
+          };
+        };'
+  
+  - slug: convert_json_to_xml
+    description: >
+      Convert JSON data from the code component to the
+      XML that AcmeERP expects.
+    action:
+      key: jsonToXml
+      componentKey: reformat
+    inputs:
+      data: outputs.compute_gallons_fuel.all.fuelGallonsUsed
+  
+  - slug: send_data_to_acmeerp
+    description: >
+      HTTP POST XML data to AcmeERP endpoint using OAuth 2.0
+    action:
+      key: httpPost
+      componentKey: http
+    inputs:
+      url: 'configVars.acmeErpEndpoint & "/fuelUsed"'
+      data: outputs.convert_json_to_xml.all
+      responseType: text
