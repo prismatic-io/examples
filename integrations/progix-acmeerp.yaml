@@ -16,7 +16,7 @@ trigger:
 
 steps:
   - slug: verifysignature
-    description: Verify taht the X-Progix-Signature is valid
+    description: Verify that the X-Progix-Signature is valid
     action:
       key: verifySignature
       componentKey: progix-sig-check
