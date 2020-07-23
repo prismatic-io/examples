@@ -1,0 +1,14 @@
+{
+  "name": "gcd-and-lcm",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@prismatic-io/spectral": "^0.1.0"
+  },
+  "devDependencies": {
+    "ts-loader": "^8.0.1",
+    "typescript": "^3.9.7",
+    "webpack-cli": "^3.3.12"
+  }
+}
