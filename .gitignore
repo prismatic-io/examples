@@ -4,3 +4,6 @@
 # Components
 components/**/node_modules
 components/**/dist
+
+# Yarn stuff
+**/yarn-error.log
