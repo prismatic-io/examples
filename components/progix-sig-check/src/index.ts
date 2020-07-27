@@ -1,4 +1,4 @@
-import { component } from "@prismatic-io/spectral/src";
+import { component } from "@prismatic-io/spectral";
 import { version } from "../package.json";
 import actions from "./actions";
 

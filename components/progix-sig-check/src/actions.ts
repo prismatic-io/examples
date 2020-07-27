@@ -1,5 +1,6 @@
 import generateSignature from "./signature";
-import { action } from "@prismatic-io/spectral/src";
+import { action } from "@prismatic-io/spectral";
+
 import {
   signatureInputField,
   bodyInputField,

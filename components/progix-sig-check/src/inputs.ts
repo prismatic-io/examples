@@ -1,4 +1,4 @@
-import { input } from "@prismatic-io/spectral/src";
+import { input } from "@prismatic-io/spectral";
 
 export const signatureInputField = input({
   key: "signature",

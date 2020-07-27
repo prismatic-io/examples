@@ -1,4 +1,4 @@
-import { action, component, input } from "@prismatic-io/spectral/src";
+import { action, component, input } from "@prismatic-io/spectral";
 import { version } from "../package.json";
 
 /* Inputs are shared between actions */
