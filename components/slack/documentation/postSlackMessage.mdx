@@ -1,0 +1,19 @@
+```bash
+# Post 'Hello, Slack' to a slack channel using a Slack webhook
+SLACK_ACTION_ID=$(prism components:actions:list --filter 'key=postSlackMessage' --columns id --no-header)
+
+INPUTS='[
+    {
+        "name": "webhookUrl",
+        "expression": "'"'"'https://hooks.slack.com/services/FOO/BAR/BAZ'"'"'"
+    },
+    {
+        "name": "message",
+        "expression": "'"'"'Hello, Slack!'"'"'"
+    }
+]'
+
+prism integrations:steps:add ${SLACK_ACTION_ID} \
+    --integration ${INTEGRATION_ID} \
+    --inputs ${INPUTS}
+```
