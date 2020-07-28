@@ -6,8 +6,11 @@ module.exports = {
   mode: "development",
   target: "node",
   plugins: [
-    new webpack.IgnorePlugin(/^pg-native$/),
-    new CopyPlugin([{ from: "assets", to: path.resolve(__dirname, "dist") }]),
+    new CopyPlugin({
+      patterns: [
+        { from: "assets", to: path.resolve(__dirname, "dist") }
+      ],
+    }),
   ],
   module: {
     rules: [
