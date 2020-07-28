@@ -11,11 +11,11 @@ defaultConfigVars:
   secret: secret
 
 trigger:
-  slug: trigger
+  name: trigger
   description: Expects a data payload and X-Progix-Signature header
 
 steps:
-  - slug: verifysignature
+  - name: verifysignature
     description: Verify that the X-Progix-Signature is valid
     action:
       key: verifySignature
@@ -25,7 +25,7 @@ steps:
       body: outputs.trigger.all.body
       secret: configVars.secret
 
-  - slug: compute_gallons_fuel
+  - name: compute_gallons_fuel
     description: Convert incoming fuel data from pounds to gallons
     action:
       key: runCode
@@ -50,7 +50,7 @@ steps:
           };
         };'
   
-  - slug: convert_json_to_xml
+  - name: convert_json_to_xml
     description: >
       Convert JSON data from the code component to the
       XML that AcmeERP expects.
@@ -60,7 +60,7 @@ steps:
     inputs:
       data: outputs.compute_gallons_fuel.all.fuelGallonsUsed
   
-  - slug: send_data_to_acmeerp
+  - name: send_data_to_acmeerp
     description: >
       HTTP POST XML data to AcmeERP endpoint using OAuth 2.0
     action:
