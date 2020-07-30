@@ -1,0 +1,17 @@
+{
+  "name": "fuel-unit-converter",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "copy-webpack-plugin": "^6.0.3",
+    "ts-loader": "^8.0.1",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "^0.1.2"
+  }
+}
