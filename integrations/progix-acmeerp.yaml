@@ -6,7 +6,7 @@ description: >
   from pounds to gallons, and XML-formatted data is sent to the
   customer's AcmeERP instance.
 
-defaultConfigVars:
+requiredConfigVars:
   acmeErpEndpoint: https://api.acmeerp.com/
   secret: secret
 
