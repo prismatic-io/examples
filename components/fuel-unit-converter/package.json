@@ -12,6 +12,6 @@
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "^0.1.2"
+    "@prismatic-io/spectral": "^0.1.3"
   }
 }
