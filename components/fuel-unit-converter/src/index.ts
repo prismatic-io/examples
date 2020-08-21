@@ -22,7 +22,7 @@ const gallonsToPoundsConversion = {
   O2: 9.52,
 };
 
-const gallonsToPoundsAction = action({
+export const gallonsToPoundsAction = action({
   key: "gallonsToPounds",
   display: {
     label: "Gallons to pounds",
@@ -39,7 +39,7 @@ const gallonsToPoundsAction = action({
   },
 });
 
-const poundsToGallonsAction = action({
+export const poundsToGallonsAction = action({
   key: "poundsToGallons",
   display: {
     label: "Pounds to gallons",
