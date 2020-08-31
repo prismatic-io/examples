@@ -29,9 +29,13 @@ export const gallonsToPoundsAction = action({
     description: "Convert gallons of fuel to pounds of fuel",
   },
   inputs: [fuelTypeInputField, fuelAmountInputField],
-  perform: async (context, { fuelType, fuelAmount }) => {
+  perform: async ({ logger }, { fuelType, fuelAmount }) => {
+    logger.info(`Converting ${fuelAmount} gallons of ${fuelType} to pounds.`)
     if (!(fuelType in gallonsToPoundsConversion)) {
       throw Error(`${fuelType} is not a valid fuel type.`);
+    }
+    if (Number(fuelAmount) < 0) {
+      logger.warn(`Received a negative amount of fuel. That is likely incorrect.`)
     }
     return {
       data: fuelAmount * gallonsToPoundsConversion[fuelType],
@@ -46,9 +50,13 @@ export const poundsToGallonsAction = action({
     description: "Convert pounds of fuel to gallons of fuel",
   },
   inputs: [fuelTypeInputField, fuelAmountInputField],
-  perform: async (context, { fuelType, fuelAmount }) => {
+  perform: async ({ logger }, { fuelType, fuelAmount }) => {
+    logger.info(`Converting ${fuelAmount} pounds of ${fuelType} to gallons.`)
     if (!(fuelType in gallonsToPoundsConversion)) {
       throw Error(`${fuelType} is not a valid fuel type.`);
+    }
+    if (Number(fuelAmount) < 0) {
+      logger.warn(`Received a negative amount of fuel. That is likely incorrect.`)
     }
     return {
       data: fuelAmount / gallonsToPoundsConversion[fuelType],
