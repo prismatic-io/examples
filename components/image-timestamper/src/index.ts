@@ -1,4 +1,5 @@
 import Jimp from "jimp/es";
+import assert from "assert";
 import { action, component, input } from "@prismatic-io/spectral";
 import { version } from "../package.json";
 
@@ -20,7 +21,8 @@ export const timestampAction = action({
     description: "Add a timestamp to an image",
   },
   perform: async (context, { image }) => {
-    const jimpInstance = await Jimp.read(Buffer.from(image.data));
+    assert(image.contentType.startsWith("image/"));
+    const jimpInstance = await Jimp.read(image.data);
     const font = await Jimp.loadFont(fontUrl);
     const timestamp = new Date();
     jimpInstance.print(font, 0, 0, timestamp.toISOString());
