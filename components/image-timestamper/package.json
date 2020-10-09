@@ -1,0 +1,22 @@
+{
+  "name": "image-timestamper",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "copy-webpack-plugin": "^6.2.0",
+    "jest": "^26.5.2",
+    "pino": "^6.7.0",
+    "tempfile": "^3.0.0",
+    "ts-jest": "^26.4.1",
+    "ts-loader": "^8.0.4",
+    "typescript": "^4.0.3",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12"
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "^0.1.3",
+    "jimp": "^0.16.1"
+  }
+}

@@ -7,3 +7,6 @@ components/**/dist
 
 # Yarn stuff
 **/yarn-error.log
+
+# MacOS
+.DS_Store
