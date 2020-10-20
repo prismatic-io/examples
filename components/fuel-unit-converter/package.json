@@ -16,7 +16,7 @@
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "^0.1.3"
+    "@prismatic-io/spectral": "^0.1.4"
   },
   "scripts": {
     "format": "prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,json}' ./*.{js,json}",

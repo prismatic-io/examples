@@ -5,7 +5,8 @@ const fuelTypeInputField = input({
   key: "fuelType",
   label: "Fuel Type",
   type: "string",
-  placeholder: "e.g. Hydrazine, Kerosene, etc.",
+  placeholder: "Type of Fuel",
+  example: "Hydrazine",
 });
 
 const fuelAmountInputField = input({
@@ -13,6 +14,7 @@ const fuelAmountInputField = input({
   label: "Fuel Amount",
   type: "string",
   placeholder: "Fuel amount to be converted in gallons or pounds",
+  example: "100",
 });
 
 const gallonsToPoundsConversion = {

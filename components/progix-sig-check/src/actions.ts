@@ -7,7 +7,7 @@ import {
   secretInputField,
 } from "./inputs";
 
-const verifySignature = action({
+export const verifySignature = action({
   key: "verifySignature",
   display: {
     label: "Verify Signature",
