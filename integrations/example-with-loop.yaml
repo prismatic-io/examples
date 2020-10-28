@@ -28,9 +28,9 @@ steps:
   - name: Loop Over Each File
     action:
       componentKey: loop
-      key: loopOverCollection
+      key: loopOverItems
     inputs:
-      collection:
+      items:
         type: reference
         value: listFilesInAGoogleCloudStorageBucket.results
     steps:
