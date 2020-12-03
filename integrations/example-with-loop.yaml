@@ -50,7 +50,7 @@ steps:
             value: gcpProjectId
       - name: Deserialize User Data
         action:
-          componentKey: reformat
+          componentKey: change-data-format
           key: deserializeFromJson
         inputs:
           data:
