@@ -44,7 +44,7 @@ steps:
             value: bucketName
           fileName:
             type: reference
-            value: loopOverEachFile.current
+            value: loopOverEachFile.currentItem
           project:
             type: configVar
             value: gcpProjectId
@@ -67,7 +67,7 @@ steps:
               module.exports = async (
                 { logger },
                 {
-                  loopOverEachFile: { current: fileName },
+                  loopOverEachFile: { currentItem: fileName },
                   deserializeUserData: {
                     results: { username, site },
                   },
@@ -112,4 +112,4 @@ steps:
             value: bucketName
           sourceFileName:
             type: reference
-            value: loopOverEachFile.current
+            value: loopOverEachFile.currentItem
