@@ -1,12 +1,12 @@
 ---
-name: AcmeERP Fuel Integration
+name: Rocket Fuel to AcmeERP
 description: >
   After a rocket is launched, fuel data is sent to this integration via a
   trigger payload.  The payload is verified, fuel data is converted from pounds
   to gallons, and XML-formatted data is sent to the customer's AcmeERP instance.
 
 requiredConfigVars:
-  acmeErpFuelEndpoint: https://api.acmeerp.com/fuel
+  acmeErpFuelEndpoint: https://postman-echo.com/post
   secret: secret
 
 trigger:
@@ -22,10 +22,10 @@ steps:
     inputs:
       signature:
         type: reference
-        value: webhookTrigger.results.headers["x-progix-signature"]
+        value: webhookTrigger.results.headers.x-progix-signature
       body:
         type: reference
-        value: webhookTrigger.results.body.data
+        value: webhookTrigger.results.rawBody.data
       secret:
         type: configVar
         value: secret
@@ -46,7 +46,7 @@ steps:
               Nitromethane: 9.49,
               O2: 9.52,
             };
-            const fuelUsed = JSON.parse(webhookTrigger.results.body).fuelUsed;
+            const fuelUsed = webhookTrigger.results.body.data.fuelUsed;
             return {
               data: {
                 fuelGallonsUsed: fuelUsed.reduce((obj, item) => {
@@ -64,7 +64,7 @@ steps:
       Convert JSON data from the code component to the XML that AcmeERP expects.
     action:
       key: jsonToXml
-      componentKey: reformat
+      componentKey: change-data-format
     inputs:
       data:
         type: reference
