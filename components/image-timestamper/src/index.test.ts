@@ -8,5 +8,5 @@ test("Test addition of timestamp", async () => {
   const output = (await timestampAction.timestampImage.perform(null, {
     image: { data: testImage, contentType: "image/png" },
   })) as PerformDataReturn;
-  fs.writeFileSync("test-output.png", output.data);
+  fs.writeFileSync("test-output.png", output.data as string);
 });

@@ -21,8 +21,8 @@ const postSlackMessageAction = action({
       placeholder: "Slack Webhook URL",
       type: "string",
       required: true,
-      comments:
-        "Slack Webhook URL in the form `https://hooks.slack.com/services/FOO/BAR/BAZ`",
+      comments: "Slack Webhook URL",
+      example: "https://hooks.slack.com/services/FOO/BAR/BAZ",
     },
     {
       key: "message",
@@ -31,6 +31,7 @@ const postSlackMessageAction = action({
       type: "string",
       required: true,
       comments: "Message to send the slack channel.",
+      example: "Hello from Prismatic!",
     },
   ],
 });

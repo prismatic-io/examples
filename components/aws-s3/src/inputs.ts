@@ -6,7 +6,8 @@ export const keyInputField = input({
   placeholder: "Object Key",
   type: "string",
   required: true,
-  comments: "The S3 Object Key (e.g. path/to/file.txt)",
+  comments: "The S3 Object Key",
+  example: "path/to/file.txt",
 });
 
 export const sourceKeyInputField = input({
@@ -16,6 +17,7 @@ export const sourceKeyInputField = input({
   type: "string",
   required: true,
   comments: "The key of the source object",
+  example: "path/to/source/file.txt",
 });
 
 export const destinationKeyInputField = input({
@@ -25,6 +27,7 @@ export const destinationKeyInputField = input({
   type: "string",
   required: true,
   comments: "The key of the destination object",
+  example: "path/to/destination/file.txt",
 });
 
 export const fileContentsInputField = input({
@@ -33,7 +36,8 @@ export const fileContentsInputField = input({
   placeholder: "Output data from previous step, or a string, to write",
   type: "data",
   required: true,
-  comments: "Binary file data or a string",
+  comments: "A string literal or binary data from a previous step",
+  example: "My File Contents",
 });
 
 export const bucketInputField = input({
@@ -43,6 +47,7 @@ export const bucketInputField = input({
   type: "string",
   required: true,
   comments: "Name of an S3 Bucket",
+  example: "my-s3-bucket-abc123",
 });
 
 export const sourceBucketInputField = input({
@@ -52,6 +57,7 @@ export const sourceBucketInputField = input({
   type: "string",
   required: true,
   comments: "Bucket to move files from",
+  example: "my-source-bucket",
 });
 
 export const destinationBucketInputField = input({
@@ -61,6 +67,7 @@ export const destinationBucketInputField = input({
   type: "string",
   required: true,
   comments: "Bucket to move files to",
+  example: "my-destination-bucket",
 });
 
 export const awsRegionInputField = input({
@@ -70,7 +77,8 @@ export const awsRegionInputField = input({
   placeholder: "AWS Region",
   type: "string",
   required: true,
-  comments: "AWS Region (e.g. 'us-west-2')",
+  comments: "AWS Region",
+  example: "us-east-1",
 });
 
 export const prefixInputField = input({
@@ -80,8 +88,8 @@ export const prefixInputField = input({
   type: "string",
   required: false,
   default: "",
-  comments:
-    "List only objects prefixed with this string, (e.g. 'path/to/files/')",
+  comments: "List only objects prefixed with this string",
+  example: "path/to/files/",
 });
 
 export const taggingInputField = input({
@@ -91,5 +99,6 @@ export const taggingInputField = input({
   type: "string",
   required: false,
   default: "",
-  comments: "Object Tags (e.g. 'key1=value1[&key2=value2]')",
+  comments: "Object Tags",
+  example: "key1=value1[&key2=value2]",
 });

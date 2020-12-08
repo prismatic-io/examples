@@ -7,14 +7,15 @@ import {
   destinationFileNameInputField,
   fileContentsInputField,
   projectInputField,
+  prefixInputField,
 } from "./inputs";
 import { googleStorageClient } from "./auth";
-import { action } from "@prismatic-io/spectral";
+import { action, util } from "@prismatic-io/spectral";
 
 const saveFileAction = action({
   key: "saveFile",
   display: {
-    label: "Save a file to Google Cloud Storage",
+    label: "Save File",
     description: "Save a file to Google Cloud Storage",
   },
   inputs: [
@@ -28,15 +29,15 @@ const saveFileAction = action({
     { fileContents, bucketName, fileName, project }
   ) => {
     const storage = googleStorageClient(credential, project);
-    const contentsToSave = fileContents.data || fileContents; // Write out binary data, or a string
-    await storage.bucket(bucketName).file(fileName).save(contentsToSave);
+    const { data } = util.types.toData(fileContents);
+    await storage.bucket(bucketName).file(fileName).save(data);
   },
 });
 
 const downloadFileAction = action({
   key: "downloadFile",
   display: {
-    label: "Download a file from Google Cloud Storage",
+    label: "Download File",
     description: "Download a file from Google Cloud Storage",
   },
   inputs: [fileNameInputField, bucketNameInputField, projectInputField],
@@ -51,7 +52,7 @@ const downloadFileAction = action({
       .file(fileName)
       .download();
     return {
-      data: contents as Buffer,
+      data: contents,
       contentType: metadata.contentType,
     };
   },
@@ -60,7 +61,7 @@ const downloadFileAction = action({
 const copyFileAction = action({
   key: "copyFile",
   display: {
-    label: "Copy files within Google Cloud Storage",
+    label: "Copy Files",
     description: "Copy a file from one Google Cloud Storage bucket to another",
   },
   inputs: [
@@ -88,10 +89,41 @@ const copyFileAction = action({
   },
 });
 
+const moveFileAction = action({
+  key: "moveFile",
+  display: {
+    label: "Move File",
+    description: "Move a file from one Google Cloud Storage bucket to another",
+  },
+  inputs: [
+    sourceBucketNameInputField,
+    destinationBucketNameInputField,
+    sourceFileNameInputField,
+    destinationFileNameInputField,
+    projectInputField,
+  ],
+  perform: async (
+    { credential },
+    {
+      sourceBucketName,
+      destinationBucketName,
+      sourceFileName,
+      destinationFileName,
+      project,
+    }
+  ) => {
+    const storage = googleStorageClient(credential, project);
+    await storage
+      .bucket(sourceBucketName)
+      .file(sourceFileName)
+      .move(storage.bucket(destinationBucketName).file(destinationFileName));
+  },
+});
+
 const deleteFileAction = action({
   key: "deleteFile",
   display: {
-    label: "Delete a file within Google Cloud Storage",
+    label: "Delete File",
     description: "Delete a file from a Google Cloud Storage bucket",
   },
   inputs: [fileNameInputField, bucketNameInputField, projectInputField],
@@ -104,15 +136,16 @@ const deleteFileAction = action({
 const listFilesAction = action({
   key: "listFiles",
   display: {
-    label: "List files in a Google Cloud Storage bucket",
+    label: "List Files",
     description: "List files in a Google Cloud Storage bucket",
   },
-  inputs: [bucketNameInputField, projectInputField],
-  perform: async ({ credential }, { bucketName, project }) => {
+  inputs: [bucketNameInputField, projectInputField, prefixInputField],
+  perform: async ({ credential }, { bucketName, project, prefix }) => {
     const storage = googleStorageClient(credential, project);
-    const [files] = await storage.bucket(bucketName).getFiles();
+    const options = { prefix };
+    const [files] = await storage.bucket(bucketName).getFiles(options);
     return {
-      data: files.map((f) => f.name),
+      data: files.map((f) => f.name).filter((f) => !f.endsWith("/")), // Filter out directories; we just care about files
     };
   },
 });
@@ -121,6 +154,7 @@ export const actions = {
   ...saveFileAction,
   ...downloadFileAction,
   ...copyFileAction,
+  ...moveFileAction,
   ...deleteFileAction,
   ...listFilesAction,
 };

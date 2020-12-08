@@ -1,4 +1,5 @@
 :::note
-`File Contents` can be a reference to a binary file.  For example, if you have an `HTTP Get` action pull a .png image, you can reference `outputs.httpget.all` to write the .png to S3.
-Or, it can be simple text, like `'Hello World'`
+**File Contents** can be a reference to a binary file from a previous step.
+For example, if you have an [HTTP Get](components/http.mdx#httpget) action that pulls down a .png image, you can reference its step name to write the .png to S3.
+Or, **File Contents** can be simple text, like `'Hello World'`.
 :::

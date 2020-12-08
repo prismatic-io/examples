@@ -6,7 +6,7 @@ export const authorizationMethods: AuthorizationMethod[] = ["private_key"];
 
 export const googleStorageClient = (credential: Credential, project) => {
   const client_email = credential.fields.username;
-  const private_key = credential.fields.private_key;
+  const private_key = credential.fields.private_key.replace(/\\n/g, "\n");
   return new Storage({
     projectId: project,
     credentials: {

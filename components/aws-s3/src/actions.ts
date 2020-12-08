@@ -10,20 +10,21 @@ import {
   sourceKeyInputField,
   taggingInputField,
 } from "./inputs";
-import { action } from "@prismatic-io/spectral";
+import { action, util } from "@prismatic-io/spectral";
+import { S3 } from "aws-sdk";
 import { createS3Client } from "./auth";
 
 const copyObject = action({
   key: "copyObject",
   display: {
-    label: "Copy an object",
+    label: "Copy Object",
     description: "Copy an object in S3 from one location to another",
   },
   perform: async (
     { credential },
     { awsRegion, sourceBucket, destinationBucket, sourceKey, destinationKey }
   ) => {
-    const s3 = createS3Client(credential, awsRegion);
+    const s3 = await createS3Client(credential, awsRegion);
     const copyParameters = {
       Bucket: destinationBucket,
       CopySource: `/${sourceBucket}/${sourceKey}`,
@@ -46,11 +47,11 @@ const copyObject = action({
 const deleteObject = action({
   key: "deleteObject",
   display: {
-    label: "Delete an Object in a Bucket",
+    label: "Delete Object",
     description: "Delete an Object within an S3 Bucket",
   },
   perform: async ({ credential }, { awsRegion, bucket, objectKey }) => {
-    const s3 = createS3Client(credential, awsRegion);
+    const s3 = await createS3Client(credential, awsRegion);
     const deleteParameters = {
       Bucket: bucket,
       Key: objectKey,
@@ -63,11 +64,11 @@ const deleteObject = action({
 const getObject = action({
   key: "getObject",
   display: {
-    label: "Get an object",
+    label: "Get Object",
     description: "Get the contents of an object",
   },
   perform: async ({ credential }, { awsRegion, bucket, objectKey }) => {
-    const s3 = createS3Client(credential, awsRegion);
+    const s3 = await createS3Client(credential, awsRegion);
     const getObjectParameters = {
       Bucket: bucket,
       Key: objectKey,
@@ -85,11 +86,11 @@ const getObject = action({
 const listObjects = action({
   key: "listObjects",
   display: {
-    label: "List Objects in a Bucket",
+    label: "List Objects",
     description: "List Objects in a Bucket",
   },
   perform: async ({ credential }, { awsRegion, bucket, prefix }) => {
-    const s3 = createS3Client(credential, awsRegion);
+    const s3 = await createS3Client(credential, awsRegion);
     const listParameters = {
       Bucket: bucket,
       Prefix: prefix,
@@ -105,18 +106,20 @@ const listObjects = action({
 const putObject = action({
   key: "putObject",
   display: {
-    label: "Put an object",
+    label: "Put Object",
     description: "Write an object to S3",
   },
   perform: async (
     { credential },
     { awsRegion, bucket, fileContents, objectKey, tagging }
   ) => {
-    const s3 = createS3Client(credential, awsRegion);
-    const putParameters = {
+    const s3 = await createS3Client(credential, awsRegion);
+    const { data, contentType } = util.types.toData(fileContents);
+    const putParameters: S3.PutObjectRequest = {
       Bucket: bucket,
       Key: objectKey,
-      Body: fileContents.data || fileContents, // Write binary data or plain text
+      Body: data,
+      ContentType: contentType,
       Tagging: tagging,
     };
     const response = await s3.putObject(putParameters).promise();
