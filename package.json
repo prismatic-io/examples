@@ -1,0 +1,12 @@
+{
+  "name": "@prismatic-io/examples",
+  "private": "false",
+  "workspaces": {
+    "packages": [
+      "components/*"
+    ]
+  },
+  "devDependencies": {
+    "prettier": "^2.2.1"
+  }
+}

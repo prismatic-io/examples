@@ -2,11 +2,11 @@
 .vscode
 
 # Components
-components/**/node_modules
 components/**/dist
 
 # Yarn stuff
 **/yarn-error.log
+node_modules
 
 # MacOS
 .DS_Store
