@@ -1,11 +1,7 @@
-import pino from "pino";
 import { gallonsToPoundsAction, poundsToGallonsAction } from ".";
 import { PerformDataReturn } from "@prismatic-io/spectral";
 
-const logger = pino({
-  name: "logger",
-  level: "fatal",
-});
+const logger = console;
 
 test("Convert pounds to gallons", async () => {
   const output = (await poundsToGallonsAction.poundsToGallons.perform(

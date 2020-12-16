@@ -1,11 +1,7 @@
-import pino from "pino";
 import generateSignature from "./signature";
 import { verifySignature } from "./actions";
 
-const logger = pino({
-  name: "logger",
-  level: "fatal",
-});
+const logger = console;
 
 const body = '{"fuelUsed":[{"type":"Kerosene","pounds":"1357964"},{"type":"O2","pounds":"3028029"}]}';
 const secret = "prismatic";

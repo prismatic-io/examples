@@ -5,12 +5,12 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "webpack"
+    "build": "webpack",
+    "test": "jest"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^6.2.0",
     "jest": "^26.5.2",
-    "pino": "^6.7.0",
     "tempfile": "^3.0.0",
     "ts-jest": "^26.4.1",
     "ts-loader": "^8.0.4",
