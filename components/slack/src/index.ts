@@ -21,8 +21,9 @@ const postSlackMessageAction = action({
       placeholder: "Slack Webhook URL",
       type: "string",
       required: true,
-      comments: "Slack Webhook URL",
-      example: "https://hooks.slack.com/services/FOO/BAR/BAZ",
+      comments:
+        "The Slack webhook URL. Instructions for generating a Slack webhook are available on the Slack component docs page.",
+      example: "https://hooks.slack.com/services/A/B/C",
     },
     {
       key: "message",
@@ -30,7 +31,7 @@ const postSlackMessageAction = action({
       placeholder: "Message to send",
       type: "string",
       required: true,
-      comments: "Message to send the slack channel.",
+      comments: "The message to send the Slack channel.",
       example: "Hello from Prismatic!",
     },
   ],
@@ -38,6 +39,7 @@ const postSlackMessageAction = action({
 
 export default component({
   key: "slack",
+  documentationUrl: "https://prismatic.io/docs/components/slack",
   public: true,
   version,
   display: {

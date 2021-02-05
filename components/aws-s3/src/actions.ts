@@ -10,6 +10,7 @@ import {
   sourceKeyInputField,
   taggingInputField,
 } from "./inputs";
+import querystring from "querystring";
 import { action, util } from "@prismatic-io/spectral";
 import { S3 } from "aws-sdk";
 import { createS3Client } from "./auth";
@@ -115,12 +116,18 @@ const putObject = action({
   ) => {
     const s3 = await createS3Client(credential, awsRegion);
     const { data, contentType } = util.types.toData(fileContents);
+    const tags = querystring.encode(
+      (tagging || {}).reduce(
+        (acc, { key, value }) => ({ ...acc, [key]: value }),
+        {}
+      )
+    );
     const putParameters: S3.PutObjectRequest = {
       Bucket: bucket,
       Key: objectKey,
       Body: data,
       ContentType: contentType,
-      Tagging: tagging,
+      Tagging: tags,
     };
     const response = await s3.putObject(putParameters).promise();
     return {

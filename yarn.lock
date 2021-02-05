@@ -859,10 +859,10 @@
   dependencies:
     mkdirp "^1.0.4"
 
-"@prismatic-io/spectral@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-1.0.0.tgz#97640eab0d17e505b76006521329f866af8e9bdb"
-  integrity sha512-ea7Y3RrpNYWMV+AGAd96dGGKBavvOQSsagG2z90+BudN9FpYnMrlIzT+vi1SP40UVl1X8th2x+CURikXVBVFQw==
+"@prismatic-io/spectral@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-1.0.2.tgz#873c3ac405456094a26ca0879bbc88cab6dfa36a"
+  integrity sha512-S6HBrkoYyb7jXXUMtCd1QjIwjXyH3mJtnDw1qugX+d8AYdAP7KPR5NPJB4vc5l4kqPb+9f4Us6rTnsQ32RD67g==
   dependencies:
     date-fns "^2.16.1"
     valid-url "^1.0.9"

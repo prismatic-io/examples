@@ -5,6 +5,7 @@ import { authorizationMethods } from "./auth";
 
 export default component({
   key: "google-cloud-storage",
+  documentationUrl: "https://prismatic.io/docs/components/google-cloud-storage",
   public: true,
   version,
   display: {

@@ -15,7 +15,7 @@
     "dev": "nodemon --watch src -e ts,ejs --exec yarn run build:testapp"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "^1.0.0",
+    "@prismatic-io/spectral": "^1.0.2",
     "aws-sdk": "^2.670.0"
   },
   "author": "Prismatic",

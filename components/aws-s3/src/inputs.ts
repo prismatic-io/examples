@@ -6,7 +6,8 @@ export const keyInputField = input({
   placeholder: "Object Key",
   type: "string",
   required: true,
-  comments: "The S3 Object Key",
+  comments:
+    "An object in S3 is a file that is saved in a 'bucket'. This represents the object's key (file path). Do not include a leading /.",
   example: "path/to/file.txt",
 });
 
@@ -16,7 +17,8 @@ export const sourceKeyInputField = input({
   placeholder: "Source Key",
   type: "string",
   required: true,
-  comments: "The key of the source object",
+  comments:
+    "An object in S3 is a file that is saved in a 'bucket'. This represents the source object's key (file path). Do not include a leading /.",
   example: "path/to/source/file.txt",
 });
 
@@ -26,7 +28,8 @@ export const destinationKeyInputField = input({
   placeholder: "Destination Key",
   type: "string",
   required: true,
-  comments: "The key of the destination object",
+  comments:
+    "An object in S3 is a file that is saved in a 'bucket'. This represents the destination object's key (file path). Do not include a leading /.",
   example: "path/to/destination/file.txt",
 });
 
@@ -36,7 +39,8 @@ export const fileContentsInputField = input({
   placeholder: "Output data from previous step, or a string, to write",
   type: "data",
   required: true,
-  comments: "A string literal or binary data from a previous step",
+  comments:
+    "The contents to write to a file. This can be a string of text, it can be binary data (like an image or PDF) that was generated in a previous step.",
   example: "My File Contents",
 });
 
@@ -46,7 +50,8 @@ export const bucketInputField = input({
   placeholder: "Name of an S3 Bucket",
   type: "string",
   required: true,
-  comments: "Name of an S3 Bucket",
+  comments:
+    "An AWS S3 'bucket' is a container where files are stored. You can create a bucket from within the AWS console. Bucket names contain only letters, numbers, and dashes.",
   example: "my-s3-bucket-abc123",
 });
 
@@ -56,7 +61,8 @@ export const sourceBucketInputField = input({
   placeholder: "Source Bucket Name",
   type: "string",
   required: true,
-  comments: "Bucket to move files from",
+  comments:
+    "An AWS S3 'bucket' is a container where files are stored. The source bucket indicates the bucket containing the file you want to copy. If you are copying files within a single bucket, list the same bucket as the source and destination bucket.",
   example: "my-source-bucket",
 });
 
@@ -66,7 +72,8 @@ export const destinationBucketInputField = input({
   placeholder: "Destination Bucket Name",
   type: "string",
   required: true,
-  comments: "Bucket to move files to",
+  comments:
+    "An AWS S3 'bucket' is a container where files are stored. The destination bucket indicates the bucket where you want a file to be stored. If you are copying files within a single bucket, list the same bucket as the source and destination bucket.",
   example: "my-destination-bucket",
 });
 
@@ -77,7 +84,8 @@ export const awsRegionInputField = input({
   placeholder: "AWS Region",
   type: "string",
   required: true,
-  comments: "AWS Region",
+  comments:
+    "AWS provides services in multiple regions, like us-west-2 or eu-east-1. AWS region indicates the region in which your bucket(s) are stored.",
   example: "us-east-1",
 });
 
@@ -88,17 +96,18 @@ export const prefixInputField = input({
   type: "string",
   required: false,
   default: "",
-  comments: "List only objects prefixed with this string",
+  comments:
+    "List only objects prefixed with this string. For example, if you only want files in a directory called 'unprocessed', you can enter 'unprocessed/'. If this is left blank, all files in the selected bucket will be listed.",
   example: "path/to/files/",
 });
 
 export const taggingInputField = input({
   key: "tagging",
   label: "Object Tags",
-  placeholder: "Object Tags (e.g. 'key1=value1[&key2=value2]')",
+  placeholder: "Object Tags",
   type: "string",
+  collection: "keyvaluelist",
   required: false,
-  default: "",
-  comments: "Object Tags",
-  example: "key1=value1[&key2=value2]",
+  comments:
+    "Objects in an S3 bucket can be optionally tagged so you can filter for files more easily. For example, you may want to tag customers with a key of 'Customer Name' and value of 'Mars Missions Corp'",
 });
