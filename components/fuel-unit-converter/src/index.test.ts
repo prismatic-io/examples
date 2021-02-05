@@ -5,7 +5,7 @@ const logger = console;
 
 test("Convert pounds to gallons", async () => {
   const output = (await poundsToGallonsAction.poundsToGallons.perform(
-    { configVars: null, logger },
+    { logger },
     {
       fuelType: "Kerosene",
       fuelAmount: 100,
@@ -16,7 +16,7 @@ test("Convert pounds to gallons", async () => {
 
 test("Convert gallons to pounds", async () => {
   const output = (await gallonsToPoundsAction.gallonsToPounds.perform(
-    { configVars: null, logger },
+    { logger },
     {
       fuelType: "Hydrazine",
       fuelAmount: 50,

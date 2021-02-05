@@ -14,7 +14,7 @@ describe("verifySignature", () => {
   });
   test("ensure action works as expected", () => {
     verifySignature.verifySignature.perform(
-      { configVars: null, logger },
+      { logger },
       {
         signature: expectedSignature,
         body,
