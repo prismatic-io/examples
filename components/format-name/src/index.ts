@@ -1,5 +1,7 @@
 import { action, component, input } from "@prismatic-io/spectral";
-import { version } from "../package.json";
+import packageInfo from "../package.json";
+
+const version = packageInfo.version;
 
 const firstNameInputField = input({
   key: "firstName",
@@ -27,7 +29,7 @@ const lastNameInputField = input({
   required: true,
 });
 
-const properFormatNameAction = action({
+export const properFormatNameAction = action({
   key: "properFormatName",
   display: {
     label: "Properly Format Name",
@@ -45,7 +47,7 @@ const properFormatNameAction = action({
   inputs: [firstNameInputField, middleNameInputField, lastNameInputField],
 });
 
-const improperFormatNameAction = action({
+export const improperFormatNameAction = action({
   key: "informalFormatName",
   display: {
     label: "Informally Format Name",

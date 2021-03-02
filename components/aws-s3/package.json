@@ -9,18 +9,19 @@
     "format": "prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "check": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "build": "webpack",
-    "test": "echo \"Warning: no test specified\"",
+    "test": "jest --maxWorkers=4",
     "testapp": "node ./test/testapp.js",
     "build:testapp": "yarn run build && yarn run testapp",
     "dev": "nodemon --watch src -e ts,ejs --exec yarn run build:testapp"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "^1.0.2",
+    "@prismatic-io/spectral": "^1.0.3",
     "aws-sdk": "^2.670.0"
   },
   "author": "Prismatic",
   "license": "MIT",
   "devDependencies": {
+    "@types/aws-sdk": "^2.7.0",
     "@types/express": "^4.17.4",
     "@types/node": "^13.13.5",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
@@ -34,7 +35,8 @@
     "ts-loader": "^7.0.2",
     "typescript": "^3.8.3",
     "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.11",
+    "ts-jest": "^26.1.1"
   },
   "eslintConfig": {
     "root": true,
@@ -61,7 +63,8 @@
     "ignorePatterns": [
       "dist",
       "node_modules",
-      "webpack.config.js"
+      "webpack.config.js",
+      "jest.config.js"
     ],
     "rules": {
       "@typescript-eslint/explicit-function-return-type": "off"

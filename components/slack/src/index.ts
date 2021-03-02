@@ -2,7 +2,7 @@ import { action, component } from "@prismatic-io/spectral";
 import { version } from "../package.json";
 import { IncomingWebhook } from "@slack/webhook";
 
-const postSlackMessageAction = action({
+export const postSlackMessageAction = action({
   key: "postSlackMessage",
   display: {
     label: "Slack Message",
@@ -35,6 +35,7 @@ const postSlackMessageAction = action({
       example: "Hello from Prismatic!",
     },
   ],
+  examplePayload: { data: { text: "ok" } },
 });
 
 export default component({

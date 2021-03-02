@@ -1,7 +1,6 @@
 import generateSignature from "./signature";
 import { verifySignature } from "./actions";
-
-const logger = console;
+import { invoke } from "@prismatic-io/spectral/dist/testing";
 
 const body = '{"fuelUsed":[{"type":"Kerosene","pounds":"1357964"},{"type":"O2","pounds":"3028029"}]}';
 const secret = "prismatic";
@@ -12,14 +11,11 @@ describe("verifySignature", () => {
     const calculatedSignature = generateSignature(secret, body);
     expect(calculatedSignature).toStrictEqual(expectedSignature);
   });
-  test("ensure action works as expected", () => {
-    verifySignature.verifySignature.perform(
-      { logger },
-      {
-        signature: expectedSignature,
-        body,
-        secret,
-      }
-    );
+  test("ensure action works as expected", async () => {
+    const { result } = await invoke(verifySignature,       {
+      signature: expectedSignature,
+      body,
+      secret,
+    });
   });
 });

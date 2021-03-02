@@ -9,7 +9,7 @@
     "format": "prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "check": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "build": "webpack",
-    "test": "echo \"Warning: no test specified\"",
+    "test": "jest --maxWorkers=4",
     "build:testapp": "yarn run build"
   },
   "devDependencies": {
@@ -22,11 +22,12 @@
     "ts-loader": "^8.0.2",
     "typescript": "^3.9.7",
     "webpack": "^4.44.1",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^3.3.12",
+    "ts-jest": "^26.4.0"
   },
   "dependencies": {
     "@google-cloud/storage": "^5.3.0",
-    "@prismatic-io/spectral": "^1.0.2"
+    "@prismatic-io/spectral": "^1.0.3"
   },
   "eslintConfig": {
     "root": true,
@@ -53,7 +54,8 @@
     "ignorePatterns": [
       "dist",
       "node_modules",
-      "webpack.config.js"
+      "webpack.config.js",
+      "jest.config.js"
     ],
     "rules": {
       "@typescript-eslint/explicit-function-return-type": "off",

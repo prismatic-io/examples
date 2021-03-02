@@ -11,10 +11,27 @@ import {
   taggingInputField,
 } from "./inputs";
 import querystring from "querystring";
-import { action, util } from "@prismatic-io/spectral";
+import {
+  action,
+  util,
+  PerformDataStructureReturn,
+} from "@prismatic-io/spectral";
 import { S3 } from "aws-sdk";
 import { createS3Client } from "./auth";
 
+interface S3ActionOutput extends PerformDataStructureReturn {
+  data:
+    | S3.Types.CopyObjectOutput
+    | string[]
+    | S3.Types.GetObjectOutput
+    | S3.Types.PutObjectOutput;
+}
+
+const copyObjectOutput: S3ActionOutput = {
+  data: {
+    CopyObjectResult: { ETag: "Example", LastModified: new Date("2020-01-01") },
+  },
+};
 const copyObject = action({
   key: "copyObject",
   display: {
@@ -43,6 +60,7 @@ const copyObject = action({
     sourceKeyInputField,
     destinationKeyInputField,
   ],
+  examplePayload: copyObjectOutput,
 });
 
 const deleteObject = action({
@@ -62,6 +80,9 @@ const deleteObject = action({
   inputs: [awsRegionInputField, bucketInputField, keyInputField],
 });
 
+const getObjectOutput: S3ActionOutput & S3.Types.GetObjectOutput = {
+  data: { Body: Buffer.from("Example"), ContentType: "application/octet" },
+};
 const getObject = action({
   key: "getObject",
   display: {
@@ -81,8 +102,12 @@ const getObject = action({
     };
   },
   inputs: [awsRegionInputField, bucketInputField, keyInputField],
+  examplePayload: getObjectOutput,
 });
 
+const listObjectOutput: S3ActionOutput = {
+  data: ["Example Item 1", "Example Item 2", "Example Item 3"],
+};
 /* Maybe FIXME?: This caps off at 1000 objects */
 const listObjects = action({
   key: "listObjects",
@@ -102,8 +127,12 @@ const listObjects = action({
     };
   },
   inputs: [awsRegionInputField, bucketInputField, prefixInputField],
+  examplePayload: listObjectOutput,
 });
 
+const putObjectOutput: S3ActionOutput = {
+  data: { ETag: "Example Tag", VersionId: "Example Version Id" },
+};
 const putObject = action({
   key: "putObject",
   display: {
@@ -141,6 +170,7 @@ const putObject = action({
     keyInputField,
     taggingInputField,
   ],
+  examplePayload: putObjectOutput,
 });
 
 export const actions = {

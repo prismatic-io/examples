@@ -7,6 +7,12 @@ export const createS3Client = async (
   credential: Credential,
   region: string
 ) => {
+  if (credential.authorizationMethod !== "api_key_secret") {
+    throw new Error(
+      `Unsupported authorization method ${credential.authorizationMethod}.`
+    );
+  }
+
   const credentials = {
     accessKeyId: credential.fields.api_key,
     secretAccessKey: credential.fields.api_secret,
@@ -18,10 +24,8 @@ export const createS3Client = async (
   try {
     await sts.getCallerIdentity({}).promise();
   } catch (err) {
-    return Promise.reject(
-      new Error(
-        `Invalid AWS Credentials have been configured. This is sometimes caused by trailing spaces in AWS keys, missing characters from a copy/paste, etc. Original AWS error message: ${err.message}`
-      )
+    throw new Error(
+      `Invalid AWS Credentials have been configured. This is sometimes caused by trailing spaces in AWS keys, missing characters from a copy/paste, etc. Original AWS error message: ${err.message}`
     );
   }
 

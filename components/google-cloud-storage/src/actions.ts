@@ -56,6 +56,7 @@ const downloadFileAction = action({
       contentType: metadata.contentType,
     };
   },
+  examplePayload: { data: "File Contents", contentType: "text/plain" },
 });
 
 const copyFileAction = action({
@@ -147,6 +148,21 @@ const listFilesAction = action({
     return {
       data: files.map((f) => f.name).filter((f) => !f.endsWith("/")), // Filter out directories; we just care about files
     };
+  },
+  examplePayload: {
+    data: [
+      {
+        acl: undefined,
+        bucket: {},
+        storage: {},
+        kmsKeyName: "Example Key",
+        userProject: "Example Project",
+        signer: {},
+        name: "Example",
+        generation: 2,
+        parent: "Example Parent",
+      },
+    ],
   },
 });
 
