@@ -5,17 +5,17 @@ Code contained within this repo is referenced throughout Prismatic's [website](h
 
 ## What is Prismatic?
 
-Prismatic is an integration platform built specifically for B2B software companies. It’s an easier way to build, deploy, and support integrations for your customers.
+Prismatic is the embedded integration platform for B2B software companies. It's the easiest way to build integrations and provide a first-class integration experience to your customers.
 
-Prismatic reduces integration effort and empowers everyone involved in the integration process with the tools they need for their roles, so you can spend less time on integrations and more time on core product innovation.
+Prismatic reduces integration effort and empowers every role with exactly what they need, so you can spend less time on integrations and more time on core product innovation.
 
 With Prismatic, you can:
 
-- Build reusable [integrations](https://www.prismatic.io/docs/integrations) in an intuitive integration designer
-- Deploy customer-specific integration [instances](https://www.prismatic.io/docs/instances) with unique [configurations](https://www.prismatic.io/docs/configuration-variables) and [credentials](https://www.prismatic.io/docs/credentials)
+- Build reusable [integrations](https://prismatic.io/docs/integrations) in an intuitive low-code integration designer
+- Easily deploy customer-specific integration [instances](https://prismatic.io/docs/instances) with unique [configurations](https://prismatic.io/docs/configuration-variables) and [credentials](https://prismatic.io/docs/credentials)
 - Run your integrations in a purpose-built environment
-- Provide better support with built-in [logging](https://www.prismatic.io/docs/logging) and [alerting](https://www.prismatic.io/docs/monitoring-and-alerting)
-- Embed a white-labeled customer integration portal
+- Provide better support with built-in [logging](https://prismatic.io/docs/logging) and [alerting](https://prismatic.io/docs/monitoring-and-alerting)
+- Embed a white-labeled customer integration portal with an integration app store and customer self-service tools
 - Mold the platform to your product, industry, and the way you build software
 
 ## Who uses Prismatic?
