@@ -874,6 +874,14 @@
     date-fns "^2.16.1"
     valid-url "^1.0.9"
 
+"@prismatic-io/spectral@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-1.0.5.tgz#f30c66f8a3965bc9ebfd5be13e752a7f045ef157"
+  integrity sha512-AhYonujgOr7YnTzL93X6zn6eIuXeB2eO7lAWBp5L9O0pQkyXpvRu7tJSJmY6nKiMP5X5A3tq4W9eIABLqjUhkA==
+  dependencies:
+    date-fns "^2.16.1"
+    valid-url "^1.0.9"
+
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"

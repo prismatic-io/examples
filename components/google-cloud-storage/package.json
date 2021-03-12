@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^5.3.0",
-    "@prismatic-io/spectral": "^1.0.3"
+    "@prismatic-io/spectral": "^1.0.5"
   },
   "eslintConfig": {
     "root": true,

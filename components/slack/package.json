@@ -14,7 +14,7 @@
     "test": "jest --maxWorkers=4"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "^1.0.3",
+    "@prismatic-io/spectral": "^1.0.5",
     "@slack/webhook": "^5.0.3"
   },
   "devDependencies": {
