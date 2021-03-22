@@ -1,34 +1,64 @@
-description: Process Login Logs
+definitionVersion: 2
+
 name: Process Login Logs
+
+description: Process Login Logs
+
+isSynchronous: false
+
 requiredConfigVars:
-  bucketName: REPLACE-ME
-  gcpProjectId: REPLACE-ME 
-  slackWebhookUrl: https://hooks.slack.com/services/REPLACE/THIS/TEXT
+  - dataType: string
+    defaultValue: ""
+    hasDivider: false
+    key: Storage Bucket Name
+    header: Google Cloud Storage Info
+  - dataType: string
+    defaultValue: ""
+    hasDivider: false
+    key: Project ID
+  - credentialTypes:
+      - privateKey
+    dataType: credential
+    defaultValue: ""
+    hasDivider: false
+    key: Private Key Pair
+  - dataType: string
+    defaultValue: ""
+    hasDivider: false
+    key: Slack Webhook
+    header: Slack Info
+
 trigger:
   description: Repeat every 5 minutes
   name: trigger
   schedule:
+    meta:
+      scheduleType: custom
+      timeZone: ""
     type: value
     value: "*/5 * * * *"
+
 steps:
   - name: List files in a Google Cloud Storage bucket
     action:
       componentKey: google-cloud-storage
       key: listFiles
+    credential: Private Key Pair
     inputs:
       bucketName:
         type: configVar
-        value: bucketName
+        value: Storage Bucket Name
       prefix:
         type: value
         value: unprocessed/
       project:
         type: configVar
-        value: gcpProjectId
+        value: Project ID
   - name: Loop Over Each File
     action:
       componentKey: loop
       key: loopOverItems
+    description: ""
     inputs:
       items:
         type: reference
@@ -38,24 +68,17 @@ steps:
         action:
           componentKey: google-cloud-storage
           key: downloadFile
+        credential: Private Key Pair
         inputs:
           bucketName:
             type: configVar
-            value: bucketName
+            value: Storage Bucket Name
           fileName:
             type: reference
             value: loopOverEachFile.currentItem
           project:
             type: configVar
-            value: gcpProjectId
-      - name: Deserialize User Data
-        action:
-          componentKey: change-data-format
-          key: deserializeFromJson
-        inputs:
-          data:
-            type: reference
-            value: downloadLogFile.results
+            value: Project ID
       - name: Generate Slack Message and Outfile
         action:
           componentKey: code
@@ -68,15 +91,15 @@ steps:
                 { logger },
                 {
                   loopOverEachFile: { currentItem: fileName },
-                  deserializeUserData: {
+                  downloadLogFile: {
                     results: { username, site },
                   },
                 }
               ) => {
-                const loginTime = fileName.replace("unprocessed/", "");
+                const loginTime = fileName.replace("unprocessed/", "").replace(".json", "");
                 return {
                   data: {
-                    slackMessage: `${username} logged into ${site} at ${loginTime}`,
+                    slackMessage: `${username} logged into ${site} at ${loginTime}.`,
                     outFileName: fileName.replace("unprocessed/", "processed/"),
                   },
                 };
@@ -92,24 +115,25 @@ steps:
             value: generateSlackMessageAndOutfile.results.slackMessage
           webhookUrl:
             type: configVar
-            value: slackWebhookUrl
+            value: Slack Webhook
       - name: Move file to destination directory
         action:
           componentKey: google-cloud-storage
           key: moveFile
+        credential: Private Key Pair
         inputs:
           destinationBucketName:
             type: configVar
-            value: bucketName
+            value: Storage Bucket Name
           destinationFileName:
             type: reference
             value: generateSlackMessageAndOutfile.results.outFileName
           project:
             type: configVar
-            value: gcpProjectId
+            value: Project ID
           sourceBucketName:
             type: configVar
-            value: bucketName
+            value: Storage Bucket Name
           sourceFileName:
             type: reference
             value: loopOverEachFile.currentItem
