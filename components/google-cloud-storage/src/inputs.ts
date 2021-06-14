@@ -1,7 +1,6 @@
 import { input } from "@prismatic-io/spectral";
 
-export const projectInputField = input({
-  key: "project",
+export const project = input({
   label: "GCP Project ID",
   placeholder: "GCP Project ID",
   type: "string",
@@ -11,8 +10,7 @@ export const projectInputField = input({
   example: "my-sample-project-123",
 });
 
-export const bucketNameInputField = input({
-  key: "bucketName",
+export const bucketName = input({
   label: "Bucket Name",
   placeholder: "Bucket Name",
   type: "string",
@@ -22,8 +20,7 @@ export const bucketNameInputField = input({
   example: "my-gcs-bucket",
 });
 
-export const sourceBucketNameInputField = input({
-  key: "sourceBucketName",
+export const sourceBucketName = input({
   label: "Source Bucket",
   placeholder: "Source Bucket Name",
   type: "string",
@@ -33,8 +30,7 @@ export const sourceBucketNameInputField = input({
   example: "my-source-bucket",
 });
 
-export const destinationBucketNameInputField = input({
-  key: "destinationBucketName",
+export const destinationBucketName = input({
   label: "Destination Bucket",
   placeholder: "Destination Bucket Name",
   type: "string",
@@ -44,8 +40,7 @@ export const destinationBucketNameInputField = input({
   example: "my-destination-bucket",
 });
 
-export const fileContentsInputField = input({
-  key: "fileContents",
+export const fileContents = input({
   label: "File Contents",
   placeholder: "Output data from previous step, or a string, to write",
   type: "data",
@@ -55,8 +50,7 @@ export const fileContentsInputField = input({
   example: "My File Contents",
 });
 
-export const fileNameInputField = input({
-  key: "fileName",
+export const fileName = input({
   label: "File Name",
   placeholder: "Full file name",
   type: "string",
@@ -66,8 +60,7 @@ export const fileNameInputField = input({
   example: "path/to/file.txt",
 });
 
-export const sourceFileNameInputField = input({
-  key: "sourceFileName",
+export const sourceFileName = input({
   label: "Source File Name",
   placeholder: "Full source file name",
   type: "string",
@@ -77,8 +70,7 @@ export const sourceFileNameInputField = input({
   example: "path/to/source/file.txt",
 });
 
-export const destinationFileNameInputField = input({
-  key: "destinationFileName",
+export const destinationFileName = input({
   label: "Destination File Name",
   placeholder: "Full destination file name",
   type: "string",
@@ -88,8 +80,7 @@ export const destinationFileNameInputField = input({
   example: "path/to/destination/file.txt",
 });
 
-export const prefixInputField = input({
-  key: "prefix",
+export const prefix = input({
   label: "Prefix",
   placeholder: "Prefix",
   type: "string",

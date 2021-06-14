@@ -17,7 +17,6 @@ import {
   credentials,
   getAuthorizationMethods,
 } from "@prismatic-io/spectral/dist/testing";
-import AWS from "aws-sdk";
 
 describe("createS3Client", () => {
   describe("invalid credentials", () => {

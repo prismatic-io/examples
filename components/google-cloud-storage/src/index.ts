@@ -1,6 +1,13 @@
 import { component } from "@prismatic-io/spectral";
 import { version } from "../package.json";
-import { actions } from "./actions";
+import {
+  saveFile,
+  downloadFile,
+  copyFile,
+  moveFile,
+  deleteFile,
+  listFiles,
+} from "./actions";
 import { authorizationMethods } from "./auth";
 
 export default component({
@@ -14,7 +21,12 @@ export default component({
     iconPath: "icon.png",
   },
   actions: {
-    ...actions,
+    saveFile,
+    downloadFile,
+    copyFile,
+    moveFile,
+    deleteFile,
+    listFiles,
   },
   authorization: {
     required: true,

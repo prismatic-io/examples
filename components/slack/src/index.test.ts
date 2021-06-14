@@ -6,15 +6,14 @@ jest.mock("@slack/webhook", () => {
   };
 });
 
-import { postSlackMessageAction } from ".";
-import { PerformDataReturn } from "@prismatic-io/spectral";
+import { postSlackMessage } from ".";
 import { invoke } from "@prismatic-io/spectral/dist/testing";
 
 describe("postSlackMessage", () => {
   test("calls webhook send", async () => {
-    const { result } = await invoke<PerformDataReturn>(postSlackMessageAction, {
+    const { result } = await invoke(postSlackMessage, {
       message: "foo",
-      webhookUrl: "https://example.com",
+      webhookUrl: "https://hooks.slack.com/services/TXXXX/BXXXXX/XXXXXXX",
     });
     expect(result.data).toStrictEqual("Mock message sent successfully.");
   });

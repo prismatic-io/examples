@@ -13,9 +13,7 @@ export default component({
     description: "Interact with AWS S3 objects and buckets",
     iconPath: "icon.png",
   },
-  actions: {
-    ...actions,
-  },
+  actions,
   authorization: {
     required: true,
     methods: authorizationMethods,

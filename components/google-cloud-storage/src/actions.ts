@@ -1,77 +1,80 @@
 import {
-  bucketNameInputField,
-  sourceBucketNameInputField,
-  destinationBucketNameInputField,
-  fileNameInputField,
-  sourceFileNameInputField,
-  destinationFileNameInputField,
-  fileContentsInputField,
-  projectInputField,
-  prefixInputField,
+  bucketName,
+  sourceBucketName,
+  destinationBucketName,
+  fileName,
+  sourceFileName,
+  destinationFileName,
+  fileContents,
+  project,
+  prefix,
 } from "./inputs";
 import { googleStorageClient } from "./auth";
 import { action, util } from "@prismatic-io/spectral";
 
-const saveFileAction = action({
-  key: "saveFile",
+export const saveFile = action({
   display: {
     label: "Save File",
     description: "Save a file to Google Cloud Storage",
   },
-  inputs: [
-    fileContentsInputField,
-    fileNameInputField,
-    bucketNameInputField,
-    projectInputField,
-  ],
+  inputs: {
+    fileContents,
+    fileName,
+    bucketName,
+    project,
+  },
   perform: async (
     { credential },
     { fileContents, bucketName, fileName, project }
   ) => {
     const storage = googleStorageClient(credential, project);
     const { data } = util.types.toData(fileContents);
-    await storage.bucket(bucketName).file(fileName).save(data);
+    await storage
+      .bucket(util.types.toString(bucketName))
+      .file(util.types.toString(fileName))
+      .save(data);
   },
 });
 
-const downloadFileAction = action({
-  key: "downloadFile",
+export const downloadFile = action({
   display: {
     label: "Download File",
     description: "Download a file from Google Cloud Storage",
   },
-  inputs: [fileNameInputField, bucketNameInputField, projectInputField],
+  inputs: { fileName, bucketName, project },
   perform: async ({ credential }, { bucketName, fileName, project }) => {
     const storage = googleStorageClient(credential, project);
     const [metadata] = await storage
-      .bucket(bucketName)
-      .file(fileName)
+      .bucket(util.types.toString(bucketName))
+      .file(util.types.toString(fileName))
       .getMetadata();
     const [contents] = await storage
-      .bucket(bucketName)
-      .file(fileName)
+      .bucket(util.types.toString(bucketName))
+      .file(util.types.toString(fileName))
       .download();
     return {
       data: contents,
       contentType: metadata.contentType,
     };
   },
-  examplePayload: { data: "File Contents", contentType: "text/plain" },
+  examplePayload: {
+    data: Buffer.from("File Contents"),
+    contentType: "text/plain",
+  },
 });
 
-const copyFileAction = action({
-  key: "copyFile",
+export const copyFile = action({
   display: {
     label: "Copy Files",
     description: "Copy a file from one Google Cloud Storage bucket to another",
   },
-  inputs: [
-    sourceBucketNameInputField,
-    destinationBucketNameInputField,
-    sourceFileNameInputField,
-    destinationFileNameInputField,
-    projectInputField,
-  ],
+  inputs: {
+    sourceBucketName,
+    destinationBucketName,
+    sourceFileName,
+    destinationFileName,
+    project,
+  },
   perform: async (
     { credential },
     {
@@ -84,25 +87,28 @@ const copyFileAction = action({
   ) => {
     const storage = googleStorageClient(credential, project);
     await storage
-      .bucket(sourceBucketName)
-      .file(sourceFileName)
-      .copy(storage.bucket(destinationBucketName).file(destinationFileName));
+      .bucket(util.types.toString(sourceBucketName))
+      .file(util.types.toString(sourceFileName))
+      .copy(
+        storage
+          .bucket(util.types.toString(destinationBucketName))
+          .file(util.types.toString(destinationFileName))
+      );
   },
 });
 
-const moveFileAction = action({
-  key: "moveFile",
+export const moveFile = action({
   display: {
     label: "Move File",
     description: "Move a file from one Google Cloud Storage bucket to another",
   },
-  inputs: [
-    sourceBucketNameInputField,
-    destinationBucketNameInputField,
-    sourceFileNameInputField,
-    destinationFileNameInputField,
-    projectInputField,
-  ],
+  inputs: {
+    sourceBucketName,
+    destinationBucketName,
+    sourceFileName,
+    destinationFileName,
+    project,
+  },
   perform: async (
     { credential },
     {
@@ -115,62 +121,48 @@ const moveFileAction = action({
   ) => {
     const storage = googleStorageClient(credential, project);
     await storage
-      .bucket(sourceBucketName)
-      .file(sourceFileName)
-      .move(storage.bucket(destinationBucketName).file(destinationFileName));
+      .bucket(util.types.toString(sourceBucketName))
+      .file(util.types.toString(sourceFileName))
+      .move(
+        storage
+          .bucket(util.types.toString(destinationBucketName))
+          .file(util.types.toString(destinationFileName))
+      );
   },
 });
 
-const deleteFileAction = action({
-  key: "deleteFile",
+export const deleteFile = action({
   display: {
     label: "Delete File",
     description: "Delete a file from a Google Cloud Storage bucket",
   },
-  inputs: [fileNameInputField, bucketNameInputField, projectInputField],
+  inputs: { fileName, bucketName, project },
   perform: async ({ credential }, { bucketName, fileName, project }) => {
     const storage = googleStorageClient(credential, project);
-    await storage.bucket(bucketName).file(fileName).delete();
+    await storage
+      .bucket(util.types.toString(bucketName))
+      .file(util.types.toString(fileName))
+      .delete();
   },
 });
 
-const listFilesAction = action({
-  key: "listFiles",
+export const listFiles = action({
   display: {
     label: "List Files",
     description: "List files in a Google Cloud Storage bucket",
   },
-  inputs: [bucketNameInputField, projectInputField, prefixInputField],
+  inputs: { bucketName, project, prefix },
   perform: async ({ credential }, { bucketName, project, prefix }) => {
     const storage = googleStorageClient(credential, project);
-    const options = { prefix };
-    const [files] = await storage.bucket(bucketName).getFiles(options);
+    const options = { prefix: util.types.toString(prefix) };
+    const [files] = await storage
+      .bucket(util.types.toString(bucketName))
+      .getFiles(options);
     return {
       data: files.map((f) => f.name).filter((f) => !f.endsWith("/")), // Filter out directories; we just care about files
     };
   },
   examplePayload: {
-    data: [
-      {
-        acl: undefined,
-        bucket: {},
-        storage: {},
-        kmsKeyName: "Example Key",
-        userProject: "Example Project",
-        signer: {},
-        name: "Example",
-        generation: 2,
-        parent: "Example Parent",
-      },
-    ],
+    data: ["foo.yaml", "bar.xml", "dist/to/myfile.json"],
   },
 });
-
-export const actions = {
-  ...saveFileAction,
-  ...downloadFileAction,
-  ...copyFileAction,
-  ...moveFileAction,
-  ...deleteFileAction,
-  ...listFilesAction,
-};

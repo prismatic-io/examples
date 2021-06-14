@@ -1,25 +1,21 @@
 import {
-  awsRegionInputField,
-  bucketInputField,
-  destinationBucketInputField,
-  destinationKeyInputField,
-  fileContentsInputField,
-  keyInputField,
-  prefixInputField,
-  sourceBucketInputField,
-  sourceKeyInputField,
-  taggingInputField,
+  awsRegion,
+  bucket,
+  destinationBucket,
+  destinationKey,
+  fileContents,
+  objectKey,
+  prefix,
+  sourceBucket,
+  sourceKey,
+  tagging,
 } from "./inputs";
 import querystring from "querystring";
-import {
-  action,
-  util,
-  PerformDataStructureReturn,
-} from "@prismatic-io/spectral";
+import { action, util } from "@prismatic-io/spectral";
 import { S3 } from "aws-sdk";
 import { createS3Client } from "./auth";
 
-interface S3ActionOutput extends PerformDataStructureReturn {
+interface S3ActionOutput {
   data:
     | S3.Types.CopyObjectOutput
     | string[]
@@ -33,7 +29,6 @@ const copyObjectOutput: S3ActionOutput = {
   },
 };
 const copyObject = action({
-  key: "copyObject",
   display: {
     label: "Copy Object",
     description: "Copy an object in S3 from one location to another",
@@ -42,58 +37,53 @@ const copyObject = action({
     { credential },
     { awsRegion, sourceBucket, destinationBucket, sourceKey, destinationKey }
   ) => {
-    const s3 = await createS3Client(credential, awsRegion);
+    const s3 = await createS3Client(credential, util.types.toString(awsRegion));
     const copyParameters = {
-      Bucket: destinationBucket,
+      Bucket: util.types.toString(destinationBucket),
       CopySource: `/${sourceBucket}/${sourceKey}`,
-      Key: destinationKey,
+      Key: util.types.toString(destinationKey),
     };
     const response = await s3.copyObject(copyParameters).promise();
     return {
       data: response,
     };
   },
-  inputs: [
-    awsRegionInputField,
-    sourceBucketInputField,
-    destinationBucketInputField,
-    sourceKeyInputField,
-    destinationKeyInputField,
-  ],
+  inputs: {
+    awsRegion,
+    sourceBucket,
+    destinationBucket,
+    sourceKey,
+    destinationKey,
+  },
   examplePayload: copyObjectOutput,
 });
 
 const deleteObject = action({
-  key: "deleteObject",
   display: {
     label: "Delete Object",
     description: "Delete an Object within an S3 Bucket",
   },
   perform: async ({ credential }, { awsRegion, bucket, objectKey }) => {
-    const s3 = await createS3Client(credential, awsRegion);
+    const s3 = await createS3Client(credential, util.types.toString(awsRegion));
     const deleteParameters = {
-      Bucket: bucket,
-      Key: objectKey,
+      Bucket: util.types.toString(bucket),
+      Key: util.types.toString(objectKey),
     };
     await s3.deleteObject(deleteParameters).promise();
   },
-  inputs: [awsRegionInputField, bucketInputField, keyInputField],
+  inputs: { awsRegion, bucket, objectKey },
 });
 
-const getObjectOutput: S3ActionOutput & S3.Types.GetObjectOutput = {
-  data: { Body: Buffer.from("Example"), ContentType: "application/octet" },
-};
 const getObject = action({
-  key: "getObject",
   display: {
     label: "Get Object",
     description: "Get the contents of an object",
   },
   perform: async ({ credential }, { awsRegion, bucket, objectKey }) => {
-    const s3 = await createS3Client(credential, awsRegion);
+    const s3 = await createS3Client(credential, util.types.toString(awsRegion));
     const getObjectParameters = {
-      Bucket: bucket,
-      Key: objectKey,
+      Bucket: util.types.toString(bucket),
+      Key: util.types.toString(objectKey),
     };
     const response = await s3.getObject(getObjectParameters).promise();
     return {
@@ -101,8 +91,11 @@ const getObject = action({
       contentType: response.ContentType,
     };
   },
-  inputs: [awsRegionInputField, bucketInputField, keyInputField],
-  examplePayload: getObjectOutput,
+  inputs: { awsRegion, bucket, objectKey },
+  examplePayload: {
+    data: Buffer.from("Example"),
+    contentType: "application/octet",
+  },
 });
 
 const listObjectOutput: S3ActionOutput = {
@@ -110,23 +103,22 @@ const listObjectOutput: S3ActionOutput = {
 };
 /* Maybe FIXME?: This caps off at 1000 objects */
 const listObjects = action({
-  key: "listObjects",
   display: {
     label: "List Objects",
     description: "List Objects in a Bucket",
   },
   perform: async ({ credential }, { awsRegion, bucket, prefix }) => {
-    const s3 = await createS3Client(credential, awsRegion);
+    const s3 = await createS3Client(credential, util.types.toString(awsRegion));
     const listParameters = {
-      Bucket: bucket,
-      Prefix: prefix,
+      Bucket: util.types.toString(bucket),
+      Prefix: util.types.toString(prefix),
     };
     const response = await s3.listObjectsV2(listParameters).promise();
     return {
       data: response.Contents.map(({ Key }) => Key),
     };
   },
-  inputs: [awsRegionInputField, bucketInputField, prefixInputField],
+  inputs: { awsRegion, bucket, prefix },
   examplePayload: listObjectOutput,
 });
 
@@ -134,7 +126,6 @@ const putObjectOutput: S3ActionOutput = {
   data: { ETag: "Example Tag", VersionId: "Example Version Id" },
 };
 const putObject = action({
-  key: "putObject",
   display: {
     label: "Put Object",
     description: "Write an object to S3",
@@ -143,17 +134,17 @@ const putObject = action({
     { credential },
     { awsRegion, bucket, fileContents, objectKey, tagging }
   ) => {
-    const s3 = await createS3Client(credential, awsRegion);
+    const s3 = await createS3Client(credential, util.types.toString(awsRegion));
     const { data, contentType } = util.types.toData(fileContents);
     const tags = querystring.encode(
-      (tagging || {}).reduce(
+      (tagging || []).reduce(
         (acc, { key, value }) => ({ ...acc, [key]: value }),
         {}
       )
     );
     const putParameters: S3.PutObjectRequest = {
-      Bucket: bucket,
-      Key: objectKey,
+      Bucket: util.types.toString(bucket),
+      Key: util.types.toString(objectKey),
       Body: data,
       ContentType: contentType,
       Tagging: tags,
@@ -163,20 +154,20 @@ const putObject = action({
       data: response,
     };
   },
-  inputs: [
-    awsRegionInputField,
-    bucketInputField,
-    fileContentsInputField,
-    keyInputField,
-    taggingInputField,
-  ],
+  inputs: {
+    awsRegion,
+    bucket,
+    fileContents,
+    objectKey,
+    tagging,
+  },
   examplePayload: putObjectOutput,
 });
 
 export const actions = {
-  ...copyObject,
-  ...deleteObject,
-  ...getObject,
-  ...listObjects,
-  ...putObject,
+  copyObject,
+  deleteObject,
+  getObject,
+  listObjects,
+  putObject,
 };

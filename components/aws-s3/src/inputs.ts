@@ -1,7 +1,7 @@
 import { input } from "@prismatic-io/spectral";
+import awsRegions from "./aws-regions.json";
 
-export const keyInputField = input({
-  key: "objectKey",
+export const objectKey = input({
   label: "Object Key",
   placeholder: "Object Key",
   type: "string",
@@ -11,8 +11,7 @@ export const keyInputField = input({
   example: "path/to/file.txt",
 });
 
-export const sourceKeyInputField = input({
-  key: "sourceKey",
+export const sourceKey = input({
   label: "Source Key",
   placeholder: "Source Key",
   type: "string",
@@ -22,8 +21,7 @@ export const sourceKeyInputField = input({
   example: "path/to/source/file.txt",
 });
 
-export const destinationKeyInputField = input({
-  key: "destinationKey",
+export const destinationKey = input({
   label: "Destination Key",
   placeholder: "Destination Key",
   type: "string",
@@ -33,8 +31,7 @@ export const destinationKeyInputField = input({
   example: "path/to/destination/file.txt",
 });
 
-export const fileContentsInputField = input({
-  key: "fileContents",
+export const fileContents = input({
   label: "File Contents",
   placeholder: "Output data from previous step, or a string, to write",
   type: "data",
@@ -44,8 +41,7 @@ export const fileContentsInputField = input({
   example: "My File Contents",
 });
 
-export const bucketInputField = input({
-  key: "bucket",
+export const bucket = input({
   label: "Bucket Name",
   placeholder: "Name of an S3 Bucket",
   type: "string",
@@ -55,8 +51,7 @@ export const bucketInputField = input({
   example: "my-s3-bucket-abc123",
 });
 
-export const sourceBucketInputField = input({
-  key: "sourceBucket",
+export const sourceBucket = input({
   label: "Source Bucket Name",
   placeholder: "Source Bucket Name",
   type: "string",
@@ -66,8 +61,7 @@ export const sourceBucketInputField = input({
   example: "my-source-bucket",
 });
 
-export const destinationBucketInputField = input({
-  key: "destinationBucket",
+export const destinationBucket = input({
   label: "Destination Bucket Name",
   placeholder: "Destination Bucket Name",
   type: "string",
@@ -77,9 +71,7 @@ export const destinationBucketInputField = input({
   example: "my-destination-bucket",
 });
 
-export const awsRegionInputField = input({
-  // FIXME: Add a `model` and make this a dropdown
-  key: "awsRegion",
+export const awsRegion = input({
   label: "AWS Region",
   placeholder: "AWS Region",
   type: "string",
@@ -87,10 +79,16 @@ export const awsRegionInputField = input({
   comments:
     "AWS provides services in multiple regions, like us-west-2 or eu-east-1. AWS region indicates the region in which your bucket(s) are stored.",
   example: "us-east-1",
+  default: "us-east-1",
+  model: awsRegions.map((region) => {
+    return {
+      label: region,
+      value: region,
+    };
+  }),
 });
 
-export const prefixInputField = input({
-  key: "prefix",
+export const prefix = input({
   label: "Prefix",
   placeholder: "Prefix",
   type: "string",
@@ -101,8 +99,7 @@ export const prefixInputField = input({
   example: "path/to/files/",
 });
 
-export const taggingInputField = input({
-  key: "tagging",
+export const tagging = input({
   label: "Object Tags",
   placeholder: "Object Tags",
   type: "string",
