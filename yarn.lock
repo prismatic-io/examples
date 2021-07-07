@@ -893,6 +893,15 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
+"@prismatic-io/spectral@2.0.0", "@prismatic-io/spectral@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-2.0.0.tgz#f8d4dd3de26305ed3abe17c9afa93584338c18da"
+  integrity sha512-gtkfbPSr1UtcSN7SOGCZjUhtdH/J2VZmSuYaNliRJRUaxyAt81y3RY4qCdFEuxhqhtDhzNLaxNjHztDnAUJEZg==
+  dependencies:
+    date-fns "2.17.0"
+    jest-mock "27.0.3"
+    valid-url "1.0.9"
+
 "@prismatic-io/spectral@2.0.0-beta.8":
   version "2.0.0-beta.8"
   resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-2.0.0-beta.8.tgz#6cde9bfa521f2051d972c5deaccd0eb104617fe1"
@@ -902,22 +911,13 @@
     jest-mock "26.6.2"
     valid-url "1.0.9"
 
-"@prismatic-io/spectral@^1.0.3", "@prismatic-io/spectral@^1.0.6":
+"@prismatic-io/spectral@^1.0.3":
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-1.0.7.tgz#e5dfc720bd24437cac47ecd5f706906c91ad8459"
   integrity sha512-toLnvNpkpOVNhqvocceVlneXgEf7gamzeRc/VmP4tLOdgxKMc2gspf9zus5zZoxDM96zFMxHi9XWk79JtZ7SEA==
   dependencies:
     date-fns "2.17.0"
     jest-mock "26.6.2"
-    valid-url "1.0.9"
-
-"@prismatic-io/spectral@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-2.0.0.tgz#f8d4dd3de26305ed3abe17c9afa93584338c18da"
-  integrity sha512-gtkfbPSr1UtcSN7SOGCZjUhtdH/J2VZmSuYaNliRJRUaxyAt81y3RY4qCdFEuxhqhtDhzNLaxNjHztDnAUJEZg==
-  dependencies:
-    date-fns "2.17.0"
-    jest-mock "27.0.3"
     valid-url "1.0.9"
 
 "@sindresorhus/is@^0.14.0":
