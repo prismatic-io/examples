@@ -1,18 +1,13 @@
 import { action, component, input } from "@prismatic-io/spectral";
-import packageInfo from "../package.json";
 
-const version = packageInfo.version;
-
-const firstNameInputField = input({
-  key: "firstName",
+const firstName = input({
   label: "First Name",
   placeholder: "First name of a person",
   type: "string",
   required: true,
 });
 
-const middleNameInputField = input({
-  key: "middleName",
+const middleName = input({
   label: "Middle Name",
   placeholder: "Middle name of a person",
   type: "string",
@@ -21,16 +16,14 @@ const middleNameInputField = input({
   comments: "Leave blank if the user has no middle name",
 });
 
-const lastNameInputField = input({
-  key: "lastName",
+const lastName = input({
   label: "Last Name",
   placeholder: "Last name of a person",
   type: "string",
   required: true,
 });
 
-export const properFormatNameAction = action({
-  key: "properFormatName",
+export const properFormatName = action({
   display: {
     label: "Properly Format Name",
     description: "Properly format a person's name (Last, First M.)",
@@ -44,11 +37,10 @@ export const properFormatNameAction = action({
       return { data: `${lastName}, ${firstName}` };
     }
   },
-  inputs: [firstNameInputField, middleNameInputField, lastNameInputField],
+  inputs: { firstName, middleName, lastName },
 });
 
-export const improperFormatNameAction = action({
-  key: "informalFormatName",
+export const improperFormatName = action({
   display: {
     label: "Informally Format Name",
     description: "Informally format a person's name (My main man, FIRSTNAME)",
@@ -58,20 +50,19 @@ export const improperFormatNameAction = action({
       data: `My main man, ${firstName}`,
     };
   },
-  inputs: [firstNameInputField],
+  inputs: { firstName },
 });
 
 export default component({
   key: "format-name",
   public: false,
-  version,
   display: {
     label: "Format Name",
     description: "Format a person's name given a first, middle, and last name",
     iconPath: "icon.png",
   },
   actions: {
-    ...improperFormatNameAction,
-    ...properFormatNameAction,
+    improperFormatName,
+    properFormatName,
   },
 });
