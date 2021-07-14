@@ -1,9 +1,8 @@
-import { gallonsToPoundsAction, poundsToGallonsAction } from ".";
-import { PerformDataReturn } from "@prismatic-io/spectral";
+import { gallonsToPounds, poundsToGallons } from ".";
 import { invoke } from "@prismatic-io/spectral/dist/testing";
 
 test("Convert pounds to gallons", async () => {
-  const { result } = await invoke<PerformDataReturn>(poundsToGallonsAction, {
+  const { result } = await invoke(poundsToGallons, {
     fuelType: "Kerosene",
     fuelAmount: 100,
   });
@@ -11,7 +10,7 @@ test("Convert pounds to gallons", async () => {
 });
 
 test("Convert gallons to pounds", async () => {
-  const { result } = await invoke<PerformDataReturn>(gallonsToPoundsAction, {
+  const { result } = await invoke(gallonsToPounds, {
     fuelType: "Hydrazine",
     fuelAmount: 50,
   });
