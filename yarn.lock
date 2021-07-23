@@ -1271,15 +1271,6 @@
     jest-mock "27.0.3"
     valid-url "1.0.9"
 
-"@prismatic-io/spectral@2.0.0-beta.8":
-  version "2.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-2.0.0-beta.8.tgz#6cde9bfa521f2051d972c5deaccd0eb104617fe1"
-  integrity sha512-n53wKVozntAUQLRi3x2dz40nwsVa22EXZYEmphPhT6uqzBz4QHlVLXu13PpRYByyZep+6ffR/pitVQNEaDpXwA==
-  dependencies:
-    date-fns "2.17.0"
-    jest-mock "26.6.2"
-    valid-url "1.0.9"
-
 "@prismatic-io/spectral@^1.0.3":
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-1.0.7.tgz#e5dfc720bd24437cac47ecd5f706906c91ad8459"
@@ -8742,6 +8733,11 @@ typescript@3.9.9, typescript@^3.8.3:
   version "3.9.9"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.9.tgz#e69905c54bc0681d0518bd4d587cc6f2d0b1a674"
   integrity sha512-kdMjTiekY+z/ubJCATUPlRDl39vXYiMV9iyeMuEuXZh2we6zz80uovNN2WlAxmmdE/Z/YQe+EbOEXB5RHEED3w==
+
+typescript@4.2.4:
+  version "4.2.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.2.4.tgz#8610b59747de028fda898a8aef0e103f156d0961"
+  integrity sha512-V+evlYHZnQkaz8TRBuxTA92yZBPotr5H+WhQ7bD3hZUndx5tGOa1fuCgeSjxAzM1RiN5IzvadIXTVefuuwZCRg==
 
 typescript@4.3.5, typescript@^4.2.2:
   version "4.3.5"

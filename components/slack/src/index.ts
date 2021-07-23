@@ -1,5 +1,4 @@
 import { action, component, util } from "@prismatic-io/spectral";
-import { version } from "../package.json";
 import { IncomingWebhook } from "@slack/webhook";
 
 const webhookRegex = RegExp(
@@ -49,11 +48,11 @@ export default component({
   key: "slack",
   documentationUrl: "https://prismatic.io/docs/components/slack",
   public: true,
-  version,
   display: {
     label: "Slack",
-    description: "Post messages to Slack",
+    description: "Send messages to Slack channels and users",
     iconPath: "icon.png",
+    category: "Application Connectors",
   },
   actions: { postSlackMessage },
 });

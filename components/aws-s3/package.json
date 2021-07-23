@@ -2,7 +2,7 @@
   "name": "@prismatic-io/aws-s3",
   "private": true,
   "version": "0.0.1",
-  "description": "AWS S3 Component for Prismatic",
+  "description": "Amazon S3 Component for Prismatic",
   "main": "index.ts",
   "scripts": {
     "lint": "eslint --cache --quiet --ext .ts,.js --ignore-pattern '*testapp*' .",
@@ -17,12 +17,13 @@
     "dev": "nodemon --watch src -e ts,ejs --exec npm run build:testapp"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "2.0.0-beta.8",
+    "@prismatic-io/spectral": "2.0.0",
     "aws-sdk": "2.691.0"
   },
   "author": "Prismatic",
   "license": "MIT",
   "devDependencies": {
+    "@prismatic-io/eslint": "0.1.0",
     "@types/express": "4.17.6",
     "@types/node": "14.14.35",
     "@types/jest": "25.2.3",

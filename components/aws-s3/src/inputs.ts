@@ -47,7 +47,7 @@ export const bucket = input({
   type: "string",
   required: true,
   comments:
-    "An AWS S3 'bucket' is a container where files are stored. You can create a bucket from within the AWS console. Bucket names contain only letters, numbers, and dashes.",
+    "An Amazon S3 'bucket' is a container where files are stored. You can create a bucket from within the AWS console. Bucket names contain only letters, numbers, and dashes.",
   example: "my-s3-bucket-abc123",
 });
 
@@ -57,7 +57,7 @@ export const sourceBucket = input({
   type: "string",
   required: true,
   comments:
-    "An AWS S3 'bucket' is a container where files are stored. The source bucket indicates the bucket containing the file you want to copy. If you are copying files within a single bucket, list the same bucket as the source and destination bucket.",
+    "An Amazon S3 'bucket' is a container where files are stored. The source bucket indicates the bucket containing the file you want to copy. If you are copying files within a single bucket, list the same bucket as the source and destination bucket.",
   example: "my-source-bucket",
 });
 
@@ -67,7 +67,7 @@ export const destinationBucket = input({
   type: "string",
   required: true,
   comments:
-    "An AWS S3 'bucket' is a container where files are stored. The destination bucket indicates the bucket where you want a file to be stored. If you are copying files within a single bucket, list the same bucket as the source and destination bucket.",
+    "An Amazon S3 'bucket' is a container where files are stored. The destination bucket indicates the bucket where you want a file to be stored. If you are copying files within a single bucket, list the same bucket as the source and destination bucket.",
   example: "my-destination-bucket",
 });
 

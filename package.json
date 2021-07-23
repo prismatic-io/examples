@@ -3,7 +3,8 @@
   "private": "false",
   "workspaces": {
     "packages": [
-      "components/*"
+      "components/*",
+      "components/packages/*"
     ]
   },
   "devDependencies": {

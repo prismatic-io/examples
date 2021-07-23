@@ -1,5 +1,4 @@
 import { component } from "@prismatic-io/spectral";
-import { version } from "../package.json";
 import {
   saveFile,
   downloadFile,
@@ -14,11 +13,11 @@ export default component({
   key: "google-cloud-storage",
   documentationUrl: "https://prismatic.io/docs/components/google-cloud-storage",
   public: true,
-  version,
   display: {
     label: "Google Cloud Storage",
-    description: "Interact with GCP objects and buckets",
+    description: "Manage objects (files) in a Google Cloud Storage bucket",
     iconPath: "icon.png",
+    category: "Data Platforms",
   },
   actions: {
     saveFile,

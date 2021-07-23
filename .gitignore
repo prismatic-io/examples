@@ -10,3 +10,6 @@ node_modules
 
 # MacOS
 .DS_Store
+
+# Build logs
+components/**/*.log
