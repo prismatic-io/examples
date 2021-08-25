@@ -15,7 +15,7 @@ With Prismatic, you can:
 - Easily deploy customer-specific integration [instances](https://prismatic.io/docs/instances) with unique [configurations](https://prismatic.io/docs/configuration-variables) and [credentials](https://prismatic.io/docs/credentials)
 - Run your integrations in a purpose-built environment
 - Provide better support with built-in [logging](https://prismatic.io/docs/logging) and [alerting](https://prismatic.io/docs/monitoring-and-alerting)
-- Embed a white-labeled customer integration portal with an integration app store and customer self-service tools
+- Embed a white-labeled customer integration portal with an [integration marketplace](https://prismatic.io/docs/integration-marketplace/) and customer self-service tools
 - Mold the platform to your product, industry, and the way you build software
 
 ## Who uses Prismatic?
