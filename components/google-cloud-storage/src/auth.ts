@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { Storage } from "@google-cloud/storage";
-import { AuthorizationMethod, Credential } from "@prismatic-io/spectral";
+import { AuthorizationDefinition, Credential } from "@prismatic-io/spectral";
 
-export const authorizationMethods: AuthorizationMethod[] = ["private_key"];
+export const authorization: AuthorizationDefinition = {
+  required: true,
+  methods: ["private_key"],
+};
 
 export const googleStorageClient = (credential: Credential, project) => {
   if (credential.authorizationMethod !== "private_key") {

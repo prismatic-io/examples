@@ -13,7 +13,7 @@ import {
 import querystring from "querystring";
 import { action, util } from "@prismatic-io/spectral";
 import { S3 } from "aws-sdk";
-import { createS3Client } from "./auth";
+import { authorization, createS3Client } from "./auth";
 
 interface S3ActionOutput {
   data:
@@ -55,6 +55,7 @@ const copyObject = action({
     sourceKey,
     destinationKey,
   },
+  authorization,
   examplePayload: copyObjectOutput,
 });
 
@@ -72,6 +73,7 @@ const deleteObject = action({
     await s3.deleteObject(deleteParameters).promise();
   },
   inputs: { awsRegion, bucket, objectKey },
+  authorization,
 });
 
 const getObject = action({
@@ -92,6 +94,7 @@ const getObject = action({
     };
   },
   inputs: { awsRegion, bucket, objectKey },
+  authorization,
   examplePayload: {
     data: Buffer.from("Example"),
     contentType: "application/octet",
@@ -119,6 +122,7 @@ const listObjects = action({
     };
   },
   inputs: { awsRegion, bucket, prefix },
+  authorization,
   examplePayload: listObjectOutput,
 });
 
@@ -161,6 +165,7 @@ const putObject = action({
     objectKey,
     tagging,
   },
+  authorization,
   examplePayload: putObjectOutput,
 });
 

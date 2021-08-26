@@ -1,7 +1,10 @@
 import AWS from "aws-sdk";
-import { AuthorizationMethod, Credential } from "@prismatic-io/spectral";
+import { AuthorizationDefinition, Credential } from "@prismatic-io/spectral";
 
-export const authorizationMethods: AuthorizationMethod[] = ["api_key_secret"];
+export const authorization: AuthorizationDefinition = {
+  required: true,
+  methods: ["api_key_secret"],
+};
 
 export const createS3Client = async (
   credential: Credential,

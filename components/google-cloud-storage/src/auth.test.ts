@@ -1,4 +1,4 @@
-import { authorizationMethods, googleStorageClient } from "./auth";
+import { authorization, googleStorageClient } from "./auth";
 import {
   credentials,
   getAuthorizationMethods,
@@ -16,7 +16,7 @@ describe("googleStorageClient", () => {
   });
 
   test("throws error for unsupported authorization methods", () => {
-    const invalidMethods = getAuthorizationMethods(authorizationMethods);
+    const invalidMethods = getAuthorizationMethods(authorization.methods);
     for (const method of invalidMethods) {
       expect(() =>
         googleStorageClient(credentials.generate(method), "foo")

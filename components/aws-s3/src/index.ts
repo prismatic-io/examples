@@ -1,6 +1,5 @@
 import { component } from "@prismatic-io/spectral";
 import { actions } from "./actions";
-import { authorizationMethods } from "./auth";
 
 export default component({
   key: "aws-s3",
@@ -8,13 +7,9 @@ export default component({
   public: true,
   display: {
     label: "Amazon S3",
-    description: "Manage objects (files) within an Amazon S3 bucket",
+    description: "Manage files within an Amazon (AWS) S3 bucket",
     iconPath: "icon.png",
     category: "Data Platforms",
   },
   actions,
-  authorization: {
-    required: true,
-    methods: authorizationMethods,
-  },
 });

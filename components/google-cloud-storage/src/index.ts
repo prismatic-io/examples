@@ -7,7 +7,6 @@ import {
   deleteFile,
   listFiles,
 } from "./actions";
-import { authorizationMethods } from "./auth";
 
 export default component({
   key: "google-cloud-storage",
@@ -15,7 +14,8 @@ export default component({
   public: true,
   display: {
     label: "Google Cloud Storage",
-    description: "Manage objects (files) in a Google Cloud Storage bucket",
+    description:
+      "Manage files in a Google Cloud Platform (GCP) Cloud Storage bucket",
     iconPath: "icon.png",
     category: "Data Platforms",
   },
@@ -26,9 +26,5 @@ export default component({
     moveFile,
     deleteFile,
     listFiles,
-  },
-  authorization: {
-    required: true,
-    methods: authorizationMethods,
   },
 });

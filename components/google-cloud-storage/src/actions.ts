@@ -9,7 +9,7 @@ import {
   project,
   prefix,
 } from "./inputs";
-import { googleStorageClient } from "./auth";
+import { authorization, googleStorageClient } from "./auth";
 import { action, util } from "@prismatic-io/spectral";
 
 export const saveFile = action({
@@ -23,6 +23,7 @@ export const saveFile = action({
     bucketName,
     project,
   },
+  authorization,
   perform: async (
     { credential },
     { fileContents, bucketName, fileName, project }
@@ -42,6 +43,7 @@ export const downloadFile = action({
     description: "Download a file from Google Cloud Storage",
   },
   inputs: { fileName, bucketName, project },
+  authorization,
   perform: async ({ credential }, { bucketName, fileName, project }) => {
     const storage = googleStorageClient(credential, project);
     const [metadata] = await storage
@@ -75,6 +77,7 @@ export const copyFile = action({
     destinationFileName,
     project,
   },
+  authorization,
   perform: async (
     { credential },
     {
@@ -109,6 +112,7 @@ export const moveFile = action({
     destinationFileName,
     project,
   },
+  authorization,
   perform: async (
     { credential },
     {
@@ -137,6 +141,7 @@ export const deleteFile = action({
     description: "Delete a file from a Google Cloud Storage bucket",
   },
   inputs: { fileName, bucketName, project },
+  authorization,
   perform: async ({ credential }, { bucketName, fileName, project }) => {
     const storage = googleStorageClient(credential, project);
     await storage
@@ -152,6 +157,7 @@ export const listFiles = action({
     description: "List files in a Google Cloud Storage bucket",
   },
   inputs: { bucketName, project, prefix },
+  authorization,
   perform: async ({ credential }, { bucketName, project, prefix }) => {
     const storage = googleStorageClient(credential, project);
     const options = { prefix: util.types.toString(prefix) };

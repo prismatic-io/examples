@@ -12,7 +12,7 @@ jest.mock("aws-sdk", () => {
   };
 });
 
-import { authorizationMethods, createS3Client } from "./auth";
+import { authorization, createS3Client } from "./auth";
 import {
   credentials,
   getAuthorizationMethods,
@@ -43,7 +43,7 @@ describe("createS3Client", () => {
     });
 
     test("throws error for unsupported authorization methods", async () => {
-      const invalidMethods = getAuthorizationMethods(authorizationMethods);
+      const invalidMethods = getAuthorizationMethods(authorization.methods);
       for (const method of invalidMethods) {
         await expect(
           createS3Client(credentials.generate(method), "us-east-2")
