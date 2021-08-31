@@ -7,8 +7,7 @@ from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 
 token = os.environ['PRISMATIC_API_KEY']
-#api_endpoint = "https://app.prismatic.io/api/"
-api_endpoint = "https://app.treece.prismatic-dev.io/api/"
+api_endpoint = "https://app.prismatic.io/api/"
 
 transport = RequestsHTTPTransport(
   url=api_endpoint,
@@ -161,6 +160,6 @@ def deleteCustomer(externalId):
 
 # Test each function:
 # print(json.dumps(getCustomers()))
-# print(json.dumps(getCustomerByExternalId("eid-123")))
+# print(json.dumps(getCustomerByExternalId("abc-123")))
 # print(json.dumps(createCustomer(name="Rockets Rockets Rockets", description="Rockets^3", externalId="456-xyz")))
-print(json.dumps(deleteCustomer(externalId="eid-123")))
+# print(json.dumps(deleteCustomer(externalId="456-xyz")))
