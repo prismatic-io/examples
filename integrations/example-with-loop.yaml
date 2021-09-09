@@ -3,10 +3,10 @@ definitionVersion: 4
 name: Process Login Logs
 
 componentVersions:
-  code: 41
-  google-cloud-storage: 26
-  loop: 17
-  slack: 39
+  code: 52
+  google-cloud-storage: 25
+  loop: 16
+  slack: 44
 
 description: Process Login Logs
 
