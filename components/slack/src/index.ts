@@ -1,5 +1,6 @@
 import { action, component, util } from "@prismatic-io/spectral";
 import { IncomingWebhook } from "@slack/webhook";
+import triggers from "./triggers";
 
 const webhookRegex = RegExp(
   "^https://hooks.slack.com/services/T\\w*/B\\w*/\\w*$"
@@ -55,4 +56,5 @@ export default component({
     category: "Application Connectors",
   },
   actions: { postSlackMessage },
+  triggers,
 });

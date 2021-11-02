@@ -1580,6 +1580,11 @@
     "@types/mime" "^1"
     "@types/node" "*"
 
+"@types/sns-validator@0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@types/sns-validator/-/sns-validator-0.3.1.tgz#76d13a495cdfcd565d2df98c4a0bf065aca2d741"
+  integrity sha512-td9FL/N5jpS1P7y41Bmj/jN0F295DAQ4If4OgIxtl/eoob+i6hciBueYD8EUSAwMpWf42JeNsGO2FglrjMC0Mg==
+
 "@types/stack-utils@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.0.tgz#7036640b4e21cc2f259ae826ce843d277dad8cff"
@@ -2344,6 +2349,13 @@ aws-sdk@2.691.0:
     url "0.10.3"
     uuid "3.3.2"
     xml2js "0.4.19"
+
+axios@0.21.4:
+  version "0.21.4"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
+  integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
+  dependencies:
+    follow-redirects "^1.14.0"
 
 axios@^0.21.1:
   version "0.21.1"
@@ -4304,7 +4316,7 @@ follow-redirects@^1.10.0:
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.1.tgz#d9114ded0a1cfdd334e164e6662ad02bfd91ff43"
   integrity sha512-HWqDgT7ZEkqRzBvc2s64vSZ/hfOceEol3ac/7tKwzuvEyWx3/4UegXh5oBOIotkGsObyk3xznnSRVADBgWSQVg==
 
-follow-redirects@^1.14.4:
+follow-redirects@^1.14.0, follow-redirects@^1.14.4:
   version "1.14.5"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.5.tgz#f09a5848981d3c772b5392309778523f8d85c381"
   integrity sha512-wtphSXy7d4/OR+MvIFbCVBDzZ5520qV8XfPklSN5QtxuMUJZ+b0Wnst1e1lCDocfzuCkHqj8k0FpZqO+UIaKNA==
@@ -8055,6 +8067,11 @@ snapdragon@^0.8.1:
     source-map "^0.5.6"
     source-map-resolve "^0.5.0"
     use "^3.1.0"
+
+sns-validator@0.3.4:
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/sns-validator/-/sns-validator-0.3.4.tgz#a858be7c0bcdf0d68d6d992a521026e2c9bcf947"
+  integrity sha512-v2pDbfPW4qeUKssV9GbgbDf7XC3b9CG+0JTSATGYWKAo/2F7d0PBQJnSY5fpdryJyoquBkER647+7f/d+HR46A==
 
 source-list-map@^2.0.0, source-list-map@^2.0.1:
   version "2.0.1"

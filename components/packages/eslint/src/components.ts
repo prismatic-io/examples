@@ -24,6 +24,8 @@ const eslintConfig = {
   ],
   rules: {
     "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/camelcase": ["off"],
+    camelcase: "off",
   },
 };
 

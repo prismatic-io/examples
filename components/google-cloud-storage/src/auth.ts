@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { Storage } from "@google-cloud/storage";
 import { AuthorizationDefinition, Credential } from "@prismatic-io/spectral";
 
