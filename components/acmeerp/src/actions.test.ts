@@ -7,7 +7,8 @@ const credential = credentials.apiKey(
 
 describe("test the add item action", () => {
   test("test that we get back what we sent", async () => {
-    const endpointUrl = "https://acmeerp.mycompany.com/api";
+    const endpointUrl =
+      "https://my-json-server.typicode.com/prismatic-io/placeholder-data";
     const name = "widgets";
     const quantity = 123;
     const { result } = await invoke(
