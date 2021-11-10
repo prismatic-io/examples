@@ -5,24 +5,25 @@ Code contained within this repo is referenced throughout Prismatic's [website](h
 
 ## What is Prismatic?
 
-Prismatic is the embedded integration platform for B2B software companies. It's the easiest way to build integrations and provide a first-class integration experience to your customers.
+Prismatic is the integration platform for B2B software companies. It's the quickest way to build integrations to the other apps your customers use and to add a native integration marketplace to your product.
 
-Prismatic reduces integration effort and empowers every role with exactly what they need, so you can spend less time on integrations and more time on core product innovation.
+Prismatic significantly reduces overall integration effort and enables non-dev teams to take on more of the integration workload, so that you can deliver integrations faster and spend more time on core product innovation.
 
 With Prismatic, you can:
 
-- Build reusable [integrations](https://prismatic.io/docs/integrations) in an intuitive low-code integration designer
-- Easily deploy customer-specific integration [instances](https://prismatic.io/docs/instances) with unique [configurations](https://prismatic.io/docs/configuration-variables) and [credentials](https://prismatic.io/docs/credentials)
-- Run your integrations in a purpose-built environment
-- Provide better support with built-in [logging](https://prismatic.io/docs/logging) and [alerting](https://prismatic.io/docs/monitoring-and-alerting)
-- Embed a white-labeled customer integration portal with an [integration marketplace](https://prismatic.io/docs/integration-marketplace/) and customer self-service tools
-- Mold the platform to your product, industry, and the way you build software
+- Build reusable [integrations](https://prismatic.io/docs/integrations) in a low-code integration designer that's tailored for your product
+- Use [pre-built components](https://prismatic.io/docs/components/component-catalog) to handle most of your integrations' functionality, and write [custom components](https://prismatic.io/docs/custom-components/writing-custom-components) when needed
+- Quickly add an [integration marketplace](https://prismatic.io/docs/integration-marketplace) to your product so customers can explore, activate, and monitor integrations
+- Easily deploy customer-specific integration [instances](https://prismatic.io/docs/instances) with unique configurations and credentials
+- Provide better support with tools like [logging](https://prismatic.io/docs/logging) and [alerting](https://prismatic.io/docs/monitoring-and-alerting)
+- Run your integrations in a purpose-built environment designed for security and scalability
+- Use powerful dev tools to mold the platform to your product, industry, and the way you build software
 
 ## Who uses Prismatic?
 
-Prismatic is for B2B (business-to-business) software companies, meaning software companies that provide applications used by businesses. It's a good fit for products/teams at any stage, including early stage SaaS, established SaaS, and legacy or on-prem systems.
+Prismatic is for B2B (business-to-business) software companies, meaning software companies that provide applications used by businesses. It's a good fit for products/teams ranging from early-stage and growing SaaS startups to large, established software companies looking to improve the way they do integrations.
 
-Many B2B software teams serve customers in niche vertical markets, and we designed Prismatic with that in mind. We provide powerful and flexible tools so you can build exactly the integrations your customers need, no matter who your customers are, no matter what systems you need to connect to, no matter how “non-standard” your integration scenario.
+Many B2B software teams serve customers in niche vertical markets, and we designed Prismatic with that in mind. We provide powerful and flexible tools so you can build exactly the integrations your customers need, no matter who your customers are, no matter what systems you need to connect to, no matter how "non-standard" your integration scenario.
 
 ## What kind of integrations can you build using Prismatic?
 
@@ -30,14 +31,15 @@ Prismatic supports integrations ranging from simple and standard to complex, bes
 Teams use it to build integrations between applications of all kinds, SaaS or legacy, with or without a modern API, regardless of protocol or data format.
 Here are some example use cases:
 
-- Use job data from your system to create invoices in your customers’ ERP.
+- Use job data from your system to create invoices in your customers' ERP.
 - Import and process data from third-party forms that vary significantly from customer to customer.
 - Email activity summary reports with parameters and intervals defined on a per-customer basis.
 
-For information on the Prismatic platform, check out our [website](https://www.prismatic.io) and [docs](https://www.prismatic.io/docs).
+For information on the Prismatic platform, check out our [website](https://prismatic.io) and [docs](https://prismatic.io/docs).
 
 ## Repository Contents
 
+- `api/` contains sample code that interacts with Prismatic's [GraphQL API](https://prismatic.io/docs/api/api-overview/).
 - `components/` contains code for sample custom components, which are a good reference for building your own custom components.
 - `integrations/` contains sample integrations written in YAML.
 
