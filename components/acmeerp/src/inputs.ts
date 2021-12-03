@@ -1,10 +1,9 @@
 import { input } from "@prismatic-io/spectral";
 
-export const endpointUrlInput = input({
-  label: "Endpoint URL",
-  default: "https://my-json-server.typicode.com/prismatic-io/placeholder-data",
+export const connectionInput = input({
+  label: "Acme ERP",
   required: true,
-  type: "string",
+  type: "connection",
 });
 
 export const itemIdInput = input({

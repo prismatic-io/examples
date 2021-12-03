@@ -9,8 +9,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "4.0.6",
-    "axios": "^0.24.0"
+    "@prismatic-io/spectral": "5.0.0-rc.0",
+    "axios": "0.24.0"
   },
   "devDependencies": {
     "@types/jest": "26.0.24",
