@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Connection, util } from "@prismatic-io/spectral";
 
-export function getAcmeErpClient(acmeConnection) {
+export function getAcmeErpClient(acmeConnection: Connection) {
   const { apiKey, endpoint } = acmeConnection.fields;
 
   // Return an HTTP client that has been configured to point

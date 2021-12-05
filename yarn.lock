@@ -1289,10 +1289,10 @@
     jest-mock "27.0.3"
     valid-url "1.0.9"
 
-"@prismatic-io/spectral@5.0.0-rc.0":
-  version "5.0.0-rc.0"
-  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-5.0.0-rc.0.tgz#91408beb951f97ace2f8090b2e07e2ff7752007d"
-  integrity sha512-oaJWXoYzZkbGm6wxY08ngJM1e6JgnpG+6Qw8FqcPPVpIKaiPvYOfDAwbWmsKpJo4C4UpjVYHALLhWgVC7PlGSg==
+"@prismatic-io/spectral@5.0.0-rc.1":
+  version "5.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-5.0.0-rc.1.tgz#e3cd80149a46abf65f4ef74fb43051bc4cf314f0"
+  integrity sha512-Ukeg3fgfVRMjBBVf25JPZPVyibBn+wchonLrk+hlLTVcuSGNJ9bRd9CkSK8YIDkkQePal/J4fm3ZvPf0mJDRkQ==
   dependencies:
     date-fns "2.17.0"
     jest-mock "27.0.3"

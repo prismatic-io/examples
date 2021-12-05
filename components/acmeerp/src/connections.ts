@@ -3,7 +3,7 @@ import { connection } from "@prismatic-io/spectral";
 // Create a connection that contains an API endpoint URL
 // and an API key.
 export const apiKeyConnection = connection({
-  connectionKey: "apiKey",
+  key: "apiKey",
   label: "Acme Connection",
   comments: "Acme Connection",
   inputs: {
@@ -26,3 +26,5 @@ export const apiKeyConnection = connection({
     },
   },
 });
+
+export default [apiKeyConnection];
