@@ -1,23 +1,22 @@
-import { action, input, util } from "@prismatic-io/spectral";
-import { authorization, getAcmeErpClient } from "./auth";
-import { endpointUrlInput, itemIdInput } from "./inputs";
+import { action, input } from "@prismatic-io/spectral";
+import { getAcmeErpClient } from "./auth";
+import { connectionInput, itemIdInput } from "./inputs";
 
+/* List all items in inventory */
 const listAllItems = action({
   display: {
     label: "List All Items",
     description: "List all items in our inventory",
   },
   inputs: {
-    // Declare some inputs for this action
-    endpointUrl: endpointUrlInput,
+    // Declare an input for this action
+    acmeConnection: connectionInput,
   },
-  authorization, // Require authorization for this action
-  perform: async ({ credential }, { endpointUrl }) => {
-    const acmeErpClient = getAcmeErpClient(
-      util.types.toString(endpointUrl), // Convert our input to string, if it's not already
-      credential
-    );
-    // Make a synchronous GET call to "{ endpointUrl }/items":
+  perform: async (context, { acmeConnection }) => {
+    // Initialize our HTTP client
+    const acmeErpClient = getAcmeErpClient(acmeConnection);
+
+    // Make a synchronous GET call to "{ endpoint }/items":
     const response = await acmeErpClient.get("/items/");
 
     // Return the data that we got back
@@ -40,21 +39,18 @@ const listAllItems = action({
   },
 });
 
+/* Get a specific item from inventory by ID */
 const getItem = action({
   display: {
     label: "Get Item",
     description: "Get an Item by ID",
   },
-  authorization,
   inputs: {
-    endpointUrl: endpointUrlInput,
+    acmeConnection: connectionInput,
     itemId: itemIdInput,
   },
-  perform: async ({ credential }, { endpointUrl, itemId }) => {
-    const acmeErpClient = getAcmeErpClient(
-      util.types.toString(endpointUrl),
-      credential
-    );
+  perform: async (context, { acmeConnection, itemId }) => {
+    const acmeErpClient = getAcmeErpClient(acmeConnection);
     const response = await acmeErpClient.get(`/items/${itemId}`);
     return { data: response.data };
   },
@@ -67,43 +63,37 @@ const getItem = action({
   },
 });
 
+/* Delete an item from inventory by ID */
 const deleteItem = action({
   display: {
     label: "Delete Item",
     description: "Delete an Item by ID",
   },
-  authorization,
   inputs: {
-    endpointUrl: endpointUrlInput,
+    acmeConnection: connectionInput,
     itemId: itemIdInput,
   },
-  perform: async ({ credential }, { endpointUrl, itemId }) => {
-    const acmeErpClient = getAcmeErpClient(
-      util.types.toString(endpointUrl),
-      credential
-    );
+  perform: async (context, { acmeConnection, itemId }) => {
+    const acmeErpClient = getAcmeErpClient(acmeConnection);
     const response = await acmeErpClient.delete(`/items/${itemId}`);
     return { data: null };
   },
 });
 
+/* Add a new item to inventory */
 const addItem = action({
   display: {
     label: "Add Item",
     description: "Add an Item to Inventory",
   },
-  authorization,
   // We can define some inputs inline if they're not reused:
   inputs: {
-    endpointUrl: endpointUrlInput,
+    acmeConnection: connectionInput,
     name: input({ label: "Item Name", type: "string" }),
     quantity: input({ label: "Item Quantity", type: "string" }),
   },
-  perform: async ({ credential }, { endpointUrl, name, quantity }) => {
-    const acmeErpClient = getAcmeErpClient(
-      util.types.toString(endpointUrl),
-      credential
-    );
+  perform: async (context, { acmeConnection, name, quantity }) => {
+    const acmeErpClient = getAcmeErpClient(acmeConnection);
     const response = await acmeErpClient.post("/items/", {
       name,
       quantity,
