@@ -10,6 +10,7 @@ import unsubscribe from "./actions/unsubscribe";
 import publishSms from "./actions/publishSms";
 import listOptOutNumbers from "./actions/listOptOutNumbers";
 import triggers from "./triggers/trigger";
+import { accessKeySecretPair } from "./connections";
 
 export default component({
   key: "aws-sns",
@@ -35,4 +36,5 @@ export default component({
     publishSms,
   },
   triggers,
+  connections: [accessKeySecretPair],
 });

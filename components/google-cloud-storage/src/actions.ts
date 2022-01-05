@@ -6,10 +6,12 @@ import {
   sourceFileName,
   destinationFileName,
   fileContents,
-  project,
   prefix,
+  pageToken,
+  maxResults,
+  connectionInput,
 } from "./inputs";
-import { authorization, googleStorageClient } from "./auth";
+import { googleStorageClient } from "./client";
 import { action, util } from "@prismatic-io/spectral";
 
 export const saveFile = action({
@@ -21,19 +23,21 @@ export const saveFile = action({
     fileContents,
     fileName,
     bucketName,
-    project,
+    googleConnection: connectionInput,
   },
-  authorization,
   perform: async (
-    { credential },
-    { fileContents, bucketName, fileName, project }
+    context,
+    { fileContents, bucketName, fileName, googleConnection }
   ) => {
-    const storage = googleStorageClient(credential, project);
+    const storage = googleStorageClient(googleConnection);
     const { data } = util.types.toData(fileContents);
     await storage
       .bucket(util.types.toString(bucketName))
       .file(util.types.toString(fileName))
       .save(data);
+    return {
+      data,
+    };
   },
 });
 
@@ -42,10 +46,9 @@ export const downloadFile = action({
     label: "Download File",
     description: "Download a file from Google Cloud Storage",
   },
-  inputs: { fileName, bucketName, project },
-  authorization,
-  perform: async ({ credential }, { bucketName, fileName, project }) => {
-    const storage = googleStorageClient(credential, project);
+  inputs: { fileName, bucketName, googleConnection: connectionInput },
+  perform: async (context, { bucketName, fileName, googleConnection }) => {
+    const storage = googleStorageClient(googleConnection);
     const [metadata] = await storage
       .bucket(util.types.toString(bucketName))
       .file(util.types.toString(fileName))
@@ -75,28 +78,30 @@ export const copyFile = action({
     destinationBucketName,
     sourceFileName,
     destinationFileName,
-    project,
+    googleConnection: connectionInput,
   },
-  authorization,
   perform: async (
-    { credential },
+    context,
     {
       sourceBucketName,
       destinationBucketName,
       sourceFileName,
       destinationFileName,
-      project,
+      googleConnection,
     }
   ) => {
-    const storage = googleStorageClient(credential, project);
-    await storage
-      .bucket(util.types.toString(sourceBucketName))
-      .file(util.types.toString(sourceFileName))
-      .copy(
-        storage
-          .bucket(util.types.toString(destinationBucketName))
-          .file(util.types.toString(destinationFileName))
-      );
+    const storage = googleStorageClient(googleConnection);
+
+    return {
+      data: await storage
+        .bucket(util.types.toString(sourceBucketName))
+        .file(util.types.toString(sourceFileName))
+        .copy(
+          storage
+            .bucket(util.types.toString(destinationBucketName))
+            .file(util.types.toString(destinationFileName))
+        ),
+    };
   },
 });
 
@@ -110,28 +115,31 @@ export const moveFile = action({
     destinationBucketName,
     sourceFileName,
     destinationFileName,
-    project,
+    googleConnection: connectionInput,
   },
-  authorization,
+
   perform: async (
-    { credential },
+    context,
     {
       sourceBucketName,
       destinationBucketName,
       sourceFileName,
       destinationFileName,
-      project,
+      googleConnection,
     }
   ) => {
-    const storage = googleStorageClient(credential, project);
-    await storage
-      .bucket(util.types.toString(sourceBucketName))
-      .file(util.types.toString(sourceFileName))
-      .move(
-        storage
-          .bucket(util.types.toString(destinationBucketName))
-          .file(util.types.toString(destinationFileName))
-      );
+    const storage = googleStorageClient(googleConnection);
+
+    return {
+      data: await storage
+        .bucket(util.types.toString(sourceBucketName))
+        .file(util.types.toString(sourceFileName))
+        .move(
+          storage
+            .bucket(util.types.toString(destinationBucketName))
+            .file(util.types.toString(destinationFileName))
+        ),
+    };
   },
 });
 
@@ -140,14 +148,16 @@ export const deleteFile = action({
     label: "Delete File",
     description: "Delete a file from a Google Cloud Storage bucket",
   },
-  inputs: { fileName, bucketName, project },
-  authorization,
-  perform: async ({ credential }, { bucketName, fileName, project }) => {
-    const storage = googleStorageClient(credential, project);
-    await storage
+  inputs: { fileName, bucketName, googleConnection: connectionInput },
+
+  perform: async (context, { bucketName, fileName, googleConnection }) => {
+    const storage = googleStorageClient(googleConnection);
+    const data = await storage
       .bucket(util.types.toString(bucketName))
       .file(util.types.toString(fileName))
       .delete();
+
+    return { data };
   },
 });
 
@@ -156,14 +166,23 @@ export const listFiles = action({
     label: "List Files",
     description: "List files in a Google Cloud Storage bucket",
   },
-  inputs: { bucketName, project, prefix },
-  authorization,
-  perform: async ({ credential }, { bucketName, project, prefix }) => {
-    const storage = googleStorageClient(credential, project);
-    const options = { prefix: util.types.toString(prefix) };
+  inputs: {
+    bucketName,
+    googleConnection: connectionInput,
+    prefix,
+    pageToken,
+    maxResults,
+  },
+  perform: async (context, params) => {
+    const storage = googleStorageClient(params.googleConnection);
+    const options = { prefix: util.types.toString(params.prefix) };
     const [files] = await storage
-      .bucket(util.types.toString(bucketName))
-      .getFiles(options);
+      .bucket(util.types.toString(params.bucketName))
+      .getFiles({
+        ...options,
+        maxResults: util.types.toInt(params.maxResults) || undefined,
+        pageToken: util.types.toString(params.pageToken) || undefined,
+      });
     return {
       data: files.map((f) => f.name).filter((f) => !f.endsWith("/")), // Filter out directories; we just care about files
     };

@@ -1,5 +1,6 @@
 import { component } from "@prismatic-io/spectral";
 import { actions } from "./actions";
+import connections from "./connections";
 
 export default component({
   key: "aws-s3",
@@ -11,5 +12,6 @@ export default component({
     iconPath: "icon.png",
     category: "Data Platforms",
   },
+  connections,
   actions,
 });

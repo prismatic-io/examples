@@ -96,3 +96,27 @@ export const parseMessage = input({
   comments:
     "When enabled the message from SNS will be parsed as JSON and returned. If disabled it will be passed as received.",
 });
+
+export const maxItems = input({
+  label: "Max Items",
+  type: "string",
+  required: false,
+  comments:
+    "Provide an integer value for the maximum amount of items that will be returned. Provide a value from 1 to 50.",
+  example: `20`,
+});
+
+export const nextToken = input({
+  label: "Next Token",
+  type: "string",
+  required: false,
+  comments:
+    "Specify the pagination token that's returned by a previous request to retrieve the next page of results",
+  example: `lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E`,
+});
+
+export const connectionInput = input({
+  label: "Connection Input",
+  type: "connection",
+  required: true,
+});

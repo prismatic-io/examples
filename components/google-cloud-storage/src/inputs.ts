@@ -90,3 +90,27 @@ export const prefix = input({
     "List only files prefixed with this string. For example, if you only want files in a directory called 'unprocessed', you can enter 'unprocessed/'. If this is left blank, all files in the selected bucket will be listed.",
   example: "path/to/directory/",
 });
+
+export const maxResults = input({
+  label: "Max Results",
+  type: "string",
+  required: false,
+  comments:
+    "Provide an integer value for the maximum amount of results that will be returned. Provide a value from 1 to 50.",
+  example: `20`,
+});
+
+export const pageToken = input({
+  label: "Page Token",
+  type: "string",
+  required: false,
+  comments:
+    "Specify the pagination token that's returned by a previous request to retrieve the next page of results",
+  example: `lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E`,
+});
+
+export const connectionInput = input({
+  label: "Connection Input",
+  type: "connection",
+  required: true,
+});
