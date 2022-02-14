@@ -1,6 +1,12 @@
 import { action, util } from "@prismatic-io/spectral";
-import { authorization, createSNSClient } from "../auth";
-import { awsRegion, message, topicArn, messageAttributes } from "../inputs";
+import { createSNSClient } from "../client";
+import {
+  awsRegion,
+  message,
+  topicArn,
+  messageAttributes,
+  connectionInput,
+} from "../inputs";
 import { SNS } from "aws-sdk";
 import {
   MessageAttributeValue,
@@ -63,11 +69,11 @@ export const publishMessage = action({
     label: "Publish Message",
     description: "Publish a message to an Amazon SNS Topic",
   },
-  perform: async ({ credential }, params) => {
-    const sns = await createSNSClient(
-      credential,
-      util.types.toString(params.awsRegion)
-    );
+  perform: async (context, params) => {
+    const sns = await createSNSClient({
+      awsConnection: params.awsConnection,
+      awsRegion: util.types.toString(params.awsRegion),
+    });
 
     return {
       data: await sns
@@ -79,9 +85,14 @@ export const publishMessage = action({
         .promise(),
     };
   },
-  inputs: { awsRegion, message, topicArn, messageAttributes },
+  inputs: {
+    awsRegion,
+    message,
+    topicArn,
+    messageAttributes,
+    awsConnection: connectionInput,
+  },
   examplePayload,
-  authorization,
 });
 
 export default publishMessage;

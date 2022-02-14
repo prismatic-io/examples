@@ -1,36 +1,25 @@
-import AWS from "aws-sdk";
-import { AuthorizationDefinition, Credential } from "@prismatic-io/spectral";
+import { S3, STS } from "aws-sdk";
+import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
 
-export const authorization: AuthorizationDefinition = {
-  required: true,
-  methods: ["api_key_secret"],
-};
-
-export const createS3Client = async (
-  credential: Credential,
-  region: string
-) => {
-  if (credential.authorizationMethod !== "api_key_secret") {
-    throw new Error(
-      `Unsupported authorization method ${credential.authorizationMethod}.`
-    );
-  }
-
-  const credentials = {
-    accessKeyId: credential.fields.api_key,
-    secretAccessKey: credential.fields.api_secret,
+export const createS3Client = async (accessKey: Connection, region: string) => {
+  const credentials: STS.Types.ClientConfiguration = {
+    accessKeyId: util.types.toString(accessKey.fields.accessKeyId),
+    secretAccessKey: util.types.toString(accessKey.fields.secretAccessKey),
     region,
   };
 
   // Verify credentials are valid with STS.getCallerIdentity()
-  const sts = new AWS.STS(credentials);
+  const sts = new STS(credentials);
   try {
     await sts.getCallerIdentity({}).promise();
   } catch (err) {
-    throw new Error(
-      `Invalid AWS Credentials have been configured. This is sometimes caused by trailing spaces in AWS keys, missing characters from a copy/paste, etc. Original AWS error message: ${err.message}`
+    throw new ConnectionError(
+      accessKey,
+      `Invalid AWS Credentials have been configured. This is sometimes caused by trailing spaces in AWS keys, missing characters from a copy/paste, etc. Original AWS error message: ${
+        (err as Error).message
+      }`
     );
   }
 
-  return new AWS.S3(credentials);
+  return new S3(credentials);
 };

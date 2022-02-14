@@ -7,6 +7,7 @@ import {
   deleteFile,
   listFiles,
 } from "./actions";
+import connections from "./connections";
 
 export default component({
   key: "google-cloud-storage",
@@ -27,4 +28,5 @@ export default component({
     deleteFile,
     listFiles,
   },
+  connections,
 });

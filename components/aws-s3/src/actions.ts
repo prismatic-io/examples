@@ -1,4 +1,5 @@
 import {
+  accessKeyInput,
   awsRegion,
   bucket,
   destinationBucket,
@@ -9,24 +10,20 @@ import {
   sourceBucket,
   sourceKey,
   tagging,
+  maxKeys,
+  continuationToken,
 } from "./inputs";
 import querystring from "querystring";
 import { action, util } from "@prismatic-io/spectral";
 import { S3 } from "aws-sdk";
-import { authorization, createS3Client } from "./auth";
+import { createS3Client } from "./auth";
 
-interface S3ActionOutput {
-  data:
-    | S3.Types.CopyObjectOutput
-    | string[]
-    | S3.Types.GetObjectOutput
-    | S3.Types.PutObjectOutput;
-}
-
-const copyObjectOutput: S3ActionOutput = {
-  data: {
-    CopyObjectResult: { ETag: "Example", LastModified: new Date("2020-01-01") },
-  },
+/*
+  Implementation of the S3 CopyObject API
+  https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html
+*/
+const copyObjectSampleOutput: S3.Types.CopyObjectOutput = {
+  CopyObjectResult: { ETag: "Example", LastModified: new Date("2020-01-01") },
 };
 const copyObject = action({
   display: {
@@ -34,10 +31,17 @@ const copyObject = action({
     description: "Copy an object in S3 from one location to another",
   },
   perform: async (
-    { credential },
-    { awsRegion, sourceBucket, destinationBucket, sourceKey, destinationKey }
+    context,
+    {
+      awsRegion,
+      accessKey,
+      sourceBucket,
+      destinationBucket,
+      sourceKey,
+      destinationKey,
+    }
   ) => {
-    const s3 = await createS3Client(credential, util.types.toString(awsRegion));
+    const s3 = await createS3Client(accessKey, util.types.toString(awsRegion));
     const copyParameters = {
       Bucket: util.types.toString(destinationBucket),
       CopySource: `/${sourceBucket}/${sourceKey}`,
@@ -50,39 +54,55 @@ const copyObject = action({
   },
   inputs: {
     awsRegion,
+    accessKey: accessKeyInput,
     sourceBucket,
     destinationBucket,
     sourceKey,
     destinationKey,
   },
-  authorization,
-  examplePayload: copyObjectOutput,
+  examplePayload: { data: copyObjectSampleOutput },
 });
 
+/*
+  Implementation of the S3 DeleteObject API
+  https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html
+*/
+const deleteObjectSampleOutput: S3.Types.DeleteObjectOutput = {
+  DeleteMarker: true,
+  VersionId: "3/L4kqtJlcpXroDTDmJ+rmSpXd3dIbrHY+MTRCxf3vjVBH40Nr8X8gdRQBpUMLUo",
+  RequestCharged: "requestor",
+};
 const deleteObject = action({
   display: {
     label: "Delete Object",
     description: "Delete an Object within an S3 Bucket",
   },
-  perform: async ({ credential }, { awsRegion, bucket, objectKey }) => {
-    const s3 = await createS3Client(credential, util.types.toString(awsRegion));
+  perform: async (context, { awsRegion, accessKey, bucket, objectKey }) => {
+    const s3 = await createS3Client(accessKey, util.types.toString(awsRegion));
     const deleteParameters = {
       Bucket: util.types.toString(bucket),
       Key: util.types.toString(objectKey),
     };
-    await s3.deleteObject(deleteParameters).promise();
+    const response = await s3.deleteObject(deleteParameters).promise();
+    return { data: response };
   },
-  inputs: { awsRegion, bucket, objectKey },
-  authorization,
+  inputs: { awsRegion, accessKey: accessKeyInput, bucket, objectKey },
+  examplePayload: {
+    data: deleteObjectSampleOutput,
+  },
 });
 
+/*
+  Implementation of the S3 GetObject API
+  https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
+*/
 const getObject = action({
   display: {
     label: "Get Object",
     description: "Get the contents of an object",
   },
-  perform: async ({ credential }, { awsRegion, bucket, objectKey }) => {
-    const s3 = await createS3Client(credential, util.types.toString(awsRegion));
+  perform: async (context, { awsRegion, accessKey, bucket, objectKey }) => {
+    const s3 = await createS3Client(accessKey, util.types.toString(awsRegion));
     const getObjectParameters = {
       Bucket: util.types.toString(bucket),
       Key: util.types.toString(objectKey),
@@ -93,40 +113,61 @@ const getObject = action({
       contentType: response.ContentType,
     };
   },
-  inputs: { awsRegion, bucket, objectKey },
-  authorization,
+  inputs: { awsRegion, accessKey: accessKeyInput, bucket, objectKey },
   examplePayload: {
     data: Buffer.from("Example"),
     contentType: "application/octet",
   },
 });
 
-const listObjectOutput: S3ActionOutput = {
+/*
+  Implementation of the S3 ListObjectsV2 API
+  https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
+*/
+const listObjectOutput: { data: string[] } = {
   data: ["Example Item 1", "Example Item 2", "Example Item 3"],
 };
-/* Maybe FIXME?: This caps off at 1000 objects */
+
 const listObjects = action({
   display: {
     label: "List Objects",
     description: "List Objects in a Bucket",
   },
-  perform: async ({ credential }, { awsRegion, bucket, prefix }) => {
-    const s3 = await createS3Client(credential, util.types.toString(awsRegion));
-    const listParameters = {
-      Bucket: util.types.toString(bucket),
-      Prefix: util.types.toString(prefix),
-    };
-    const response = await s3.listObjectsV2(listParameters).promise();
+  perform: async (context, params) => {
+    const s3 = await createS3Client(
+      params.accessKey,
+      util.types.toString(params.awsRegion)
+    );
+
+    const response = await s3
+      .listObjectsV2({
+        Bucket: util.types.toString(params.bucket),
+        Prefix: util.types.toString(params.prefix),
+        MaxKeys: util.types.toInt(params.maxKeys) || undefined,
+        ContinuationToken:
+          util.types.toString(params.continuationToken) || undefined,
+      })
+      .promise();
     return {
       data: response.Contents.map(({ Key }) => Key),
     };
   },
-  inputs: { awsRegion, bucket, prefix },
-  authorization,
+  inputs: {
+    awsRegion,
+    accessKey: accessKeyInput,
+    bucket,
+    prefix,
+    maxKeys,
+    continuationToken,
+  },
   examplePayload: listObjectOutput,
 });
 
-const putObjectOutput: S3ActionOutput = {
+/*
+  Implementation of the S3 PutObject API
+  https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html
+*/
+const putObjectOutput: { data: S3.Types.PutObjectOutput } = {
   data: { ETag: "Example Tag", VersionId: "Example Version Id" },
 };
 const putObject = action({
@@ -135,10 +176,10 @@ const putObject = action({
     description: "Write an object to S3",
   },
   perform: async (
-    { credential },
-    { awsRegion, bucket, fileContents, objectKey, tagging }
+    context,
+    { awsRegion, accessKey, bucket, fileContents, objectKey, tagging }
   ) => {
-    const s3 = await createS3Client(credential, util.types.toString(awsRegion));
+    const s3 = await createS3Client(accessKey, util.types.toString(awsRegion));
     const { data, contentType } = util.types.toData(fileContents);
     const tags = querystring.encode(
       (tagging || []).reduce(
@@ -160,12 +201,12 @@ const putObject = action({
   },
   inputs: {
     awsRegion,
+    accessKey: accessKeyInput,
     bucket,
     fileContents,
     objectKey,
     tagging,
   },
-  authorization,
   examplePayload: putObjectOutput,
 });
 

@@ -108,3 +108,30 @@ export const tagging = input({
   comments:
     "Objects in an S3 bucket can be optionally tagged so you can filter for files more easily. For example, you may want to tag customers with a key of 'Customer Name' and value of 'Mars Missions Corp'",
 });
+
+export const maxKeys = input({
+  label: "Max Keys",
+  type: "string",
+  required: false,
+  comments:
+    "Provide an integer value for the maximum amount of items that will be returned. Provide a value from 1 to 1000.",
+  example: `1000`,
+});
+
+export const continuationToken = input({
+  label: "ContinuationToken",
+  type: "string",
+  required: false,
+  comments:
+    "Specify the pagination token that's returned by a previous request to retrieve the next page of results",
+  example: `lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E`,
+});
+
+export const accessKeyInput = input({
+  label: "AWS Access Key",
+  type: "connection",
+  placeholder: "AWS IAM Access Key",
+  required: true,
+  comments:
+    "Access keys provide programmatic access to access resources in AWS. See https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html.",
+});

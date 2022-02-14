@@ -12,11 +12,9 @@ jest.mock("aws-sdk", () => {
   };
 });
 
-import { authorization, createS3Client } from "./auth";
-import {
-  credentials,
-  getAuthorizationMethods,
-} from "@prismatic-io/spectral/dist/testing";
+import { createS3Client } from "./auth";
+import { accessKeySecretPair } from "./connections";
+import { createConnection } from "@prismatic-io/spectral/dist/testing";
 
 describe("createS3Client", () => {
   describe("invalid credentials", () => {
@@ -26,7 +24,13 @@ describe("createS3Client", () => {
 
     test("throws error if invalid credentials provided", async () => {
       await expect(
-        createS3Client(credentials.generate("api_key_secret"), "us-east-2")
+        createS3Client(
+          createConnection(accessKeySecretPair, {
+            accessKeyId: "fakeKey",
+            secretAccessKey: "fakeKey",
+          }),
+          "us-east-2"
+        )
       ).rejects.toThrow(/Invalid AWS Credentials/);
     });
   });
@@ -37,18 +41,14 @@ describe("createS3Client", () => {
     });
 
     test("returns S3 client with api key secret credentials", async () => {
-      const credential = credentials.apiKeySecret("foo", "bar");
-      await createS3Client(credential, "us-east-2");
+      await createS3Client(
+        createConnection(accessKeySecretPair, {
+          accessKeyId: "fakeKey",
+          secretAccessKey: "fakeKey",
+        }),
+        "us-east-2"
+      );
       expect(s3Mock).toHaveBeenCalled();
-    });
-
-    test("throws error for unsupported authorization methods", async () => {
-      const invalidMethods = getAuthorizationMethods(authorization.methods);
-      for (const method of invalidMethods) {
-        await expect(
-          createS3Client(credentials.generate(method), "us-east-2")
-        ).rejects.toThrow(/Unsupported authorization method/);
-      }
     });
   });
 });

@@ -36,6 +36,7 @@ export const snsExamplePayload: TriggerPayload = {
     data: {},
   },
   webhookUrls: {},
+  webhookApiKeys: {},
   customer: {
     externalId: "abc-123",
     name: "Example Corp",
