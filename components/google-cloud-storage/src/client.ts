@@ -1,23 +1,23 @@
 import { Storage } from "@google-cloud/storage";
 import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
+import { googleConnection } from "./connections";
 
-export const googleStorageClient = (googleConnection: Connection) => {
-  if (googleConnection.key !== "privateKey") {
-    throw new ConnectionError(
-      googleConnection,
-      `Unsupported authorization method ${googleConnection.key}.`
-    );
+export const googleStorageClient = (connection: Connection) => {
+  if (connection.key !== googleConnection.key) {
+    throw new ConnectionError(connection, "Unknown Connection type provided.");
   }
 
-  const client_email = util.types.toString(googleConnection.fields.clientEmail);
-  const private_key = util.types
-    .toString(googleConnection.fields.private_key)
+  const clientEmail = util.types.toString(connection.fields.clientEmail);
+  const privateKey = util.types
+    .toString(connection.fields.privateKey)
     .replace(/\\n/g, "\n");
+  const projectId = util.types.toString(connection.fields.projectId);
+
   return new Storage({
-    projectId: util.types.toString(googleConnection.fields.projectId),
+    projectId,
     credentials: {
-      client_email,
-      private_key,
+      client_email: clientEmail,
+      private_key: privateKey,
     },
   });
 };

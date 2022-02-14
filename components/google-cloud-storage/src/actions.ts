@@ -23,13 +23,13 @@ export const saveFile = action({
     fileContents,
     fileName,
     bucketName,
-    googleConnection: connectionInput,
+    connection: connectionInput,
   },
   perform: async (
     context,
-    { fileContents, bucketName, fileName, googleConnection }
+    { fileContents, bucketName, fileName, connection }
   ) => {
-    const storage = googleStorageClient(googleConnection);
+    const storage = googleStorageClient(connection);
     const { data } = util.types.toData(fileContents);
     await storage
       .bucket(util.types.toString(bucketName))
@@ -46,9 +46,9 @@ export const downloadFile = action({
     label: "Download File",
     description: "Download a file from Google Cloud Storage",
   },
-  inputs: { fileName, bucketName, googleConnection: connectionInput },
-  perform: async (context, { bucketName, fileName, googleConnection }) => {
-    const storage = googleStorageClient(googleConnection);
+  inputs: { fileName, bucketName, connection: connectionInput },
+  perform: async (context, { bucketName, fileName, connection }) => {
+    const storage = googleStorageClient(connection);
     const [metadata] = await storage
       .bucket(util.types.toString(bucketName))
       .file(util.types.toString(fileName))
@@ -78,7 +78,7 @@ export const copyFile = action({
     destinationBucketName,
     sourceFileName,
     destinationFileName,
-    googleConnection: connectionInput,
+    connection: connectionInput,
   },
   perform: async (
     context,
@@ -87,10 +87,10 @@ export const copyFile = action({
       destinationBucketName,
       sourceFileName,
       destinationFileName,
-      googleConnection,
+      connection,
     }
   ) => {
-    const storage = googleStorageClient(googleConnection);
+    const storage = googleStorageClient(connection);
 
     return {
       data: await storage
@@ -115,7 +115,7 @@ export const moveFile = action({
     destinationBucketName,
     sourceFileName,
     destinationFileName,
-    googleConnection: connectionInput,
+    connection: connectionInput,
   },
 
   perform: async (
@@ -125,10 +125,10 @@ export const moveFile = action({
       destinationBucketName,
       sourceFileName,
       destinationFileName,
-      googleConnection,
+      connection,
     }
   ) => {
-    const storage = googleStorageClient(googleConnection);
+    const storage = googleStorageClient(connection);
 
     return {
       data: await storage
@@ -148,10 +148,10 @@ export const deleteFile = action({
     label: "Delete File",
     description: "Delete a file from a Google Cloud Storage bucket",
   },
-  inputs: { fileName, bucketName, googleConnection: connectionInput },
+  inputs: { fileName, bucketName, connection: connectionInput },
 
-  perform: async (context, { bucketName, fileName, googleConnection }) => {
-    const storage = googleStorageClient(googleConnection);
+  perform: async (context, { bucketName, fileName, connection }) => {
+    const storage = googleStorageClient(connection);
     const data = await storage
       .bucket(util.types.toString(bucketName))
       .file(util.types.toString(fileName))
@@ -167,14 +167,14 @@ export const listFiles = action({
     description: "List files in a Google Cloud Storage bucket",
   },
   inputs: {
+    connection: connectionInput,
     bucketName,
-    googleConnection: connectionInput,
     prefix,
     pageToken,
     maxResults,
   },
   perform: async (context, params) => {
-    const storage = googleStorageClient(params.googleConnection);
+    const storage = googleStorageClient(params.connection);
     const options = { prefix: util.types.toString(params.prefix) };
     const [files] = await storage
       .bucket(util.types.toString(params.bucketName))

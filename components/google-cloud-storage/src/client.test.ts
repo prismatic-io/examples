@@ -3,20 +3,20 @@ import { googleConnection } from "./connections";
 import { createConnection } from "@prismatic-io/spectral/dist/testing";
 
 describe("googleStorageClient", () => {
-  test("returns client with private key credentials", () => {
+  test("returns client with connection", () => {
     const connection = createConnection(googleConnection, {
       privateKey: "",
       clientEmail: "",
       projectId: "",
     });
-    expect(googleStorageClient(connection)).not.toBeUndefined();
+    expect(googleStorageClient(connection)).toBeDefined();
   });
 
-  test("throws error for unsupported authorization methods", () => {
+  test("throws error for unexpected connections", () => {
     expect(() =>
       googleStorageClient(
         createConnection({ inputs: {}, key: "fakeConnection", label: "" }, {})
       )
-    ).toThrow(/Unsupported authorization method/);
+    ).toThrow(/Unknown Connection type provided/);
   });
 });

@@ -116,7 +116,7 @@ export const nextToken = input({
 });
 
 export const connectionInput = input({
-  label: "Connection Input",
+  label: "Connection",
   type: "connection",
   required: true,
 });

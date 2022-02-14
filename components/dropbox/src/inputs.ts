@@ -50,7 +50,7 @@ export const limit = input({
 });
 
 export const cursor = input({
-  label: "Cusrsor",
+  label: "Cursor",
   type: "string",
   required: false,
   comments:

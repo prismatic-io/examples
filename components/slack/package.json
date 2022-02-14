@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "@prismatic-io/spectral": "5.0.0",
-    "@slack/webhook": "6.0.0"
+    "@slack/webhook": "6.0.0",
+    "@slack/bolt": "3.9.0"
   },
   "devDependencies": {
     "@prismatic-io/eslint": "0.1.0",
