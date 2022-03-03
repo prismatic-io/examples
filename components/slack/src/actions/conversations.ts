@@ -1,5 +1,5 @@
 import { action, util } from "@prismatic-io/spectral";
-import { createClient } from "../client";
+import { createOauthClient } from "../client";
 import {
   connectionInput,
   channelName,
@@ -17,19 +17,14 @@ export const createConversation = action({
     description: "Create a new conversation",
   },
   perform: async (context, { connection, isPrivate, conversationName }) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.conversations.create({
-        name: util.types.toString(conversationName),
-        is_private: util.types.toBool(isPrivate) || undefined,
-        team_id: util.types.toString(teamId) || undefined,
-        token: util.types.toString(connection.token.access_token),
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.conversations.create({
+      name: util.types.toString(conversationName),
+      is_private: util.types.toBool(isPrivate) || undefined,
+      team_id: util.types.toString(teamId) || undefined,
+      token: util.types.toString(connection.token.access_token),
+    });
+    return { data };
   },
   inputs: { conversationName, isPrivate, teamId, connection: connectionInput },
 });
@@ -40,17 +35,12 @@ export const closeConversation = action({
     description: "Close an existing conversation",
   },
   perform: async (context, { connection, conversationName }) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.conversations.close({
-        channel: util.types.toString(conversationName),
-        token: util.types.toString(connection.token.access_token),
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.conversations.close({
+      channel: util.types.toString(conversationName),
+      token: util.types.toString(connection.token.access_token),
+    });
+    return { data };
   },
   inputs: { conversationName, connection: connectionInput },
 });
@@ -64,18 +54,13 @@ export const renameConversation = action({
     context,
     { connection, newConversationName, conversationName }
   ) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.conversations.rename({
-        channel: util.types.toString(conversationName),
-        name: util.types.toString(newConversationName),
-        token: util.types.toString(connection.token.access_token),
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.conversations.rename({
+      channel: util.types.toString(conversationName),
+      name: util.types.toString(newConversationName),
+      token: util.types.toString(connection.token.access_token),
+    });
+    return { data };
   },
   inputs: {
     conversationName,
@@ -96,20 +81,15 @@ export const listConversations = action({
     context,
     { connection, cursor, excludeArchived, limit, teamId }
   ) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.conversations.list({
-        cursor: util.types.toString(cursor) || undefined,
-        exclude_archived: util.types.toBool(excludeArchived) || undefined,
-        limit: util.types.toNumber(limit) || undefined,
-        team_id: util.types.toString(teamId) || undefined,
-        token: util.types.toString(connection.token.access_token),
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.conversations.list({
+      cursor: util.types.toString(cursor) || undefined,
+      exclude_archived: util.types.toBool(excludeArchived) || undefined,
+      limit: util.types.toNumber(limit) || undefined,
+      team_id: util.types.toString(teamId) || undefined,
+      token: util.types.toString(connection.token.access_token),
+    });
+    return { data };
   },
   inputs: {
     teamId,
@@ -126,17 +106,12 @@ export const leaveConversation = action({
     description: "Leave an existing conversation",
   },
   perform: async (context, { connection, channelName }) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.conversations.leave({
-        channel: util.types.toString(channelName),
-        token: util.types.toString(connection.token.access_token),
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.conversations.leave({
+      channel: util.types.toString(channelName),
+      token: util.types.toString(connection.token.access_token),
+    });
+    return { data };
   },
   inputs: {
     channelName,
@@ -150,19 +125,14 @@ export const listConversationMembers = action({
     description: "List all members of a conversation",
   },
   perform: async (context, { connection, channelName }) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.conversations.members({
-        cursor: util.types.toString(cursor) || undefined,
-        limit: util.types.toNumber(limit) || undefined,
-        channel: util.types.toString(channelName),
-        token: util.types.toString(connection.token.access_token),
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.conversations.members({
+      cursor: util.types.toString(cursor) || undefined,
+      limit: util.types.toNumber(limit) || undefined,
+      channel: util.types.toString(channelName),
+      token: util.types.toString(connection.token.access_token),
+    });
+    return { data };
   },
   inputs: {
     channelName,

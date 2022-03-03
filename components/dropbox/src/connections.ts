@@ -46,7 +46,7 @@ export const oauthConnection = oauth2Connection({
     clientSecret: {
       label: "App Secret",
       placeholder: "App Secret",
-      type: "string",
+      type: "password",
       required: true,
       shown: true,
       comments: "Generate at https://www.dropbox.com/developers/apps",

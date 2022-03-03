@@ -1,6 +1,7 @@
 import { action, input, util } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
 import { connectionInput, limit, cursor } from "../inputs";
+import { handleDropboxError } from "../util";
 
 const path = input({
   label: "Directory Path",
@@ -22,41 +23,51 @@ export const listFolder = action({
     const dirPath = util.types.toString(params.path).replace(/\/$/, "");
     const dbx = await createAuthorizedClient(params.dropboxConnection);
 
-    const data =
-      params.cursor !== ""
-        ? await dbx.filesListFolderContinue({
-            cursor: util.types.toString(params.cursor),
-          })
-        : await dbx.filesListFolder({
-            path: util.types.toString(dirPath),
-            limit: util.types.toInt(params.limit) || undefined,
-          });
+    try {
+      const data =
+        params.cursor !== ""
+          ? await dbx.filesListFolderContinue({
+              cursor: util.types.toString(params.cursor),
+            })
+          : await dbx.filesListFolder({
+              path: util.types.toString(dirPath),
+              limit: util.types.toInt(params.limit) || undefined,
+            });
 
-    return {
-      data,
-    };
+      return {
+        data,
+      };
+    } catch (err) {
+      handleDropboxError(err, [params.path]);
+    }
   },
   inputs: { dropboxConnection: connectionInput, path, cursor, limit },
   examplePayload: {
     data: {
-      status: "200",
+      status: 200,
       headers: {},
       result: {
         entries: [
           {
             ".tag": "folder",
+            id: "exampleId",
             name: "MyExampleFolder",
             path_lower: "/myexamplefolder",
           },
           {
-            ".tag": "folder",
-            name: "MyExampleFolder",
-            path_lower: "/myexamplefolder",
+            ".tag": "file",
+            id: "exampleId",
+            name: "MyImage.jpg",
+            path_lower: "/myexamplefolder/myimage.jpg",
+            client_modified: new Date("2020-01-01").toUTCString(),
+            server_modified: new Date("2020-01-01").toUTCString(),
+            rev: "681a01c39731",
+            size: 213654,
           },
         ],
         cursor:
           "hgL45HTslKOhj1_GEut-DVuaNs4xrXzpwQZRyJ0-KCW0wWMQ5DZu68__ULJa0zDcBp3ZrMlCj3-ZuOy4kjc9H2o7Ohk9UsId0sxVZrXFX",
-        hasMore: true,
+        has_more: true,
       },
     },
   },

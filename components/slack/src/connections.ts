@@ -25,7 +25,7 @@ export const slackOAuth = oauth2Connection({
       placeholder: "Token URL",
       type: "string",
       required: true,
-      shown: true,
+      shown: false,
       comments: "The OAuth 2.0 Token URL for Slack",
       default: "https://slack.com/api/oauth.access",
     },
@@ -36,12 +36,13 @@ export const slackOAuth = oauth2Connection({
       required: true,
       shown: true,
       default: "",
+      example: "chat:write:user users:read",
       comments:
         "A space-delimited set of one or more scopes to get the user's permission to access.",
     },
     clientId: {
-      label: "Client Id",
-      placeholder: "Client Id",
+      label: "Client ID",
+      placeholder: "Client ID",
       type: "string",
       required: true,
       shown: true,
@@ -49,7 +50,7 @@ export const slackOAuth = oauth2Connection({
     clientSecret: {
       label: "Client Secret",
       placeholder: "Client Secret",
-      type: "string",
+      type: "password",
       required: true,
       shown: true,
     },

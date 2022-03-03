@@ -3,10 +3,7 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import fetch from "isomorphic-fetch";
 
-// FIXME: This doesn't seem proper.
-// See https://github.com/dropbox/dropbox-sdk-js/issues/201
-//import { Dropbox } from "dropbox";
-import { Dropbox } from "dropbox/dist/Dropbox-sdk.min";
+import { Dropbox } from "dropbox";
 
 dotenv.config();
 

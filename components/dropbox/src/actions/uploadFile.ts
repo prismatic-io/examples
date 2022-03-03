@@ -1,6 +1,7 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
 import { connectionInput, path, fileContents } from "../inputs";
+import { handleDropboxError, validatePath } from "../util";
 
 export const uploadFile = action({
   display: {
@@ -8,27 +9,35 @@ export const uploadFile = action({
     description: "Upload a file to the specified path",
   },
   perform: async (context, { dropboxConnection, path, fileContents }) => {
+    validatePath(path);
     const dbx = await createAuthorizedClient(dropboxConnection);
-
     const { data } = util.types.toData(fileContents);
-    const result = await dbx.filesUpload({
-      path: util.types.toString(path),
-      contents: data,
-      mode: { ".tag": "overwrite" },
-    });
-    return {
-      data: result,
-    };
+    try {
+      const result = await dbx.filesUpload({
+        path: util.types.toString(path),
+        contents: data,
+        mode: { ".tag": "overwrite" },
+      });
+      return {
+        data: result,
+      };
+    } catch (err) {
+      handleDropboxError(err, [path]);
+    }
   },
   inputs: { dropboxConnection: connectionInput, path, fileContents },
   examplePayload: {
     data: {
-      id: "exampleId",
-      client_modified: new Date("2020-01-01").toUTCString(),
-      server_modified: new Date("2020-01-01").toUTCString(),
-      rev: undefined,
-      size: 2048,
-      name: "myFileName",
+      status: 200,
+      headers: {},
+      result: {
+        id: "exampleId",
+        client_modified: new Date("2020-01-01").toUTCString(),
+        server_modified: new Date("2020-01-01").toUTCString(),
+        rev: undefined,
+        size: 2048,
+        name: "myFileName",
+      },
     },
   },
 });

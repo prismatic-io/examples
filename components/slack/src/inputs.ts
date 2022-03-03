@@ -17,12 +17,22 @@ export const messageId = input({
   example: "84350944036",
 });
 
+// .sendMessage can take a channel name or ID
 export const channelName = input({
-  label: "Channel Name",
+  label: "Channel Name or ID",
   type: "string",
   required: true,
-  comments: "The name of the Slack channel.",
+  comments: "The name or static ID of the Slack channel.",
   example: "general",
+});
+
+// update, delete message only take channel ID
+export const channelId = input({
+  label: "Channel ID",
+  type: "string",
+  required: true,
+  comments: "The static ID of the Slack channel.",
+  example: "C02MS7HV6KB",
 });
 
 export const conversationName = input({

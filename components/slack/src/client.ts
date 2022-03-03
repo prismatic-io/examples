@@ -6,7 +6,7 @@ interface CreateClientProps {
   slackConnection?: Connection;
 }
 
-export const getApp = ({ slackConnection }: CreateClientProps) => {
+export const createOauthClient = ({ slackConnection }: CreateClientProps) => {
   if (slackConnection.key !== "oauth2") {
     throw new ConnectionError(
       slackConnection,
@@ -14,20 +14,15 @@ export const getApp = ({ slackConnection }: CreateClientProps) => {
     );
   }
 
-  return new App({
+  const app = new App({
     token: util.types.toString(slackConnection.token.access_token),
     signingSecret: util.types.toString(slackConnection.fields.signingSecret),
     scopes: util.types.toString(slackConnection.fields.scopes),
     clientId: util.types.toString(slackConnection.fields.clientId),
     clientSecret: util.types.toString(slackConnection.fields.clientSecret),
   });
-};
 
-export const createClient = async ({ slackConnection }: CreateClientProps) => {
-  const app = getApp({ slackConnection });
-  await app.start(process.env.port || 3000);
-
-  return { client: app.client, app };
+  return app.client;
 };
 
 export const createWebhookClient = (

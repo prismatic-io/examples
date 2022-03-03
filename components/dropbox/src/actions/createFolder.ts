@@ -1,6 +1,7 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
 import { path, connectionInput } from "../inputs";
+import { handleDropboxError, validatePath } from "../util";
 
 export const createFolder = action({
   display: {
@@ -8,18 +9,27 @@ export const createFolder = action({
     description: "Create a Folder at the specified path",
   },
   perform: async (context, { dropboxConnection, path }) => {
+    validatePath(path);
     const dbx = await createAuthorizedClient(dropboxConnection);
-    const result = await dbx.filesCreateFolderV2({
-      path: util.types.toString(path),
-    });
-    return {
-      data: result,
-    };
+    try {
+      const result = await dbx.filesCreateFolderV2({
+        path: util.types.toString(path),
+      });
+      return {
+        data: result,
+      };
+    } catch (err) {
+      handleDropboxError(err, [path]);
+    }
   },
   inputs: { dropboxConnection: connectionInput, path },
   examplePayload: {
     data: {
-      metadata: { id: "exampleId", name: "myFolderName" },
+      status: 200,
+      headers: {},
+      result: {
+        metadata: { id: "exampleId", name: "myFolderName" },
+      },
     },
   },
 });

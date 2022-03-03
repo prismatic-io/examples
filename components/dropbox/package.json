@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@prismatic-io/spectral": "5.0.0",
-    "dropbox": "10.5.0",
+    "dropbox": "10.24.0",
     "isomorphic-fetch": "2.2.1",
     "mime-types": "2.1.27"
   },

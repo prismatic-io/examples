@@ -1,8 +1,9 @@
 import { action, util } from "@prismatic-io/spectral";
-import { createClient, createWebhookClient } from "../client";
+import { createOauthClient, createWebhookClient } from "../client";
 import {
   connectionInput,
   message,
+  channelId,
   channelName,
   username,
   asUser,
@@ -19,20 +20,15 @@ export const postMessage = action({
     context,
     { connection, message, channelName, username, asUser }
   ) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.chat.postMessage({
-        channel: util.types.toString(channelName),
-        username: util.types.toString(username) || undefined,
-        text: util.types.toString(message),
-        token: util.types.toString(connection.token.access_token),
-        as_user: util.types.toBool(asUser) || undefined,
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.chat.postMessage({
+      channel: util.types.toString(channelName),
+      username: util.types.toString(username) || undefined,
+      text: util.types.toString(message),
+      token: util.types.toString(connection.token.access_token),
+      as_user: util.types.toBool(asUser),
+    });
+    return { data };
   },
   inputs: {
     message,
@@ -50,27 +46,22 @@ export const updateMessage = action({
   },
   perform: async (
     context,
-    { connection, message, channelName, asUser, messageId }
+    { connection, message, channelId, asUser, messageId }
   ) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.chat.update({
-        channel: util.types.toString(channelName),
-        ts: util.types.toString(messageId),
-        text: util.types.toString(message) || undefined,
-        as_user: util.types.toBool(asUser) || undefined,
-        token: util.types.toString(connection.token.access_token),
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.chat.update({
+      channel: util.types.toString(channelId),
+      ts: util.types.toString(messageId),
+      text: util.types.toString(message) || undefined,
+      as_user: util.types.toBool(asUser),
+      token: util.types.toString(connection.token.access_token),
+    });
+    return { data };
   },
   inputs: {
     message,
     messageId,
-    channelName,
+    channelId,
     asUser,
     connection: connectionInput,
   },
@@ -82,24 +73,19 @@ export const deletePendingMessage = action({
     description:
       "Delete the content and metadata of a pending scheduled message from a queue",
   },
-  perform: async (context, { connection, messageId, asUser, channelName }) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.chat.deleteScheduledMessage({
-        channel: util.types.toString(channelName),
-        scheduled_message_id: util.types.toString(messageId),
-        as_user: util.types.toBool(asUser),
-        token: util.types.toString(connection.token.access_token),
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+  perform: async (context, { connection, messageId, asUser, channelId }) => {
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.chat.deleteScheduledMessage({
+      channel: util.types.toString(channelId),
+      scheduled_message_id: util.types.toString(messageId),
+      as_user: util.types.toBool(asUser),
+      token: util.types.toString(connection.token.access_token),
+    });
+    return { data };
   },
   inputs: {
     messageId,
-    channelName,
+    channelId,
     asUser,
     connection: connectionInput,
   },
@@ -110,24 +96,19 @@ export const deleteMessage = action({
     label: "Delete message",
     description: "Delete the content and metadata of an existing message",
   },
-  perform: async (context, { connection, messageId, asUser, channelName }) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.chat.delete({
-        channel: util.types.toString(channelName),
-        ts: util.types.toString(messageId),
-        as_user: util.types.toBool(asUser),
-        token: util.types.toString(connection.token.access_token),
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+  perform: async (context, { connection, messageId, asUser, channelId }) => {
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.chat.delete({
+      channel: util.types.toString(channelId),
+      ts: util.types.toString(messageId),
+      as_user: util.types.toBool(asUser),
+      token: util.types.toString(connection.token.access_token),
+    });
+    return { data };
   },
   inputs: {
     messageId,
-    channelName,
+    channelId,
     asUser,
     connection: connectionInput,
   },
@@ -142,21 +123,16 @@ export const postEphemeralMessage = action({
     context,
     { connection, channelName, userId, username, asUser, message }
   ) => {
-    const { client, app } = await createClient({ slackConnection: connection });
-
-    try {
-      const data = await client.chat.postEphemeral({
-        channel: util.types.toString(channelName),
-        user: util.types.toString(userId),
-        username: util.types.toString(username) || undefined,
-        text: util.types.toString(message) || undefined,
-        as_user: util.types.toBool(asUser) || undefined,
-        token: util.types.toString(connection.token.access_token),
-      });
-      return { data };
-    } finally {
-      await app.stop();
-    }
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.chat.postEphemeral({
+      channel: util.types.toString(channelName),
+      user: util.types.toString(userId),
+      username: util.types.toString(username) || undefined,
+      text: util.types.toString(message) || undefined,
+      as_user: util.types.toBool(asUser),
+      token: util.types.toString(connection.token.access_token),
+    });
+    return { data };
   },
   inputs: {
     channelName,
