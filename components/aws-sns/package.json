@@ -19,7 +19,7 @@
   "dependencies": {
     "@prismatic-io/spectral": "5.0.0",
     "sns-validator": "0.3.4",
-    "aws-sdk": "2.691.0",
+    "aws-sdk": "2.814.0",
     "axios": "0.21.4"
   },
   "author": "Prismatic",
