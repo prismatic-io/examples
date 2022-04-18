@@ -22,7 +22,6 @@ export const createConversation = action({
       name: util.types.toString(conversationName),
       is_private: util.types.toBool(isPrivate) || undefined,
       team_id: util.types.toString(teamId) || undefined,
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },
@@ -38,7 +37,6 @@ export const closeConversation = action({
     const client = createOauthClient({ slackConnection: connection });
     const data = await client.conversations.close({
       channel: util.types.toString(conversationName),
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },
@@ -58,7 +56,6 @@ export const renameConversation = action({
     const data = await client.conversations.rename({
       channel: util.types.toString(conversationName),
       name: util.types.toString(newConversationName),
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },
@@ -87,7 +84,6 @@ export const listConversations = action({
       exclude_archived: util.types.toBool(excludeArchived) || undefined,
       limit: util.types.toNumber(limit) || undefined,
       team_id: util.types.toString(teamId) || undefined,
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },
@@ -109,7 +105,6 @@ export const leaveConversation = action({
     const client = createOauthClient({ slackConnection: connection });
     const data = await client.conversations.leave({
       channel: util.types.toString(channelName),
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },
@@ -130,7 +125,6 @@ export const listConversationMembers = action({
       cursor: util.types.toString(cursor) || undefined,
       limit: util.types.toNumber(limit) || undefined,
       channel: util.types.toString(channelName),
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },

@@ -10,10 +10,19 @@ const examplePayload: Response = {
   data: {
     Subscriptions: [
       {
-        SubscriptionArn: "arn:aws:Example Subscription Arn",
-        Owner: "example_owner",
-        Protocol: "EMAIL",
-        Endpoint: "admin@example.io",
+        SubscriptionArn:
+          "arn:aws:sns:us-east-2:123456789012:MyExampleTopic:00000000-00000000-00000000-00000000",
+        Owner: "0123456789000",
+        Protocol: "https",
+        Endpoint: "https://example.com/",
+        TopicArn: "arn:aws:sns:us-east-2:123456789012:MyExampleTopic",
+      },
+      {
+        SubscriptionArn: "PendingConfirmation",
+        Owner: "0123456789000",
+        Protocol: "email",
+        Endpoint: "admin@example.com",
+        TopicArn: "arn:aws:sns:us-east-2:123456789012:MyExampleTopic",
       },
     ],
   },

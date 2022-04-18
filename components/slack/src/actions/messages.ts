@@ -9,6 +9,7 @@ import {
   asUser,
   messageId,
   userId,
+  blocks,
 } from "../inputs";
 
 export const postMessage = action({
@@ -18,15 +19,15 @@ export const postMessage = action({
   },
   perform: async (
     context,
-    { connection, message, channelName, username, asUser }
+    { connection, message, channelName, username, asUser, messageId }
   ) => {
     const client = createOauthClient({ slackConnection: connection });
     const data = await client.chat.postMessage({
       channel: util.types.toString(channelName),
       username: util.types.toString(username) || undefined,
       text: util.types.toString(message),
-      token: util.types.toString(connection.token.access_token),
       as_user: util.types.toBool(asUser),
+      thread_ts: util.types.toString(messageId) || undefined,
     });
     return { data };
   },
@@ -36,6 +37,26 @@ export const postMessage = action({
     username,
     asUser,
     connection: connectionInput,
+    messageId: { ...messageId, required: false },
+  },
+  examplePayload: {
+    data: {
+      ok: true,
+      channel: "C011B7U3R9U",
+      ts: "1646951430.367539",
+      message: {
+        type: "message",
+        subtype: "bot_message",
+        text: "The message I sent",
+        ts: "1646951430.367539",
+        username: "My Slack App",
+        bot_id: "B036D2DCT54",
+      },
+      response_metadata: {
+        scopes: ["identify", "chat:write:bot"],
+        acceptedScopes: ["chat:write:bot"],
+      },
+    },
   },
 });
 
@@ -54,7 +75,6 @@ export const updateMessage = action({
       ts: util.types.toString(messageId),
       text: util.types.toString(message) || undefined,
       as_user: util.types.toBool(asUser),
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },
@@ -79,7 +99,6 @@ export const deletePendingMessage = action({
       channel: util.types.toString(channelId),
       scheduled_message_id: util.types.toString(messageId),
       as_user: util.types.toBool(asUser),
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },
@@ -102,7 +121,6 @@ export const deleteMessage = action({
       channel: util.types.toString(channelId),
       ts: util.types.toString(messageId),
       as_user: util.types.toBool(asUser),
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },
@@ -130,7 +148,6 @@ export const postEphemeralMessage = action({
       username: util.types.toString(username) || undefined,
       text: util.types.toString(message) || undefined,
       as_user: util.types.toBool(asUser),
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },
@@ -152,7 +169,9 @@ export const postSlackMessage = action({
   perform: async (context, { connection, message }) => {
     const webhook = createWebhookClient(connection);
     return {
-      data: await webhook.send({ text: util.types.toString(message) }),
+      data: await webhook.send({
+        text: util.types.toString(message),
+      }),
     };
   },
   inputs: {
@@ -172,4 +191,96 @@ export const postSlackMessage = action({
     },
   },
   examplePayload: { data: { text: "ok" } },
+});
+
+export const postWebhookBlockMessage = action({
+  display: {
+    label: "Slack Block Message From Webhook",
+    description:
+      "Post a block formatted message to a Slack channel from a webhook URL",
+  },
+  perform: async (context, { connection, message, blocks }) => {
+    const webhook = createWebhookClient(connection);
+    return {
+      data: await webhook.send({
+        text: util.types.toString(message),
+        blocks: util.types.isJSON(util.types.toString(blocks))
+          ? JSON.parse(util.types.toString(blocks)) || []
+          : blocks || [],
+      }),
+    };
+  },
+  inputs: {
+    connection: {
+      label: "Connection",
+      type: "connection",
+      required: true,
+      comments: "The connection to use",
+    },
+    message: {
+      ...message,
+      label: "Alt Message",
+      required: false,
+      comments: "This message will override if your block cannot be sent",
+    },
+    blocks: { ...blocks },
+  },
+  examplePayload: { data: { text: "ok" } },
+});
+
+export const postBlockMessage = action({
+  display: {
+    label: "Post Block Message",
+    description: "Post a message to a slack channel",
+  },
+  perform: async (
+    context,
+    { connection, blocks, message, channelName, username, asUser, messageId }
+  ) => {
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await client.chat.postMessage({
+      channel: util.types.toString(channelName),
+      username: util.types.toString(username) || undefined,
+      blocks: util.types.isJSON(util.types.toString(blocks))
+        ? JSON.parse(util.types.toString(blocks)) || []
+        : blocks || [],
+      text: util.types.toString(message),
+      as_user: util.types.toBool(asUser),
+      thread_ts: util.types.toString(messageId) || undefined,
+    });
+    return { data };
+  },
+  inputs: {
+    blocks,
+    message: {
+      ...message,
+      label: "Alt Message",
+      required: false,
+      comments: "This message will override if your block cannot be sent",
+    },
+    channelName,
+    username,
+    asUser,
+    connection: connectionInput,
+    messageId: { ...messageId, required: false },
+  },
+  examplePayload: {
+    data: {
+      ok: true,
+      channel: "C011B7U3R9U",
+      ts: "1646951430.367539",
+      message: {
+        type: "message",
+        subtype: "bot_message",
+        text: "The message I sent",
+        ts: "1646951430.367539",
+        username: "My Slack App",
+        bot_id: "B036D2DCT54",
+      },
+      response_metadata: {
+        scopes: ["identify", "chat:write:bot"],
+        acceptedScopes: ["chat:write:bot"],
+      },
+    },
+  },
 });

@@ -3,8 +3,10 @@ import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
 
 export const createS3Client = async (accessKey: Connection, region: string) => {
   const credentials: STS.Types.ClientConfiguration = {
-    accessKeyId: util.types.toString(accessKey.fields.accessKeyId),
-    secretAccessKey: util.types.toString(accessKey.fields.secretAccessKey),
+    accessKeyId: util.types.toString(accessKey.fields.accessKeyId).trim(),
+    secretAccessKey: util.types
+      .toString(accessKey.fields.secretAccessKey)
+      .trim(),
     region,
   };
 
@@ -15,7 +17,7 @@ export const createS3Client = async (accessKey: Connection, region: string) => {
   } catch (err) {
     throw new ConnectionError(
       accessKey,
-      `Invalid AWS Credentials have been configured. This is sometimes caused by trailing spaces in AWS keys, missing characters from a copy/paste, etc. Original AWS error message: ${
+      `Invalid AWS Credentials have been configured. This is sometimes caused by missing characters from a copy/paste. Original AWS error message: ${
         (err as Error).message
       }`
     );

@@ -29,7 +29,7 @@ export const subscriptionTrigger = trigger({
   perform: async ({ logger }, payload, params) => {
     const validator = new MessageValidator();
 
-    const origionalHeaders = payload.headers;
+    const originalHeaders = payload.headers;
     payload.headers = lowerCaseHeaders(payload.headers);
 
     const _parseMessage =
@@ -92,7 +92,7 @@ export const subscriptionTrigger = trigger({
       }
     }
 
-    payload.headers = origionalHeaders;
+    payload.headers = originalHeaders;
 
     return {
       // Return a deserialized message as payload.body.data

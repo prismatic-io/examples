@@ -3,7 +3,8 @@ import { connection } from "@prismatic-io/spectral";
 export const accessKeySecretPair = connection({
   key: "apiKeySecret",
   label: "AWS SNS Access Key and Secret",
-  comments: "Authenticates requests to AWS SNS using an API Key and API Secret",
+  comments:
+    "Authenticates requests to Amazon SNS using an API Key and API Secret",
   inputs: {
     accessKeyId: {
       label: "Access Key ID",
@@ -17,7 +18,7 @@ export const accessKeySecretPair = connection({
     secretAccessKey: {
       label: "Secret Access Key",
       placeholder: "Secret Access Key",
-      type: "string",
+      type: "password",
       required: true,
       shown: true,
       comments: "An AWS IAM Secret Access Key",

@@ -11,11 +11,11 @@ const examplePayload: Response = {
   data: {
     Attributes: {
       Policy: "Example Policy",
-      Owner: "Example Owner",
-      topicArn: "arn:aws:Example Topic Arn",
-      SubscriptionsPending: "0",
+      Owner: "0123456789000",
+      topicArn: "arn:aws:sns:us-east-2:123456789012:MyExampleTopic",
+      SubscriptionsPending: "1",
       EffectiveDeliveryPolicy: "Example Delivery Policy",
-      SubscriptionsConfirmed: "1",
+      SubscriptionsConfirmed: "5",
       DisplayName: "Example Display Name",
       SubscriptionsDeleted: "5",
     },

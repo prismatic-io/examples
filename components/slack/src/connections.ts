@@ -57,7 +57,7 @@ export const slackOAuth = oauth2Connection({
     signingSecret: {
       label: "Signing Secret",
       placeholder: "Signing Secret",
-      type: "string",
+      type: "password",
       required: true,
       shown: true,
     },

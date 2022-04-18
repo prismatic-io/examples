@@ -1,7 +1,7 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
 import { connectionInput, path } from "../inputs";
-import mime from "mime-types";
+import * as mime from "mime-types";
 import { basename } from "path";
 import { files } from "dropbox";
 import { handleDropboxError, validatePath } from "../util";

@@ -1,19 +1,75 @@
-import { trigger } from "@prismatic-io/spectral";
+import { HttpResponse, trigger, util } from "@prismatic-io/spectral";
+import { connectionInput } from "./inputs";
+import crypto from "crypto";
+
+const computeSignature = (
+  requestBody: string,
+  signingSecret: string,
+  timestamp: number
+) => {
+  const signatureBaseString = `v0:${timestamp}:${requestBody}`;
+  const signature = crypto
+    .createHmac("sha256", signingSecret)
+    .update(signatureBaseString, "utf8")
+    .digest("hex");
+  return `v0=${signature}`;
+};
+
+interface Request {
+  challenge?: string;
+}
 
 export const webhook = trigger({
   display: {
     label: "Webhook",
     description: "Trigger for handling webhooks from Slack",
   },
-  perform: async (context, payload) => {
+  allowsBranching: true,
+  staticBranchNames: ["Notification", "URL Verify"],
+  perform: async (context, payload, params) => {
+    // Validate that the webhook request came from Slack
+    // https://api.slack.com/authentication/verifying-requests-from-slack
+    const signingSecret = util.types.toString(
+      params.slackConnection.fields.signingSecret
+    );
+    const requestBody = util.types.toString(payload.rawBody.data);
+    const timestamp = util.types.toInt(
+      payload.headers["X-Slack-Request-Timestamp"]
+    );
+    const computedSignature = computeSignature(
+      requestBody,
+      signingSecret,
+      timestamp
+    );
+    const payloadSignature = util.types.toString(
+      payload.headers["X-Slack-Signature"]
+    );
+    if (payloadSignature !== computedSignature) {
+      throw new Error(
+        "Error validating message signature. Check your signing secret and verify that this message came from Slack."
+      );
+    }
+
+    // Check if this is a "challenge" URL verification handshake and respond accordingly
+    // https://api.slack.com/apis/connections/events-api#subscriptions
+    const challenge = (payload.body.data as Request)?.challenge;
+    const response: HttpResponse = {
+      statusCode: 200,
+      contentType: "text/plain",
+      body: challenge,
+    };
+
     return Promise.resolve({
       payload,
+      response,
+      branch: challenge ? "URL Verify" : "Notification",
     });
   },
-  inputs: {},
+  inputs: { slackConnection: connectionInput },
   synchronousResponseSupport: "invalid",
   scheduleSupport: "invalid",
   examplePayload: {
+    branch: "Notification",
     payload: {
       headers: {
         accept: "*/*",
@@ -37,6 +93,11 @@ export const webhook = trigger({
         externalId: "customer-example-external-id",
         name: "John Doe",
       },
+    },
+    response: {
+      statusCode: 200,
+      contentType: "text/plain",
+      body: "3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P",
     },
   },
 });

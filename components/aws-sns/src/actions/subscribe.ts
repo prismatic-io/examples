@@ -13,7 +13,10 @@ interface Response {
   data: SNS.Types.SubscribeResponse;
 }
 const examplePayload: Response = {
-  data: { SubscriptionArn: "Example SubscriptionArn" },
+  data: {
+    SubscriptionArn:
+      "arn:aws:sns:us-east-2:123456789012:MyExampleTopic:00000000-00000000-00000000-00000000",
+  },
 };
 
 export const subscribe = action({

@@ -9,6 +9,8 @@ import {
   updateMessage,
   postEphemeralMessage,
   postSlackMessage,
+  postBlockMessage,
+  postWebhookBlockMessage,
 } from "./actions/messages";
 import {
   closeConversation,
@@ -18,17 +20,16 @@ import {
   listConversations,
   listConversationMembers,
 } from "./actions/conversations";
-import { getUser, listUsers } from "./actions/users";
+import { getUser, getUserById, listUsers } from "./actions/users";
 import {
   createChannel,
-  listChannels,
   renameChannel,
   archiveChannel,
 } from "./actions/channels";
 
 export default component({
   key: "slack",
-  documentationUrl: "https://prismatic.io/docs/components/slack",
+  documentationUrl: "https://prismatic.io/docs/components/slack/",
   public: true,
   display: {
     label: "Slack",
@@ -47,15 +48,17 @@ export default component({
     createConversation,
     renameConversation,
     getUser,
+    getUserById,
     leaveConversation,
     listConversations,
     listConversationMembers,
     listUsers,
     createChannel,
-    listChannels,
     renameChannel,
     archiveChannel,
     postSlackMessage,
+    postBlockMessage,
+    postWebhookBlockMessage,
   },
   triggers,
 });

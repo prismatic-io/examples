@@ -19,7 +19,7 @@ interface Response {
 
 const examplePayload: Response = {
   data: {
-    MessageId: "Example Message Id",
+    MessageId: "00000000-00000000-00000000-00000000",
   },
 };
 

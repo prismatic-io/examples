@@ -1,15 +1,6 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createOauthClient } from "../client";
-import {
-  connectionInput,
-  channelName,
-  teamId,
-  validate,
-  excludeArchived,
-  cursor,
-  limit,
-  excludeMembers,
-} from "../inputs";
+import { connectionInput, channelName, teamId, validate } from "../inputs";
 
 export const createChannel = action({
   display: {
@@ -21,42 +12,11 @@ export const createChannel = action({
     const data = await client.channels.create({
       name: util.types.toString(channelName),
       team_id: util.types.toString(teamId) || undefined,
-      token: util.types.toString(connection.token.access_token),
       validate: util.types.toBool(validate) || undefined,
     });
     return { data };
   },
   inputs: { channelName, validate, teamId, connection: connectionInput },
-});
-
-export const listChannels = action({
-  display: {
-    label: "List Channels",
-    description: "List all channels",
-  },
-  perform: async (
-    context,
-    { connection, cursor, limit, teamId, excludeArchived, excludeMembers }
-  ) => {
-    const client = createOauthClient({ slackConnection: connection });
-    const data = await client.channels.list({
-      cursor: util.types.toString(cursor) || undefined,
-      exclude_archived: util.types.toBool(excludeArchived),
-      exclude_members: util.types.toBool(excludeMembers),
-      limit: util.types.toNumber(limit) || undefined,
-      team_id: util.types.toString(teamId) || undefined,
-      token: util.types.toString(connection.token.access_token),
-    });
-    return { data };
-  },
-  inputs: {
-    cursor,
-    limit,
-    teamId,
-    excludeArchived,
-    excludeMembers,
-    connection: connectionInput,
-  },
 });
 
 export const renameChannel = action({
@@ -70,7 +30,6 @@ export const renameChannel = action({
       channel: util.types.toString(channelName),
       name: util.types.toString(newName),
       validate: util.types.toBool(validate) || undefined,
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },
@@ -91,7 +50,6 @@ export const archiveChannel = action({
     const client = createOauthClient({ slackConnection: connection });
     const data = await client.channels.archive({
       channel: util.types.toString(channelName),
-      token: util.types.toString(connection.token.access_token),
     });
     return { data };
   },

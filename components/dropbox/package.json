@@ -25,19 +25,15 @@
     "mime-types": "2.1.27"
   },
   "devDependencies": {
-    "@prismatic-io/eslint": "0.1.0",
+    "@prismatic-io/eslint-config-spectral": "1.0.0",
     "@types/express": "4.17.6",
     "@types/mime-types": "2.1.0",
     "@types/node": "14.14.35",
     "@types/jest": "25.2.3",
     "@types/node-fetch": "2.5.7",
-    "@typescript-eslint/eslint-plugin": "2.34.0",
-    "@typescript-eslint/parser": "2.34.0",
     "copy-webpack-plugin": "6.0.3",
     "dotenv": "8.2.0",
     "eslint": "6.8.0",
-    "eslint-config-prettier": "6.11.0",
-    "eslint-plugin-prettier": "3.1.3",
     "express": "4.17.1",
     "nodemon": "2.0.4",
     "ts-jest": "26.4.0",
@@ -48,5 +44,11 @@
     "prettier": "2.0.5",
     "jest": "26.6.3",
     "body-parser": "1.19.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@prismatic-io/eslint-config-spectral"
+    ]
   }
 }

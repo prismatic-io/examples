@@ -1,4 +1,4 @@
-import { input } from "@prismatic-io/spectral";
+import { input, util } from "@prismatic-io/spectral";
 
 export const message = input({
   label: "Message",
@@ -13,7 +13,7 @@ export const messageId = input({
   label: "Message Id",
   type: "string",
   required: true,
-  comments: "Provide a string value for the unique identifier of the message.",
+  comments: "A unique identifier of a message or thread (thread_ts)",
   example: "84350944036",
 });
 
@@ -135,4 +135,25 @@ export const connectionInput = input({
   type: "connection",
   required: true,
   comments: "The connection to use",
+});
+
+export const blocks = input({
+  label: "Blocks",
+  type: "code",
+  language: "JSON",
+  required: true,
+  example: util.docs.formatJsonExample([
+    { type: "section", text: { type: "plain_text", text: "Hello world" } },
+  ]),
+  default: `[
+  {
+    "type": "section",
+    "text": {
+      "type": "plain_text",
+      "text": "Hello world"
+    }
+  }
+]`,
+  comments:
+    "Provide a JSON array containing blocks (objects) that make up the desired message.",
 });

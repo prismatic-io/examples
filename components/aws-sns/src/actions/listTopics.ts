@@ -17,7 +17,7 @@ export const listTopics = action({
     label: "List Topics",
     description: "List available Amazon SNS Topics",
   },
-  perform: async (conext, params) => {
+  perform: async (context, params) => {
     const sns = await createSNSClient({
       awsConnection: params.awsConnection,
       awsRegion: util.types.toString(params.awsRegion),

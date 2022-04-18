@@ -19,8 +19,10 @@ export const createSNSClient = async ({
   }
 
   const credentials = {
-    accessKeyId: util.types.toString(awsConnection.fields.accessKeyId),
-    secretAccessKey: util.types.toString(awsConnection.fields.secretAccessKey),
+    accessKeyId: util.types.toString(awsConnection.fields.accessKeyId).trim(),
+    secretAccessKey: util.types
+      .toString(awsConnection.fields.secretAccessKey)
+      .trim(),
     region: util.types.toString(awsRegion),
   };
 
@@ -30,7 +32,7 @@ export const createSNSClient = async ({
   } catch (err) {
     throw new ConnectionError(
       awsConnection,
-      `Invalid AWS Credentials have been configured. This is sometimes caused by trailing spaces in AWS keys, missing characters from a copy/paste, etc. Original AWS error message: ${err.message}`
+      `Invalid AWS Credentials have been configured. This is sometimes caused by missing characters from a copy/paste. Original AWS error message: ${err.message}`
     );
   }
 

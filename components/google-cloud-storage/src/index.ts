@@ -1,17 +1,21 @@
 import { component } from "@prismatic-io/spectral";
-import {
-  saveFile,
-  downloadFile,
-  copyFile,
-  moveFile,
-  deleteFile,
-  listFiles,
-} from "./actions";
+import { copyFile } from "./actions/copyFile";
+import { deleteFile } from "./actions/deleteFile";
+import { downloadFile } from "./actions/downloadFile";
+import { listFiles } from "./actions/listfiles";
+import { moveFile } from "./actions/moveFile";
+import { saveFile } from "./actions/saveFile";
+import { getFile } from "./actions/getFile";
+import { listBuckets } from "./actions/listBuckets";
+import { createBucket } from "./actions/createBucket";
+import { deleteBucket } from "./actions/deleteBucket";
+import { getBucket } from "./actions/getBucket";
 import connections from "./connections";
 
 export default component({
   key: "google-cloud-storage",
-  documentationUrl: "https://prismatic.io/docs/components/google-cloud-storage",
+  documentationUrl:
+    "https://prismatic.io/docs/components/google-cloud-storage/",
   public: true,
   display: {
     label: "Google Cloud Storage",
@@ -27,6 +31,11 @@ export default component({
     moveFile,
     deleteFile,
     listFiles,
+    getFile,
+    listBuckets,
+    createBucket,
+    getBucket,
+    deleteBucket,
   },
   connections,
 });

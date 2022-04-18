@@ -2,7 +2,7 @@ import { Storage } from "@google-cloud/storage";
 import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
 import { googleConnection } from "./connections";
 
-export const googleStorageClient = (connection: Connection) => {
+export const googleStorageClient = (connection: Connection): Storage => {
   if (connection.key !== googleConnection.key) {
     throw new ConnectionError(connection, "Unknown Connection type provided.");
   }

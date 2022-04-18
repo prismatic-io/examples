@@ -41,14 +41,25 @@ export const message = input({
   required: true,
   comments: "Provide a string for the message you would like to send.",
 });
+
 export const protocol = input({
   label: "protocol",
   type: "string",
   required: true,
-  default: "EMAIL",
-  example: "EMAIL",
+  default: "https",
+  model: [
+    { label: "application", value: "application" },
+    { label: "email", value: "email" },
+    { label: "email-json", value: "email-json" },
+    { label: "firehose", value: "firehose" },
+    { label: "http", value: "http" },
+    { label: "https", value: "https" },
+    { label: "lambda", value: "lambda" },
+    { label: "sms", value: "sms" },
+    { label: "sqs", value: "sqs" },
+  ],
   comments:
-    "When you subscribe an endpoint to a topic, you must specify which protocol to use when this client receives messages in the future.",
+    "When you subscribe an endpoint to a topic, you must specify which protocol to use when this topic receives messages.",
 });
 
 export const endpoint = input({
@@ -57,16 +68,16 @@ export const endpoint = input({
   required: true,
   example: "example@prismatic.io",
   comments:
-    "When you subscribe an endpoint to a topic, you can publish a notification to the topic and Amazon SNS sends an HTTP POST request delivering the contents of the notification to the subscribed endpoint.",
+    "The endpoint that you want to receive notifications. This could be an email address, URL, phone number, or SQS/application/Lambda/Firehose ARN.",
 });
 
 export const subscriptionArn = input({
   label: "Subscription Arn",
   type: "string",
   required: true,
-  example: "1234567890",
-  comments:
-    "The response from the Subscribe request includes the subscription ARN, even if the subscription is not yet confirmed.",
+  example:
+    "arn:aws:sns:us-east-2:123456789012:MyExampleTopic:00000000-00000000-00000000-00000000",
+  comments: "The unique identifier for a topic subscription",
 });
 
 export const phoneNumber = input({
@@ -83,7 +94,7 @@ export const messageAttributes = input({
   type: "string",
   required: false,
   collection: "keyvaluelist",
-  example: `key: myAttr, value: "This is an example attribute"`,
+  example: "This is an example attribute",
   comments:
     "For each item, provide a key value pair representing a message attribute. When determining your message attributes, it is important that you follow the specifications listed in the Amazon SNS docs: https://docs.aws.amazon.com/sns/latest/api/API_MessageAttributeValue.html",
 });

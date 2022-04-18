@@ -114,3 +114,42 @@ export const connectionInput = input({
   type: "connection",
   required: true,
 });
+
+export const userProject = input({
+  label: "User Project",
+  type: "string",
+  required: false,
+  comments: "Specify the project that the user creating the bucket belongs to.",
+  example: `my-example-project`,
+});
+
+export const location = input({
+  label: "Location",
+  type: "string",
+  required: false,
+  comments:
+    "The location of the bucket. Object data for objects in the bucket resides in physical storage within this region. Defaults to 'US'. See Cloud Storage bucket locations for the authoritative list: https://cloud.google.com/storage/docs/locations",
+  example: `US-EAST1`,
+});
+
+export const multiRegional = input({
+  label: "Multi-Regional",
+  type: "boolean",
+  required: false,
+  comments:
+    "This flag will determine if your bucket will be available from  multiple regions.",
+});
+
+export const storageClass = input({
+  label: "StorageClass Type",
+  type: "string",
+  required: true,
+  model: [
+    { label: "Standard", value: "standard" },
+    { label: "Archived", value: "archived" },
+    { label: "Coldline", value: "coldline" },
+    { label: "Nearline", value: "nearline" },
+    { label: "Regional", value: "regional" },
+  ],
+  comments: "This flag will determine the StorageClass your bucket will use.",
+});

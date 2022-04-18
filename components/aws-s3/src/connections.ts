@@ -17,7 +17,7 @@ export const accessKeySecretPair = connection({
     secretAccessKey: {
       label: "Secret Access Key",
       placeholder: "Secret Access Key",
-      type: "string",
+      type: "password",
       required: true,
       shown: true,
       comments: "An AWS IAM Secret Access Key",
