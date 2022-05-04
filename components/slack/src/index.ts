@@ -11,6 +11,7 @@ import {
   postSlackMessage,
   postBlockMessage,
   postWebhookBlockMessage,
+  listScheduledMessages,
 } from "./actions/messages";
 import {
   closeConversation,
@@ -19,13 +20,19 @@ import {
   leaveConversation,
   listConversations,
   listConversationMembers,
+  archiveConversation,
+  conversationExists,
+  inviteUserToConversation,
+  setConversationPurpose,
+  setConversationTopic,
 } from "./actions/conversations";
-import { getUser, getUserById, listUsers } from "./actions/users";
 import {
-  createChannel,
-  renameChannel,
-  archiveChannel,
-} from "./actions/channels";
+  getUser,
+  getUserById,
+  listUsers,
+  listUsersConversations,
+} from "./actions/users";
+import { listFiles, uploadFile } from "./actions/files";
 
 export default component({
   key: "slack",
@@ -53,12 +60,18 @@ export default component({
     listConversations,
     listConversationMembers,
     listUsers,
-    createChannel,
-    renameChannel,
-    archiveChannel,
     postSlackMessage,
     postBlockMessage,
     postWebhookBlockMessage,
+    archiveConversation,
+    conversationExists,
+    listScheduledMessages,
+    listFiles,
+    inviteUserToConversation,
+    setConversationPurpose,
+    setConversationTopic,
+    listUsersConversations,
+    uploadFile,
   },
   triggers,
 });

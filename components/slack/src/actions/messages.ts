@@ -1,5 +1,6 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createOauthClient, createWebhookClient } from "../client";
+import { handleErrors } from "../errors";
 import {
   connectionInput,
   message,
@@ -22,13 +23,15 @@ export const postMessage = action({
     { connection, message, channelName, username, asUser, messageId }
   ) => {
     const client = createOauthClient({ slackConnection: connection });
-    const data = await client.chat.postMessage({
-      channel: util.types.toString(channelName),
-      username: util.types.toString(username) || undefined,
-      text: util.types.toString(message),
-      as_user: util.types.toBool(asUser),
-      thread_ts: util.types.toString(messageId) || undefined,
-    });
+    const data = await handleErrors(
+      client.chat.postMessage({
+        channel: util.types.toString(channelName),
+        username: util.types.toString(username) || undefined,
+        text: util.types.toString(message),
+        as_user: util.types.toBool(asUser),
+        thread_ts: util.types.toString(messageId) || undefined,
+      })
+    );
     return { data };
   },
   inputs: {
@@ -70,12 +73,14 @@ export const updateMessage = action({
     { connection, message, channelId, asUser, messageId }
   ) => {
     const client = createOauthClient({ slackConnection: connection });
-    const data = await client.chat.update({
-      channel: util.types.toString(channelId),
-      ts: util.types.toString(messageId),
-      text: util.types.toString(message) || undefined,
-      as_user: util.types.toBool(asUser),
-    });
+    const data = await handleErrors(
+      client.chat.update({
+        channel: util.types.toString(channelId),
+        ts: util.types.toString(messageId),
+        text: util.types.toString(message) || undefined,
+        as_user: util.types.toBool(asUser),
+      })
+    );
     return { data };
   },
   inputs: {
@@ -95,11 +100,13 @@ export const deletePendingMessage = action({
   },
   perform: async (context, { connection, messageId, asUser, channelId }) => {
     const client = createOauthClient({ slackConnection: connection });
-    const data = await client.chat.deleteScheduledMessage({
-      channel: util.types.toString(channelId),
-      scheduled_message_id: util.types.toString(messageId),
-      as_user: util.types.toBool(asUser),
-    });
+    const data = await handleErrors(
+      client.chat.deleteScheduledMessage({
+        channel: util.types.toString(channelId),
+        scheduled_message_id: util.types.toString(messageId),
+        as_user: util.types.toBool(asUser),
+      })
+    );
     return { data };
   },
   inputs: {
@@ -117,11 +124,13 @@ export const deleteMessage = action({
   },
   perform: async (context, { connection, messageId, asUser, channelId }) => {
     const client = createOauthClient({ slackConnection: connection });
-    const data = await client.chat.delete({
-      channel: util.types.toString(channelId),
-      ts: util.types.toString(messageId),
-      as_user: util.types.toBool(asUser),
-    });
+    const data = await handleErrors(
+      client.chat.delete({
+        channel: util.types.toString(channelId),
+        ts: util.types.toString(messageId),
+        as_user: util.types.toBool(asUser),
+      })
+    );
     return { data };
   },
   inputs: {
@@ -142,13 +151,15 @@ export const postEphemeralMessage = action({
     { connection, channelName, userId, username, asUser, message }
   ) => {
     const client = createOauthClient({ slackConnection: connection });
-    const data = await client.chat.postEphemeral({
-      channel: util.types.toString(channelName),
-      user: util.types.toString(userId),
-      username: util.types.toString(username) || undefined,
-      text: util.types.toString(message) || undefined,
-      as_user: util.types.toBool(asUser),
-    });
+    const data = await handleErrors(
+      client.chat.postEphemeral({
+        channel: util.types.toString(channelName),
+        user: util.types.toString(userId),
+        username: util.types.toString(username) || undefined,
+        text: util.types.toString(message) || undefined,
+        as_user: util.types.toBool(asUser),
+      })
+    );
     return { data };
   },
   inputs: {
@@ -202,12 +213,14 @@ export const postWebhookBlockMessage = action({
   perform: async (context, { connection, message, blocks }) => {
     const webhook = createWebhookClient(connection);
     return {
-      data: await webhook.send({
-        text: util.types.toString(message),
-        blocks: util.types.isJSON(util.types.toString(blocks))
-          ? JSON.parse(util.types.toString(blocks)) || []
-          : blocks || [],
-      }),
+      data: await handleErrors(
+        webhook.send({
+          text: util.types.toString(message),
+          blocks: util.types.isJSON(util.types.toString(blocks))
+            ? JSON.parse(util.types.toString(blocks)) || []
+            : blocks || [],
+        })
+      ),
     };
   },
   inputs: {
@@ -238,16 +251,18 @@ export const postBlockMessage = action({
     { connection, blocks, message, channelName, username, asUser, messageId }
   ) => {
     const client = createOauthClient({ slackConnection: connection });
-    const data = await client.chat.postMessage({
-      channel: util.types.toString(channelName),
-      username: util.types.toString(username) || undefined,
-      blocks: util.types.isJSON(util.types.toString(blocks))
-        ? JSON.parse(util.types.toString(blocks)) || []
-        : blocks || [],
-      text: util.types.toString(message),
-      as_user: util.types.toBool(asUser),
-      thread_ts: util.types.toString(messageId) || undefined,
-    });
+    const data = await handleErrors(
+      client.chat.postMessage({
+        channel: util.types.toString(channelName),
+        username: util.types.toString(username) || undefined,
+        blocks: util.types.isJSON(util.types.toString(blocks))
+          ? JSON.parse(util.types.toString(blocks)) || []
+          : blocks || [],
+        text: util.types.toString(message),
+        as_user: util.types.toBool(asUser),
+        thread_ts: util.types.toString(messageId) || undefined,
+      })
+    );
     return { data };
   },
   inputs: {
@@ -282,5 +297,20 @@ export const postBlockMessage = action({
         acceptedScopes: ["chat:write:bot"],
       },
     },
+  },
+});
+
+export const listScheduledMessages = action({
+  display: {
+    label: "List Scheduled Messages",
+    description: "List all scheduled messages",
+  },
+  perform: async (context, { connection }) => {
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await handleErrors(client.chat.scheduledMessages.list());
+    return { data };
+  },
+  inputs: {
+    connection: connectionInput,
   },
 });
