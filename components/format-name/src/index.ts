@@ -1,10 +1,11 @@
-import { action, component, input } from "@prismatic-io/spectral";
+import { action, component, input, util } from "@prismatic-io/spectral";
 
 const firstName = input({
   label: "First Name",
   placeholder: "First name of a person",
   type: "string",
   required: true,
+  clean: (value) => util.types.toString(value),
 });
 
 const middleName = input({
@@ -14,6 +15,7 @@ const middleName = input({
   required: false,
   default: "",
   comments: "Leave blank if the user has no middle name",
+  clean: (value) => util.types.toString(value),
 });
 
 const lastName = input({
@@ -21,6 +23,7 @@ const lastName = input({
   placeholder: "Last name of a person",
   type: "string",
   required: true,
+  clean: (value) => util.types.toString(value),
 });
 
 export const properFormatName = action({
@@ -28,13 +31,13 @@ export const properFormatName = action({
     label: "Properly Format Name",
     description: "Properly format a person's name (Last, First M.)",
   },
-  perform: async (context, { firstName, middleName, lastName }) => {
-    if (middleName) {
+  perform: async (context, params) => {
+    if (params.middleName) {
       return {
-        data: `${lastName}, ${firstName} ${middleName[0]}.`,
+        data: `${params.lastName}, ${params.firstName} ${params.middleName[0]}.`,
       };
     } else {
-      return { data: `${lastName}, ${firstName}` };
+      return { data: `${params.lastName}, ${params.firstName}` };
     }
   },
   inputs: { firstName, middleName, lastName },
@@ -45,9 +48,9 @@ export const improperFormatName = action({
     label: "Informally Format Name",
     description: "Informally format a person's name (My main man, FIRSTNAME)",
   },
-  perform: async (context, { firstName }) => {
+  perform: async (context, params) => {
     return {
-      data: `My main man, ${firstName}`,
+      data: `My main man, ${params.firstName}`,
     };
   },
   inputs: { firstName },
