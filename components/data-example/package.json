@@ -9,7 +9,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "2.0.0"
+    "@prismatic-io/spectral": "6.5.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.21",
