@@ -1,11 +1,5 @@
 import { action, component, input, util } from "@prismatic-io/spectral";
 
-interface PointOfSaleType {
-  productName: string;
-  price: number;
-  quantity: number;
-}
-
 const pointOfSaleInput = input({
   label: "pointOfSaleInput",
   type: "data",
@@ -13,7 +7,7 @@ const pointOfSaleInput = input({
   comments:
     "Ensure the input is a deserialized object of the form { productName: string, price: number, quantity: number }.",
   example: "{ productName: 'Widget', price: 1.25, quantity: 75 }",
-  clean: (value: any): PointOfSaleType => {
+  clean: (value: any) => {
     const parsedValue = util.types.isJSON(value) ? JSON.parse(value) : value;
     if (
       !(
