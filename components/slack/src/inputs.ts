@@ -50,14 +50,6 @@ export const isPrivate = input({
   comments: "This flag will determine if the Slack conversation is private.",
 });
 
-export const asUser = input({
-  label: "As User",
-  type: "boolean",
-  required: false,
-  comments:
-    "This flag will determine if the message will be sent as a user or a bot.",
-});
-
 export const teamId = input({
   label: "Team Id",
   type: "string",
@@ -70,7 +62,8 @@ export const username = input({
   label: "Bot Username",
   type: "string",
   required: false,
-  comments: "The username of the bot the message will be sent from.",
+  comments:
+    "The username of the bot the message will be sent from. This requires the 'chat:write.customize' scope.",
   example: "exampleUser",
 });
 
@@ -156,4 +149,14 @@ export const blocks = input({
 ]`,
   comments:
     "Provide a JSON array containing blocks (objects) that make up the desired message.",
+});
+
+export const fields = input({
+  label: "Additional Fields",
+  type: "string",
+  required: false,
+  example: "as_user",
+  collection: "keyvaluelist",
+  comments:
+    "For each item, provide a key value pair that will be used in the request.",
 });

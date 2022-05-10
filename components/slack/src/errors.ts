@@ -7,8 +7,7 @@ interface SlackError {
 export const handleErrors = async (response: Promise<any>): Promise<any> => {
   try {
     const result = await response;
-
-    return result?.data;
+    return result;
   } catch (e) {
     const error = e as SlackError;
     throw new Error(JSON.stringify(error));

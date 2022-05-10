@@ -3,13 +3,11 @@ const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
-  mode: "development",
+  mode: "production",
   target: "node",
   plugins: [
     new CopyPlugin({
-      patterns: [
-        { from: "assets", to: path.resolve(__dirname, "dist") }
-      ],
+      patterns: [{ from: "assets", to: path.resolve(__dirname, "dist") }],
     }),
   ],
   module: {

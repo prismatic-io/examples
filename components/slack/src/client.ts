@@ -6,6 +6,18 @@ interface CreateClientProps {
   slackConnection?: Connection;
 }
 
+export const getUserToken = ({ slackConnection }: CreateClientProps) => {
+  const user = slackConnection?.token.authed_user as any;
+  if (
+    util.types.toBool(slackConnection.fields.isUser) &&
+    user.access_token !== undefined
+  ) {
+    return util.types.toString(user.access_token);
+  } else {
+    return util.types.toString(slackConnection.token.access_token);
+  }
+};
+
 export const createOauthClient = ({ slackConnection }: CreateClientProps) => {
   if (slackConnection.key !== "oauth2") {
     throw new ConnectionError(
@@ -13,9 +25,10 @@ export const createOauthClient = ({ slackConnection }: CreateClientProps) => {
       `Unsupported authorization method ${slackConnection.key}.`
     );
   }
+  const token = getUserToken({ slackConnection });
 
   const app = new App({
-    token: util.types.toString(slackConnection.token.access_token),
+    token,
     signingSecret: util.types.toString(slackConnection.fields.signingSecret),
     scopes: util.types.toString(slackConnection.fields.scopes),
     clientId: util.types.toString(slackConnection.fields.clientId),

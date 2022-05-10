@@ -16,18 +16,27 @@ export const slackOAuth = oauth2Connection({
       placeholder: "Authorize URL",
       type: "string",
       required: true,
-      shown: false,
-      comments: "The OAuth 2.0 Authorization URL for Slack",
-      default: "https://slack.com/oauth/authorize",
+      shown: true,
+      comments: `The OAuth 2.0 Authorization URL for Slack. If you want to request access to the API on behalf of a user, append a 'user_scope' query parameter to the end of the Authorize URL: https://slack.com/oauth/v2/authorize?user_scope=chat:write`,
+      default: "https://slack.com/oauth/v2/authorize",
     },
     tokenUrl: {
       label: "Token URL",
       placeholder: "Token URL",
       type: "string",
       required: true,
-      shown: false,
+      shown: true,
       comments: "The OAuth 2.0 Token URL for Slack",
-      default: "https://slack.com/api/oauth.access",
+      default: "https://slack.com/api/oauth.v2.access",
+    },
+    revokeUrl: {
+      label: "Revoke URL",
+      placeholder: "Revoke URL",
+      type: "string",
+      required: true,
+      shown: true,
+      comments: "The OAuth 2.0 Revocation URL for Slack",
+      default: "https://slack.com/api/auth.revoke",
     },
     scopes: {
       label: "Scopes",
@@ -35,9 +44,9 @@ export const slackOAuth = oauth2Connection({
       type: "string",
       required: true,
       shown: true,
-      default: "",
+      default: "chat:write chat:write.public channels:read",
       example:
-        "chat:write:user users:read channels:read files:read files:write:user channels:write",
+        "chat:write chat:write.public users:read channels:read files:read files:write channels:write",
       comments:
         "A space-delimited set of one or more scopes to get the user's permission to access.",
     },
@@ -61,6 +70,17 @@ export const slackOAuth = oauth2Connection({
       type: "password",
       required: true,
       shown: true,
+    },
+    isUser: {
+      label: "Is User",
+      type: "boolean",
+      required: true,
+      default: "false",
+      comments: `
+      Flip the flag to true if you want to access the API as a user,
+      if flipped you must also provide a 'user_scope' query parameter to the end of the Authorize URL.
+      Leaving the flag false will grant you a bot token instead.
+      `,
     },
   },
 });

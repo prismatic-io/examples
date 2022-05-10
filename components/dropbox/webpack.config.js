@@ -3,7 +3,7 @@ const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
 
 const baseConfig = {
-  mode: "development",
+  mode: "production",
   target: "node",
   plugins: [new webpack.IgnorePlugin(/^pg-native$/)],
   module: {
