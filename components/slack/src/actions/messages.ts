@@ -10,7 +10,6 @@ import {
   messageId,
   userId,
   blocks,
-  fields,
 } from "../inputs";
 
 export const postMessage = action({
@@ -20,7 +19,7 @@ export const postMessage = action({
   },
   perform: async (
     context,
-    { connection, message, channelName, username, messageId, fields }
+    { connection, message, channelName, username, messageId }
   ) => {
     const client = createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
@@ -29,7 +28,6 @@ export const postMessage = action({
         channel: util.types.toString(channelName),
         text: util.types.toString(message),
         thread_ts: util.types.toString(messageId) || undefined,
-        ...(util.types.keyValPairListToObject(fields) || undefined),
       })
     );
     return { data };
@@ -40,7 +38,6 @@ export const postMessage = action({
     username,
     connection: connectionInput,
     messageId: { ...messageId, required: false },
-    fields,
   },
   examplePayload: {
     data: {
@@ -73,17 +70,13 @@ export const updateMessage = action({
     label: "Update Message",
     description: "Update the contents of an existing message",
   },
-  perform: async (
-    context,
-    { connection, message, channelId, messageId, fields }
-  ) => {
+  perform: async (context, { connection, message, channelId, messageId }) => {
     const client = createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.chat.update({
         channel: util.types.toString(channelId),
         ts: util.types.toString(messageId),
         text: util.types.toString(message) || undefined,
-        ...(util.types.keyValPairListToObject(fields) || undefined),
       })
     );
     return { data };
@@ -92,7 +85,6 @@ export const updateMessage = action({
     message,
     messageId,
     channelId,
-    fields,
     connection: connectionInput,
   },
 });
@@ -103,13 +95,12 @@ export const deletePendingMessage = action({
     description:
       "Delete the content and metadata of a pending scheduled message from a queue",
   },
-  perform: async (context, { connection, messageId, channelId, fields }) => {
+  perform: async (context, { connection, messageId, channelId }) => {
     const client = createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.chat.deleteScheduledMessage({
         channel: util.types.toString(channelId),
         scheduled_message_id: util.types.toString(messageId),
-        ...(util.types.keyValPairListToObject(fields) || undefined),
       })
     );
     return { data };
@@ -117,7 +108,6 @@ export const deletePendingMessage = action({
   inputs: {
     messageId,
     channelId,
-    fields,
     connection: connectionInput,
   },
 });
@@ -127,13 +117,12 @@ export const deleteMessage = action({
     label: "Delete message",
     description: "Delete the content and metadata of an existing message",
   },
-  perform: async (context, { connection, messageId, channelId, fields }) => {
+  perform: async (context, { connection, messageId, channelId }) => {
     const client = createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.chat.delete({
         channel: util.types.toString(channelId),
         ts: util.types.toString(messageId),
-        ...(util.types.keyValPairListToObject(fields) || undefined),
       })
     );
     return { data };
@@ -141,8 +130,6 @@ export const deleteMessage = action({
   inputs: {
     messageId,
     channelId,
-
-    fields,
     connection: connectionInput,
   },
 });
@@ -154,7 +141,7 @@ export const postEphemeralMessage = action({
   },
   perform: async (
     context,
-    { connection, channelName, userId, username, message, fields }
+    { connection, channelName, userId, username, message }
   ) => {
     const client = createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
@@ -163,7 +150,6 @@ export const postEphemeralMessage = action({
         user: util.types.toString(userId),
         username: util.types.toString(username) || undefined,
         text: util.types.toString(message) || undefined,
-        ...(util.types.keyValPairListToObject(fields) || undefined),
       })
     );
     return { data };
@@ -173,7 +159,6 @@ export const postEphemeralMessage = action({
     userId,
     username,
     message,
-    fields,
     connection: connectionInput,
   },
 });
@@ -218,13 +203,12 @@ export const postWebhookBlockMessage = action({
   },
   perform: async (context, { connection, message, blocks }) => {
     const webhook = createWebhookClient(connection);
+
     return {
       data: await handleErrors(
         webhook.send({
           text: util.types.toString(message),
-          blocks: util.types.isJSON(util.types.toString(blocks))
-            ? JSON.parse(util.types.toString(blocks)) || []
-            : blocks || [],
+          ...blocks,
         })
       ),
     };
@@ -239,10 +223,10 @@ export const postWebhookBlockMessage = action({
     message: {
       ...message,
       label: "Alt Message",
-      required: false,
+      required: true,
       comments: "This message will override if your block cannot be sent",
     },
-    blocks: { ...blocks },
+    blocks,
   },
   examplePayload: { data: { text: "ok" } },
 });
@@ -254,19 +238,16 @@ export const postBlockMessage = action({
   },
   perform: async (
     context,
-    { connection, blocks, message, channelName, username, fields, messageId }
+    { connection, blocks, message, channelName, username, messageId }
   ) => {
     const client = createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.chat.postMessage({
+        ...blocks,
         channel: util.types.toString(channelName),
         username: util.types.toString(username) || undefined,
-        blocks: util.types.isJSON(util.types.toString(blocks))
-          ? JSON.parse(util.types.toString(blocks)) || []
-          : blocks || [],
         text: util.types.toString(message),
         thread_ts: util.types.toString(messageId) || undefined,
-        ...(util.types.keyValPairListToObject(fields) || undefined),
       })
     );
     return { data };
@@ -276,12 +257,10 @@ export const postBlockMessage = action({
     message: {
       ...message,
       label: "Alt Message",
-      required: false,
       comments: "This message will override if your block cannot be sent",
     },
     channelName,
     username,
-    fields,
     connection: connectionInput,
     messageId: { ...messageId, required: false },
   },

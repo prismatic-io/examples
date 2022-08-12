@@ -13,7 +13,8 @@ export const messageId = input({
   label: "Message Id",
   type: "string",
   required: true,
-  comments: "A unique identifier of a message or thread (thread_ts)",
+  comments:
+    "A unique identifier of a message or thread to reply to (thread_ts)",
   example: "84350944036",
 });
 
@@ -135,28 +136,24 @@ export const blocks = input({
   type: "code",
   language: "JSON",
   required: true,
-  example: util.docs.formatJsonExample([
-    { type: "section", text: { type: "plain_text", text: "Hello world" } },
-  ]),
-  default: `[
-  {
-    "type": "section",
-    "text": {
-      "type": "plain_text",
-      "text": "Hello world"
+  default: `{
+  "blocks": [
+    {
+      "type": "section",
+      "text": {
+        "type": "plain_text",
+        "text": "Hello world"
+      }
     }
-  }
-]`,
+  ]
+}`,
   comments:
-    "Provide a JSON array containing blocks (objects) that make up the desired message.",
-});
+    "A JSON array containing blocks (objects) that make up the desired message. Use Slack's Block Kit Builder (https://app.slack.com/block-kit-builder/) to build block messages.",
+  clean: (block) => {
+    const value = util.types.isJSON(util.types.toString(block))
+      ? JSON.parse(util.types.toString(block))
+      : block;
 
-export const fields = input({
-  label: "Additional Fields",
-  type: "string",
-  required: false,
-  example: "as_user",
-  collection: "keyvaluelist",
-  comments:
-    "For each item, provide a key value pair that will be used in the request.",
+    return "blocks" in value ? value : { blocks: value };
+  },
 });

@@ -1,6 +1,7 @@
 import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
 import { App } from "@slack/bolt";
 import { IncomingWebhook } from "@slack/webhook";
+import { slackOAuth, webhookUrlConnection } from "./connections";
 
 interface CreateClientProps {
   slackConnection?: Connection;
@@ -19,7 +20,7 @@ export const getUserToken = ({ slackConnection }: CreateClientProps) => {
 };
 
 export const createOauthClient = ({ slackConnection }: CreateClientProps) => {
-  if (slackConnection.key !== "oauth2") {
+  if (slackConnection.key !== slackOAuth.key) {
     throw new ConnectionError(
       slackConnection,
       `Unsupported authorization method ${slackConnection.key}.`
@@ -45,13 +46,10 @@ export const createWebhookClient = (
     "^https://hooks.slack.com/services/T\\w*/B\\w*/\\w*$"
   );
   const { key, fields } = connection;
-  if (key !== "webhookUrl") {
-    throw new Error("Unknown connection key provided.");
-  }
-
-  // TODO: Make this strongly typed based on the type of connection.
-  if (!("webhookUrl" in fields)) {
-    throw new ConnectionError(connection, "Invalid connection type provided.");
+  if (key !== webhookUrlConnection.key) {
+    throw new Error(
+      "The connection provided to this step is not a webhook connection. Please ensure that the connection contains a webhook URL (and is not a Slack OAuth connection)."
+    );
   }
 
   const { webhookUrl } = fields;
@@ -62,6 +60,5 @@ export const createWebhookClient = (
     );
   }
 
-  const webhook = new IncomingWebhook(util.types.toString(webhookUrl));
-  return webhook;
+  return new IncomingWebhook(util.types.toString(webhookUrl));
 };

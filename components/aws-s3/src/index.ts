@@ -4,7 +4,7 @@ import connections from "./connections";
 
 export default component({
   key: "aws-s3",
-  documentationUrl: "https://prismatic.io/docs/components/aws-s3",
+  documentationUrl: "https://prismatic.io/docs/components/aws-s3/",
   public: true,
   display: {
     label: "Amazon S3",

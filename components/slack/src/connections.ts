@@ -76,11 +76,7 @@ export const slackOAuth = oauth2Connection({
       type: "boolean",
       required: true,
       default: "false",
-      comments: `
-      Flip the flag to true if you want to access the API as a user,
-      if flipped you must also provide a 'user_scope' query parameter to the end of the Authorize URL.
-      Leaving the flag false will grant you a bot token instead.
-      `,
+      comments: `Flip the flag to true if you want to access the API as a user. If flipped you must also provide a 'user_scope' query parameter to the end of the Authorize URL. Leaving the flag false will grant you a bot token instead.`,
     },
   },
 });
