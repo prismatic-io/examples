@@ -1,153 +1,222 @@
-definitionVersion: 4
-
-name: Process Login Logs
-
-componentVersions:
-  code: 52
-  google-cloud-storage: 25
-  loop: 16
-  slack: 44
-
-description: Process Login Logs
-
-requiredConfigVars:
-  - dataType: string
-    defaultValue: ""
-    hasDivider: false
-    key: Storage Bucket Name
-    header: Google Cloud Storage Info
-    orgOnly: false
-  - dataType: string
-    defaultValue: ""
-    hasDivider: false
-    key: Project ID
-    orgOnly: false
-  - credentialTypes:
-      - privateKey
-    dataType: credential
-    defaultValue: ""
-    hasDivider: false
-    key: Private Key Pair
-    orgOnly: false
-  - dataType: string
-    defaultValue: ""
-    hasDivider: false
-    key: Slack Webhook
-    header: Slack Info
-    orgOnly: false
-
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: Google Cloud Storage Connection
+      - type: configVar
+        value: Google Cloud Storage - Bucket Name Variable
+    name: Configuration
+    tagline: ""
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
 flows:
-  - name: Flow 1
+  - description: ""
     isSynchronous: false
-    description: ""
-    trigger:
-      action:
-        componentKey: Standard Triggers
-        key: trigger
-      description: Repeat every 5 minutes
-      name: trigger
-      schedule:
-        meta:
-          scheduleType: custom
-          timeZone: ""
-        type: value
-        value: "*/5 * * * *"
+    name: Flow 1
     steps:
-      - name: List files in a Google Cloud Storage bucket
-        action:
-          componentKey: google-cloud-storage
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Integration Trigger
+      - action:
           key: listFiles
-        credential: Private Key Pair
+          component:
+            isPublic: true
+            key: google-cloud-storage
+            version: LATEST
+        description: ""
         inputs:
           bucketName:
             type: configVar
-            value: Storage Bucket Name
+            value: Google Cloud Storage - Bucket Name Variable
+          connection:
+            type: configVar
+            value: Google Cloud Storage Connection
+          maxResults:
+            type: value
+            value: ""
+          pageToken:
+            type: value
+            value: ""
           prefix:
             type: value
             value: unprocessed/
-          project:
-            type: configVar
-            value: Project ID
-      - name: Loop Over Each File
-        action:
-          componentKey: loop
+        name: List Files
+      - action:
           key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
         description: ""
         inputs:
           items:
             type: reference
-            value: listFilesInAGoogleCloudStorageBucket.results
+            value: listFiles.results
+        name: Loop Over Items
         steps:
-          - name: Download Log File
-            action:
-              componentKey: google-cloud-storage
+          - action:
               key: downloadFile
-            credential: Private Key Pair
+              component:
+                isPublic: true
+                key: google-cloud-storage
+                version: LATEST
+            description: ""
             inputs:
               bucketName:
                 type: configVar
-                value: Storage Bucket Name
+                value: Google Cloud Storage - Bucket Name Variable
+              connection:
+                type: configVar
+                value: Google Cloud Storage Connection
               fileName:
                 type: reference
-                value: loopOverEachFile.currentItem
-              project:
+                value: loopOverItems.currentItem
+            name: Download File
+          - action:
+              key: createObject
+              component:
+                isPublic: true
+                key: collection-tools
+                version: LATEST
+            description: ""
+            inputs:
+              keyValueInput:
+                type: complex
+                value:
+                  - name: item_name
+                    type: reference
+                    value: downloadFile.results.item
+                  - name: quantity
+                    type: reference
+                    value: downloadFile.results.qty
+                  - name: cost
+                    type: reference
+                    value: downloadFile.results.price
+            name: Create Object
+          - action:
+              key: httpPost
+              component:
+                isPublic: true
+                key: http
+                version: LATEST
+            description: ""
+            inputs:
+              connection:
                 type: configVar
-                value: Project ID
-          - name: Generate Slack Message and Outfile
-            action:
-              componentKey: code
-              key: runCode
-            inputs:
-              code:
-                type: value
-                value: |
-                  module.exports = async (
-                    { logger },
-                    {
-                      loopOverEachFile: { currentItem: fileName },
-                      downloadLogFile: {
-                        results: { username, site },
-                      },
-                    }
-                  ) => {
-                    const loginTime = fileName.replace("unprocessed/", "").replace(".json", "");
-                    return {
-                      data: {
-                        slackMessage: `${username} logged into ${site} at ${loginTime}.`,
-                        outFileName: fileName.replace("unprocessed/", "processed/"),
-                      },
-                    };
-                    return { data: results };
-                  };       
-          - name: Slack Message
-            action:
-              componentKey: slack
-              key: postSlackMessage
-            inputs:
-              message:
+                value: ""
+              data:
                 type: reference
-                value: generateSlackMessageAndOutfile.results.slackMessage
-              webhookUrl:
-                type: configVar
-                value: Slack Webhook
-          - name: Move file to destination directory
-            action:
-              componentKey: google-cloud-storage
-              key: moveFile
-            credential: Private Key Pair
+                value: createObject.results
+              debugRequest:
+                type: value
+                value: "false"
+              includeFullResponse:
+                type: value
+                value: "false"
+              maxRetries:
+                type: value
+                value: "0"
+              responseType:
+                type: value
+                value: json
+              retryDelayMS:
+                type: value
+                value: "0"
+              retryOnAllErrors:
+                type: value
+                value: "false"
+              timeout:
+                type: value
+                value: ""
+              url:
+                type: value
+                value: "https://postman-echo.com/post"
+              useExponentialBackoff:
+                type: value
+                value: "false"
+            name: POST Request
+          - action:
+              key: replace
+              component:
+                isPublic: true
+                key: text-manipulation
+                version: LATEST
+            description: ""
             inputs:
+              find:
+                type: value
+                value: unprocessed
+              replace:
+                type: value
+                value: processed
+              text:
+                type: reference
+                value: loopOverItems.currentItem
+            name: Find & Replace
+          - action:
+              key: moveFile
+              component:
+                isPublic: true
+                key: google-cloud-storage
+                version: LATEST
+            description: ""
+            inputs:
+              connection:
+                type: configVar
+                value: Google Cloud Storage Connection
               destinationBucketName:
                 type: configVar
-                value: Storage Bucket Name
+                value: Google Cloud Storage - Bucket Name Variable
               destinationFileName:
                 type: reference
-                value: generateSlackMessageAndOutfile.results.outFileName
-              project:
-                type: configVar
-                value: Project ID
+                value: findReplace.results
               sourceBucketName:
                 type: configVar
-                value: Storage Bucket Name
+                value: Google Cloud Storage - Bucket Name Variable
               sourceFileName:
                 type: reference
-                value: loopOverEachFile.currentItem
+                value: loopOverItems.currentItem
+            name: Move File
+name: Loop Over Files Example
+requiredConfigVars:
+  - connection:
+      key: privateKey
+      component:
+        isPublic: true
+        key: google-cloud-storage
+        version: LATEST
+    dataType: connection
+    inputs:
+      clientEmail:
+        type: value
+        value: ""
+      privateKey:
+        type: value
+        value: ""
+      projectId:
+        type: value
+        value: ""
+    key: Google Cloud Storage Connection
+    orgOnly: false
+  - dataType: string
+    defaultValue: ""
+    key: Google Cloud Storage - Bucket Name Variable
+    orgOnly: false

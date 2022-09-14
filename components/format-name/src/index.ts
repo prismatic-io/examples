@@ -67,5 +67,60 @@ export default component({
   actions: {
     improperFormatName,
     properFormatName,
+    myInputs: action({
+      display: {
+        label: "Input Demonstration",
+        description: "Input Demonstration",
+      },
+      inputs: {
+        s: input({ label: "My String", type: "string" }),
+        t: input({ label: "My Text", type: "text" }),
+        b: input({ label: "My Boolean", type: "boolean" }),
+        c: input({ label: "My Code", type: "code", language: "json" }),
+        p: input({ label: "My Password", type: "password" }),
+        con: input({
+          label: "My Conditional",
+          type: "conditional",
+          collection: "valuelist",
+        }),
+        environment: input({
+          label: "Acme Inc Environment to Use",
+          placeholder: "ACME Environment",
+          type: "string",
+          required: true,
+          model: [
+            {
+              label: "Production",
+              value: "https://api.acme.com/",
+            },
+            {
+              label: "Staging",
+              value: "https://staging.acme.com/api",
+            },
+            {
+              label: "Sandbox",
+              value: "https://sandbox.acme.com/api",
+            },
+          ],
+        }),
+        vl: input({
+          label: "Record ID",
+          type: "string",
+          collection: "valuelist",
+          required: true,
+        }),
+        kvl: input({
+          label: "Header",
+          type: "string",
+          collection: "keyvaluelist",
+          required: false,
+          comments: "A list of headers to send with the request.",
+          example: "User-Agent: curl/7.64.1",
+        }),
+      },
+      perform: async (c, p) => {
+        return { data: null };
+      },
+    }),
   },
 });
