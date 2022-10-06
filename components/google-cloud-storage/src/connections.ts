@@ -18,7 +18,7 @@ export const googleConnection = connection({
     privateKey: {
       label: "Private Key",
       placeholder: "Private Key",
-      type: "string",
+      type: "text",
       required: true,
       shown: true,
       comments: "The private key of the client you would like to connect.",
@@ -29,8 +29,7 @@ export const googleConnection = connection({
       type: "string",
       required: true,
       shown: true,
-      comments:
-        "A space-delimited set of one or more scopes to get the user's permission to access.",
+      comments: "The ID of the project that hosts the storage bucket",
     },
   },
 });

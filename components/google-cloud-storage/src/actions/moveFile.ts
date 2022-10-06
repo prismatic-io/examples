@@ -32,16 +32,15 @@ export const moveFile = action({
     }
   ) => {
     const storage = googleStorageClient(connection);
+    await storage
+      .bucket(util.types.toString(sourceBucketName))
+      .file(util.types.toString(sourceFileName))
+      .move(
+        storage
+          .bucket(util.types.toString(destinationBucketName))
+          .file(util.types.toString(destinationFileName))
+      );
 
-    return {
-      data: await storage
-        .bucket(util.types.toString(sourceBucketName))
-        .file(util.types.toString(sourceFileName))
-        .move(
-          storage
-            .bucket(util.types.toString(destinationBucketName))
-            .file(util.types.toString(destinationFileName))
-        ),
-    };
+    return { data: null };
   },
 });

@@ -1,6 +1,7 @@
 import { component } from "@prismatic-io/spectral";
 import connections from "./connections";
 import triggers from "./triggers";
+import dataSources from "./dataSources";
 
 import {
   postMessage,
@@ -74,4 +75,5 @@ export default component({
     uploadFile,
   },
   triggers,
+  dataSources,
 });

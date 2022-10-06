@@ -5,7 +5,6 @@ const CopyPlugin = require("copy-webpack-plugin");
 const baseConfig = {
   mode: "production",
   target: "node",
-  plugins: [new webpack.IgnorePlugin(/^pg-native$/)],
   module: {
     rules: [
       {
@@ -29,7 +28,6 @@ const baseConfig = {
 const componentConfig = {
   ...baseConfig,
   plugins: [
-    ...baseConfig.plugins,
     new CopyPlugin({
       patterns: [{ from: "assets", to: path.resolve(__dirname, "dist") }],
     }),

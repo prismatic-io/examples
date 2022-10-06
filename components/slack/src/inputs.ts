@@ -134,19 +134,23 @@ export const connectionInput = input({
 export const blocks = input({
   label: "Blocks",
   type: "code",
-  language: "JSON",
+  language: "json",
   required: true,
-  default: `{
-  "blocks": [
+  default: JSON.stringify(
     {
-      "type": "section",
-      "text": {
-        "type": "plain_text",
-        "text": "Hello world"
-      }
-    }
-  ]
-}`,
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: "Hello world",
+          },
+        },
+      ],
+    },
+    null,
+    2
+  ),
   comments:
     "A JSON array containing blocks (objects) that make up the desired message. Use Slack's Block Kit Builder (https://app.slack.com/block-kit-builder/) to build block messages.",
   clean: (block) => {

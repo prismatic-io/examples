@@ -11,11 +11,11 @@ export const deleteFile = action({
 
   perform: async (context, { bucketName, fileName, connection }) => {
     const storage = googleStorageClient(connection);
-    const data = await storage
+    await storage
       .bucket(util.types.toString(bucketName))
       .file(util.types.toString(fileName))
       .delete();
 
-    return { data };
+    return { data: null };
   },
 });
