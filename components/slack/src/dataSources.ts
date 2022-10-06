@@ -16,7 +16,7 @@ const selectChannels = dataSource({
       exclude_archived: true,
       limit: 1000, // todo: implement paging over results
     });
-    const objects: Element[] = data.channels.map((channel) => ({
+    const objects = data.channels.map<Element>((channel) => ({
       key: channel.id,
       label: channel.name,
     }));
