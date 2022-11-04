@@ -1,43 +1,23 @@
-import { invoke, createConnection } from "@prismatic-io/spectral/dist/testing";
-import actions from "./actions";
-import { util } from "@prismatic-io/spectral";
+import { createHarness } from "@prismatic-io/spectral/dist/testing";
 import { oauthConnection } from "./connections";
+import component from ".";
 
-interface DropboxResult {
-  size: number;
-  byteLength: number;
-}
+// Initialize a testing harness
+const harness = createHarness(component);
 
-describe("downloadFile", () => {
-  const dropboxConnection = createConnection(oauthConnection, {
-    access_token: process.env.DROPBOX_TEST_TOKEN,
-  });
+// Parse the OAuth 2.0 connection from the PRISMATIC_CONNECTION_VALUE environment variable
+const parsedConnection = harness.connectionValue(oauthConnection);
 
-  const path = "/Hello/World.txt";
-  const expectedContents = "foo bar baz";
-  let expectedSize = -1;
-
-  beforeAll(async () => {
-    const { result } = await invoke(actions.uploadFile, {
-      dropboxConnection,
-      path,
-      fileContents: expectedContents,
+describe("listFolder", () => {
+  test("listRootFolder", async () => {
+    const result = await harness.action("listFolder", {
+      dropboxConnection: parsedConnection, // Pass in our connection
+      path: "/",
     });
-    const data = result.data;
-    expectedSize = data.result.size;
-  });
-
-  afterAll(async () => {
-    await invoke(actions.deleteObject, { dropboxConnection, path });
-  });
-
-  it("should round-trip a text file", async () => {
-    const { result } = await invoke(actions.downloadFile, {
-      dropboxConnection,
-      path,
-    });
-    const data = result.data;
-    expect(data.byteLength).toStrictEqual(expectedSize);
-    expect(util.types.toString(data)).toStrictEqual(expectedContents);
+    const files = result["data"]["result"]["entries"];
+    // Verify a folder named "Public" exists in the response
+    expect(files).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: "Public" })])
+    );
   });
 });

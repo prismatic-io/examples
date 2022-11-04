@@ -46,7 +46,7 @@ export const slackOAuth = oauth2Connection({
       shown: true,
       default: "chat:write chat:write.public channels:read",
       example:
-        "chat:write chat:write.public users:read channels:read files:read files:write channels:write",
+        "chat:write chat:write.public users:read channels:read files:read files:write channels:write channels:history groups:history mpim:history im:history",
       comments:
         "A space-delimited set of one or more scopes to get the user's permission to access.",
     },

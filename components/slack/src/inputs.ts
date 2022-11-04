@@ -3,7 +3,7 @@ import { input, util } from "@prismatic-io/spectral";
 export const message = input({
   label: "Message",
   placeholder: "Message to send",
-  type: "string",
+  type: "text",
   required: true,
   comments: "The message to send the Slack channel.",
   example: "Hello from Prismatic!",

@@ -26,6 +26,7 @@ import {
   inviteUserToConversation,
   setConversationPurpose,
   setConversationTopic,
+  getConversationsHistory,
 } from "./actions/conversations";
 import {
   getUser,
@@ -73,6 +74,7 @@ export default component({
     setConversationTopic,
     listUsersConversations,
     uploadFile,
+    getConversationsHistory,
   },
   triggers,
   dataSources,

@@ -1,4 +1,4 @@
-import { action, util } from "@prismatic-io/spectral";
+import { action, input, util } from "@prismatic-io/spectral";
 import { createOauthClient } from "../client";
 import {
   connectionInput,
@@ -98,6 +98,88 @@ export const renameConversation = action({
       label: "New Conversation Name",
     },
     connection: connectionInput,
+  },
+});
+
+export const getConversationsHistory = action({
+  display: {
+    label: "Get Conversation History",
+    description: "Get the history of a conversation",
+  },
+  perform: async (
+    context,
+    {
+      connection,
+      cursor,
+      includeAllMetadata,
+      limit,
+      channelName,
+      oldest,
+      inclusive,
+      latest,
+    }
+  ) => {
+    const client = createOauthClient({ slackConnection: connection });
+    const data = await handleErrors(
+      client.conversations.history({
+        channel: util.types.toString(channelName),
+        cursor: util.types.toString(cursor) || undefined,
+        include: util.types.toBool(includeAllMetadata) || undefined,
+        limit: util.types.toNumber(limit) || undefined,
+        inclusive: inclusive,
+        ...(oldest ? { oldest: util.types.toString(oldest) } : {}),
+        ...(latest ? { latest: util.types.toString(latest) } : {}),
+      })
+    );
+    return { data };
+  },
+  inputs: {
+    channelName,
+    limit,
+    cursor,
+    includeAllMetadata: input({
+      label: "Include All Metadata",
+      type: "boolean",
+      default: false,
+    }),
+    inclusive: input({
+      label: "Inclusive",
+      comments:
+        "Include messages with oldest or latest timestamps in results. Ignored unless either timestamp is specified",
+      type: "boolean",
+      required: false,
+      default: false,
+    }),
+    latest: input({
+      label: "Latest",
+      comments:
+        "Only messages before this Unix timestamp will be included in results. Default is current time.",
+      type: "string",
+      required: false,
+    }),
+    oldest: input({
+      label: "Oldest",
+      comments:
+        "Only messages after this Unix timestamp will be included in results",
+      type: "string",
+      required: false,
+    }),
+    connection: connectionInput,
+  },
+  examplePayload: {
+    data: {
+      ok: true,
+      messages: [
+        {
+          client_msg_id: "123123-123123-123123",
+          type: "message",
+          text: "hello world",
+          user: "U01QFFSE2QK",
+          ts: "166149417.178179",
+          team: "TH0GJM0M8",
+        },
+      ],
+    },
   },
 });
 

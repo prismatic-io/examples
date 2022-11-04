@@ -34,4 +34,9 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     libraryTarget: "commonjs2",
   },
+  // Get rid of build warnings
+  externals: {
+    bufferutil: "bufferutil",
+    "utf-8-validate": "utf-8-validate",
+  },
 };

@@ -186,7 +186,7 @@ export const postSlackMessage = action({
     message: {
       label: "Message",
       placeholder: "Message to send",
-      type: "string",
+      type: "text",
       required: true,
       comments: "The message to send the Slack channel.",
       example: "Hello from Prismatic!",
