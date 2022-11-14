@@ -21,19 +21,18 @@ interface Request {
 
 export const webhook = trigger({
   display: {
-    label: "Webhook",
-    description: "Trigger for handling webhooks from Slack",
+    label: "Slack Events API Webhook",
+    description: "Trigger for handling webhooks from Slack's events API",
   },
   allowsBranching: true,
   staticBranchNames: ["Notification", "URL Verify", "Management"],
   perform: async (context, payload, params) => {
-    // Validate that the webhook request came from Slack
-    // https://api.slack.com/authentication/verifying-requests-from-slack
-
     const bypassHeader = util.types.toBool(
       payload.headers?.["prismatic-bypass-challenge"] || false
     );
     if (!bypassHeader) {
+      // Validate that the webhook request came from Slack
+      // https://api.slack.com/authentication/verifying-requests-from-slack
       const signingSecret = util.types.toString(
         params.slackConnection.fields.signingSecret
       );
@@ -112,10 +111,12 @@ export const webhook = trigger({
     },
   },
 });
+
 export const slashCommandWebhook = trigger({
   display: {
-    label: "Slash Command Webhook",
-    description: "Trigger for handling Slash Command webhooks from Slack",
+    label: "Slack App Webhook",
+    description:
+      "Trigger for handling slash command and modal webhooks from Slack",
   },
   perform: async (context, payload, params) => {
     const response = {
