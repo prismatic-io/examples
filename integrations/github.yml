@@ -1,0 +1,815 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: GitHub Connection
+      - type: configVar
+        value: Zendesk Connection
+    name: Connections
+    tagline: ""
+  - elements:
+      - type: configVar
+        value: GitHub Repository
+      - type: configVar
+        value: GitHub Webhook Secret
+      - type: configVar
+        value: Github Sender Email
+    name: Github Repository
+    tagline: ""
+    userLevelConfigured: false
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: ""
+    isSynchronous: false
+    name: My Deploy Flow
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Instance Deploy Trigger
+      - action:
+          key: split
+          component:
+            isPublic: true
+            key: text-manipulation
+            version: LATEST
+        description: ""
+        inputs:
+          separator:
+            type: value
+            value: /
+          text:
+            type: configVar
+            value: GitHub Repository
+        name: Split String
+      - action:
+          key: reposCreateWebhook
+          component:
+            isPublic: true
+            key: github
+            version: LATEST
+        description: ""
+        inputs:
+          callbackUrl:
+            type: reference
+            value: instanceDeployTrigger.results.webhookUrls.Handle GitHub Updates
+          connection:
+            type: configVar
+            value: GitHub Connection
+          events:
+            type: complex
+            value:
+              - type: value
+                value: issues
+              - type: value
+                value: issue_comment
+          owner:
+            type: reference
+            value: splitString.results.0
+          repo:
+            type: reference
+            value: splitString.results.1
+          webhookSecret:
+            type: configVar
+            value: GitHub Webhook Secret
+        name: Repos Create Webhook
+      - action:
+          key: createWebhook
+          component:
+            isPublic: true
+            key: zendesk
+            version: LATEST
+        description: ""
+        inputs:
+          allowDuplicates:
+            type: value
+            value: "false"
+          callbackUrl:
+            type: reference
+            value: instanceDeployTrigger.results.webhookUrls.Handle Zendesk Updates
+          events:
+            type: complex
+            value:
+              - type: value
+                value: conditional_ticket_events
+          name:
+            type: value
+            value: Zendesk to Github
+          zendeskConnection:
+            type: configVar
+            value: Zendesk Connection
+        name: Create Webhook
+      - action:
+          key: createWebhookTrigger
+          component:
+            isPublic: true
+            key: zendesk
+            version: LATEST
+        description: ""
+        inputs:
+          allowDuplicates:
+            type: value
+            value: "false"
+          conditions:
+            type: value
+            value: |-
+              {
+                "all": [],
+                "any": [
+                  {
+                    "field": "status",
+                    "operator": "changed"
+                  },
+                  {
+                    "field": "status",
+                    "operator": "not_changed"
+                  }
+                ]
+              }
+          connection:
+            type: configVar
+            value: Zendesk Connection
+          messageBody:
+            type: value
+            value: |-
+              {
+                "current_user": {
+                  "details": "{{current_user.details}}",
+                  "email": "{{current_user.email}}",
+                  "external_id": "{{current_user.external_id}}",
+                  "first_name": "{{current_user.first_name}}",
+                  "language": "{{current_user.language}}",
+                  "name": "{{current_user.name}}",
+                  "notes": "{{current_user.notes}}",
+                  "organization.details": "{{current_user.organization.details}}",
+                  "organization.name": "{{current_user.organization.name}}",
+                  "organization.notes": "{{current_user.organization.notes}}",
+                  "phone": "{{current_user.phone}}",
+                  "tags": "{{current_user.tags}}"
+                },
+                "ticket": {
+                  "account": "{{ticket.account}}",
+                  "assignee": {
+                    "first_name": "{{ticket.assignee.first_name}}",
+                    "last_name": "{{ticket.assignee.last_name}}",
+                    "name": "{{ticket.assignee.name}}"
+                  },
+                  "brand": {
+                    "name": "{{ticket.brand.name}}"
+                  },
+                  "cc_names": "{{ticket.cc_names}}",
+                  "ccs": "{{ticket.ccs}}",
+                  "comments_formatted": "{{ticket.comments_formatted}}",
+                  "description": "{{ticket.description}}",
+                  "due_date": "{{ticket.due_date}}",
+                  "email_cc_names": "{{ticket.email_cc_names}}",
+                  "email_ccs": "{{ticket.email_ccs}}",
+                  "external_id": "{{ticket.external_id}}",
+                  "follower_names": "{{ticket.follower_names}}",
+                  "follower_reply_type_message": "{{ticket.follower_reply_type_message}}",
+                  "followers": "{{ticket.followers}}",
+                  "group": {
+                    "name": "{{ticket.group.name}}"
+                  },
+                  "id": "{{ticket.id}}",
+                  "in_business_hours": "{{ticket.in_business_hours}}",
+                  "latest_comment_formatted": "{{ticket.latest_comment_formatted}}",
+                  "latest_public_comment_formatted": "{{ticket.latest_public_comment_formatted}}",
+                  "link": "{{ticket.link}}",
+                  "organization": {
+                    "external_id": "{{ticket.organization.external_id}}",
+                    "name": "{{ticket.organization.name}}"
+                  },
+                  "priority": "{{ticket.priority}}",
+                  "public_comments_formatted": "{{ticket.public_comments_formatted}}",
+                  "requester": {
+                    "email": "{{ticket.requester.email}}",
+                    "external_id": "{{ticket.requester.external_id}}",
+                    "first_name": "{{ticket.requester.first_name}}",
+                    "language": "{{ticket.requester.language}}",
+                    "last_name": "{{ticket.requester.last_name}}",
+                    "name": "{{ticket.requester.name}}",
+                    "phone": "{{ticket.requester.phone}}"
+                  },
+                  "status": "{{ticket.status}}",
+                  "tags": "{{ticket.tags}}",
+                  "ticket_field_ID": "{{ticket.ticket_field_ID}}",
+                  "ticket_field_option_title_ID": "{{ticket.ticket_field_option_title_ID}}",
+                  "ticket_form": "{{ticket.ticket_form}}",
+                  "ticket_type": "{{ticket.ticket_type}}",
+                  "title": "{{ticket.title}}",
+                  "via": "{{ticket.via}}"
+                }
+              }
+          title:
+            type: reference
+            value: createWebhook.results.webhook.id
+          webhookId:
+            type: reference
+            value: createWebhook.results.webhook.id
+        name: Create Webhook Trigger
+  - description: ""
+    isSynchronous: false
+    name: Handle GitHub Updates
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: github
+            version: LATEST
+        description: ""
+        inputs:
+          webhookSecret:
+            type: configVar
+            value: GitHub Webhook Secret
+        isTrigger: true
+        name: Handle GitHub Updates Trigger
+      - action:
+          key: branchOnExpression
+          component:
+            isPublic: true
+            key: branch
+            version: LATEST
+        branches:
+          - name: Zendesk-generated event
+            steps:
+              - action:
+                  key: branchOnExpression
+                  component:
+                    isPublic: true
+                    key: branch
+                    version: LATEST
+                branches:
+                  - name: Zendesk-generated event
+                    steps:
+                      - action:
+                          key: stopExecution
+                          component:
+                            isPublic: true
+                            key: stop-execution
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          jsonBody:
+                            type: value
+                            value: ""
+                          statusCode:
+                            type: value
+                            value: "200"
+                        name: Short-circuit
+                  - name: Else
+                    steps: []
+                description: Stop if this webhook was caused by a Zendesk event
+                inputs:
+                  conditions:
+                    type: complex
+                    value:
+                      - name: Zendesk-generated event
+                        type: complex
+                        value:
+                          - and
+                          - - in
+                            - type: value
+                              value: "[From Zendesk]"
+                            - type: reference
+                              value: >-
+                                handleGithubUpdatesTrigger.results.body.data.comment.body
+                name: Short-Circut if Zendesk-generated event
+          - name: Else
+            steps: []
+        description: Stop if this webhook was caused by a Zendesk event
+        inputs:
+          conditions:
+            type: complex
+            value:
+              - name: Zendesk-generated event
+                type: complex
+                value:
+                  - and
+                  - - exists
+                    - type: reference
+                      value: >-
+                        handleGithubUpdatesTrigger.results.body.data.comment.body
+        name: Has New Comment
+      - action:
+          key: branchOnValue
+          component:
+            isPublic: true
+            key: branch
+            version: LATEST
+        branches:
+          - name: Opened
+            steps:
+              - action:
+                  key: createTicket
+                  component:
+                    isPublic: true
+                    key: zendesk
+                    version: LATEST
+                description: ""
+                inputs:
+                  assigneeId:
+                    type: value
+                    value: ""
+                  debug:
+                    type: value
+                    value: "false"
+                  externalId:
+                    type: template
+                    value: >-
+                      github:{{$handleGithubUpdatesTrigger.results.body.data.issue.number}}
+                  followers:
+                    type: complex
+                    value: []
+                  recipientEmail:
+                    type: value
+                    value: ""
+                  requesterEmail:
+                    type: configVar
+                    value: Github Sender Email
+                  requesterName:
+                    type: reference
+                    value: handleGithubUpdatesTrigger.results.body.data.sender.login
+                  requesterOrganization:
+                    type: value
+                    value: ""
+                  tags:
+                    type: complex
+                    value: []
+                  ticketComment:
+                    type: template
+                    value: >-
+                      [From GitHub]:
+                      {{$handleGithubUpdatesTrigger.results.body.data.issue.body}}
+                  ticketCommentHTML:
+                    type: value
+                    value: ""
+                  ticketPriority:
+                    type: value
+                    value: ""
+                  ticketStatus:
+                    type: value
+                    value: ""
+                  ticketSubject:
+                    type: reference
+                    value: handleGithubUpdatesTrigger.results.body.data.issue.title
+                  ticketType:
+                    type: value
+                    value: ""
+                  zendeskConnection:
+                    type: configVar
+                    value: Zendesk Connection
+                name: Create Ticket
+          - name: Comment Added
+            steps:
+              - action:
+                  key: getByExternalId
+                  component:
+                    isPublic: true
+                    key: zendesk
+                    version: LATEST
+                description: ""
+                inputs:
+                  debug:
+                    type: value
+                    value: "false"
+                  externalId:
+                    type: template
+                    value: >-
+                      github:{{$handleGithubUpdatesTrigger.results.body.data.issue.number}}
+                  zendeskConnection:
+                    type: configVar
+                    value: Zendesk Connection
+                name: Get Ticket By External ID for comment
+              - action:
+                  key: updateTicket
+                  component:
+                    isPublic: true
+                    key: zendesk
+                    version: LATEST
+                description: ""
+                inputs:
+                  assigneeEmail:
+                    type: value
+                    value: ""
+                  assigneeId:
+                    type: value
+                    value: ""
+                  debug:
+                    type: value
+                    value: "false"
+                  requesterOrganization:
+                    type: value
+                    value: ""
+                  tags:
+                    type: complex
+                    value: []
+                  ticketComment:
+                    type: template
+                    value: >-
+                      [From GitHub]:
+                      {{$handleGithubUpdatesTrigger.results.body.data.comment.body}}
+                  ticketCommentHTML:
+                    type: value
+                    value: ""
+                  ticketId:
+                    type: reference
+                    value: getTicketByExternalIdForComment.results.0.id
+                  ticketPriority:
+                    type: value
+                    value: ""
+                  ticketStatus:
+                    type: value
+                    value: open
+                  ticketSubject:
+                    type: value
+                    value: ""
+                  ticketType:
+                    type: value
+                    value: ""
+                  zendeskConnection:
+                    type: configVar
+                    value: Zendesk Connection
+                name: Add ticket comment
+          - name: Closed
+            steps:
+              - action:
+                  key: getByExternalId
+                  component:
+                    isPublic: true
+                    key: zendesk
+                    version: LATEST
+                description: ""
+                inputs:
+                  debug:
+                    type: value
+                    value: "false"
+                  externalId:
+                    type: template
+                    value: >-
+                      github:{{$handleGithubUpdatesTrigger.results.body.data.issue.number}}
+                  zendeskConnection:
+                    type: configVar
+                    value: Zendesk Connection
+                name: Get Ticket By External ID
+              - action:
+                  key: updateTicket
+                  component:
+                    isPublic: true
+                    key: zendesk
+                    version: LATEST
+                description: ""
+                inputs:
+                  assigneeEmail:
+                    type: value
+                    value: ""
+                  assigneeId:
+                    type: value
+                    value: ""
+                  debug:
+                    type: value
+                    value: "false"
+                  requesterOrganization:
+                    type: value
+                    value: ""
+                  tags:
+                    type: complex
+                    value: []
+                  ticketComment:
+                    type: value
+                    value: Closed on GitHub
+                  ticketCommentHTML:
+                    type: value
+                    value: ""
+                  ticketId:
+                    type: reference
+                    value: getTicketByExternalId.results.0.id
+                  ticketPriority:
+                    type: value
+                    value: ""
+                  ticketStatus:
+                    type: value
+                    value: closed
+                  ticketSubject:
+                    type: value
+                    value: ""
+                  ticketType:
+                    type: value
+                    value: ""
+                  zendeskConnection:
+                    type: configVar
+                    value: Zendesk Connection
+                name: Close Ticket
+          - name: Else
+            steps:
+              - action:
+                  key: stopExecution
+                  component:
+                    isPublic: true
+                    key: stop-execution
+                    version: LATEST
+                description: ""
+                inputs:
+                  jsonBody:
+                    type: value
+                    value: ""
+                  statusCode:
+                    type: value
+                    value: "200"
+                name: Stop Execution
+        description: ""
+        inputs:
+          branchValueMappings:
+            type: complex
+            value:
+              - name: Opened
+                type: value
+                value: opened
+              - name: Comment Added
+                type: value
+                value: created
+              - name: Closed
+                type: value
+                value: closed
+          inputValue:
+            type: reference
+            value: handleGithubUpdatesTrigger.results.body.data.action
+        name: Ticket Opened or closed?
+  - description: ""
+    isSynchronous: false
+    name: Handle Zendesk Updates
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: zendesk
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Zendesk Connection
+        isTrigger: true
+        name: Handle Zendesk Updates Trigger
+      - action:
+          key: branchOnExpression
+          component:
+            isPublic: true
+            key: branch
+            version: LATEST
+        branches:
+          - name: GitHub-Generate Event
+            steps:
+              - action:
+                  key: stopExecution
+                  component:
+                    isPublic: true
+                    key: stop-execution
+                    version: LATEST
+                description: ""
+                inputs:
+                  jsonBody:
+                    type: value
+                    value: ""
+                  statusCode:
+                    type: value
+                    value: "200"
+                name: Stop Execution
+          - name: Else
+            steps: []
+        description: ""
+        inputs:
+          conditions:
+            type: complex
+            value:
+              - name: GitHub-Generate Event
+                type: complex
+                value:
+                  - and
+                  - - in
+                    - type: value
+                      value: "[From GitHub]"
+                    - type: reference
+                      value: >-
+                        handleZendeskUpdatesTrigger.results.body.data.ticket.latest_comment_formatted
+        name: Short-Circuit GitHub-generated events
+      - action:
+          key: split
+          component:
+            isPublic: true
+            key: text-manipulation
+            version: LATEST
+        description: ""
+        inputs:
+          separator:
+            type: value
+            value: /
+          text:
+            type: configVar
+            value: GitHub Repository
+        name: Split GitHub owner and repo
+      - action:
+          key: split
+          component:
+            isPublic: true
+            key: text-manipulation
+            version: LATEST
+        description: ""
+        inputs:
+          separator:
+            type: value
+            value: ":"
+          text:
+            type: reference
+            value: handleZendeskUpdatesTrigger.results.body.data.ticket.external_id
+        name: Split out external_id
+      - action:
+          key: issuesCreateComment
+          component:
+            isPublic: true
+            key: github
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: template
+            value: >-
+              [From Zendesk]
+              {{$handleZendeskUpdatesTrigger.results.body.data.ticket.latest_comment_formatted}}
+          connection:
+            type: configVar
+            value: GitHub Connection
+          issueNumber:
+            type: reference
+            value: splitOutExternalId.results.1
+          owner:
+            type: reference
+            value: splitGithubOwnerAndRepo.results.0
+          repo:
+            type: reference
+            value: splitGithubOwnerAndRepo.results.1
+        name: Issues Create Comment
+  - description: ""
+    isSynchronous: false
+    name: My Cleanup Flow
+    steps:
+      - action:
+          key: instanceRemove
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Integration Trigger
+      - action:
+          key: split
+          component:
+            isPublic: true
+            key: text-manipulation
+            version: LATEST
+        description: ""
+        inputs:
+          separator:
+            type: value
+            value: /
+          text:
+            type: configVar
+            value: GitHub Repository
+        name: Split String
+      - action:
+          key: reposDeleteInstanceWebhooks
+          component:
+            isPublic: true
+            key: github
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: GitHub Connection
+          owner:
+            type: reference
+            value: splitString.results.0
+          repo:
+            type: reference
+            value: splitString.results.1
+        name: Repos Delete Instance Webhooks
+      - action:
+          key: deleteInstanceWebhooks
+          component:
+            isPublic: true
+            key: zendesk
+            version: LATEST
+        description: ""
+        inputs:
+          zendeskConnection:
+            type: configVar
+            value: Zendesk Connection
+        name: Delete Instance Webhooks
+name: Github
+requiredConfigVars:
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: github
+        version: LATEST
+    dataType: connection
+    inputs:
+      clientId:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      scopes:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: repo
+    key: GitHub Connection
+    orgOnly: false
+  - dataSource:
+      key: listReposForAuthenticatedUser
+      component:
+        isPublic: true
+        key: github
+        version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    description: Select the GitHub repository you would like to pull issues from
+    inputs:
+      connection:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: GitHub Connection
+    key: GitHub Repository
+    orgOnly: false
+  - dataType: string
+    defaultValue: My-secret-value
+    key: GitHub Webhook Secret
+    orgOnly: true
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: zendesk
+        version: LATEST
+    dataType: connection
+    inputs:
+      authorizeUrl:
+        type: value
+        value: "https://YOUR-ZENDESK-DOMAIN.zendesk.com/oauth/authorizations/new"
+      clientId:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      scopes:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: read write
+      subdomain:
+        type: value
+        value: ""
+      tokenUrl:
+        type: value
+        value: "https://YOUR-ZENDESK-DOMAIN.zendesk.com/oauth/tokens"
+    key: Zendesk Connection
+    orgOnly: false
+  - dataType: string
+    defaultValue: no-reply@github.com
+    description: Email address attached to GitHub-generated tickets
+    key: Github Sender Email
+    orgOnly: false
