@@ -44,15 +44,6 @@ export const asanaOAuthConnection = oauth2Connection({
       comments: "The OAuth 2.0 Token URL for Asana",
       default: "https://app.asana.com/-/oauth_token",
     },
-    revokeUrl: {
-      label: "Revoke URL",
-      placeholder: "Revoke URL",
-      type: "string",
-      required: true,
-      shown: false,
-      comments: "The OAuth 2.0 Revoke URL for Asana",
-      default: "https://app.asana.com/-/oauth_revoke",
-    },
     scopes: {
       label: "Scopes",
       placeholder: "Scopes",

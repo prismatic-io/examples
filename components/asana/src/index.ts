@@ -64,7 +64,7 @@ import { deleteStatus } from "./actions/status-update/deleteStatus";
 import { getStatusesForObject } from "./actions/status-update/getStatusesForObject";
 import { getStatusUpdate } from "./actions/status-update/getStatusUpdate";
 import webhookActions from "./actions/webhooks";
-
+import dataSources from "./dataSources";
 import triggers from "./triggers";
 
 import { asanaApiKeyConnection, asanaOAuthConnection } from "./connections";
@@ -149,6 +149,7 @@ export default component({
     ...webhookActions,
   },
   triggers,
+  dataSources,
   hooks: { error: handleErrors },
   connections: [asanaApiKeyConnection, asanaOAuthConnection],
 });

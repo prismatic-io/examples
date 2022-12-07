@@ -44,7 +44,7 @@ export const slackOAuth = oauth2Connection({
       type: "string",
       required: true,
       shown: true,
-      default: "chat:write chat:write.public channels:read",
+      default: "chat:write chat:write.public channels:read im:read mpim:read",
       example:
         "chat:write chat:write.public users:read channels:read files:read files:write channels:write channels:history groups:history mpim:history im:history",
       comments:
