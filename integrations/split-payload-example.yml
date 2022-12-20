@@ -1,0 +1,478 @@
+category: ''
+configPages:
+  - elements:
+      - type: configVar
+        value: Prismatic Connection
+    name: Configuration
+    tagline: ''
+definitionVersion: 7
+description: ''
+documentation: >-
+  ## Split Payload Example
+
+
+  This example integration pulls down 100 records from an API, splits them into
+  20-record "chunks", and then dispatches the 20-record chunks to a sibling flow
+  for processing in parallel.
+
+
+  The integration then waits for each execution to complete. Once it recognizes
+  that the sibling flow has completed its execution, it fetches the execution's
+  step results and collects all step results into a single array.
+
+
+  This illustrates one strategy you can use to process large sets of data in
+  parallel.
+endpointType: flow_specific
+flows:
+  - description: ''
+    isSynchronous: false
+    name: Flow 1
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ''
+        inputs:
+          body:
+            type: value
+            value: ''
+          contentType:
+            type: value
+            value: ''
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ''
+        isTrigger: true
+        name: Integration Trigger
+      - action:
+          key: httpGet
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: ''
+        inputs:
+          connection:
+            type: configVar
+            value: ''
+          debugRequest:
+            type: value
+            value: 'false'
+          headers:
+            type: complex
+            value: []
+          ignoreSslErrors:
+            type: value
+            value: 'false'
+          includeFullResponse:
+            type: value
+            value: 'false'
+          maxRetries:
+            type: value
+            value: '0'
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: '0'
+          retryOnAllErrors:
+            type: value
+            value: 'false'
+          timeout:
+            type: value
+            value: ''
+          url:
+            type: value
+            value: 'https://jsonplaceholder.typicode.com/posts'
+          useExponentialBackoff:
+            type: value
+            value: 'false'
+        name: GET Request
+      - action:
+          key: chunks
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: ''
+        inputs:
+          listInput:
+            type: reference
+            value: getRequest.results
+          numberInput:
+            type: value
+            value: '20'
+        name: Chunks
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ''
+        inputs:
+          items:
+            type: reference
+            value: chunks.results
+        name: Parallelize the Data
+        steps:
+          - action:
+              key: httpPost
+              component:
+                isPublic: true
+                key: http
+                version: LATEST
+            description: ''
+            inputs:
+              connection:
+                type: configVar
+                value: ''
+              data:
+                type: reference
+                value: parallelizeTheData.currentItem
+              debugRequest:
+                type: value
+                value: 'false'
+              headers:
+                type: complex
+                value: []
+              ignoreSslErrors:
+                type: value
+                value: 'false'
+              includeFullResponse:
+                type: value
+                value: 'false'
+              maxRetries:
+                type: value
+                value: '0'
+              queryParams:
+                type: complex
+                value: []
+              responseType:
+                type: value
+                value: json
+              retryDelayMS:
+                type: value
+                value: '0'
+              retryOnAllErrors:
+                type: value
+                value: 'false'
+              timeout:
+                type: value
+                value: ''
+              url:
+                type: reference
+                value: integrationTrigger.results.webhookUrls.Capitalize Titles
+              useExponentialBackoff:
+                type: value
+                value: 'false'
+            name: POST Request
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ''
+        inputs:
+          items:
+            type: reference
+            value: parallelizeTheData.results
+        name: Fetch the Results
+        steps:
+          - action:
+              key: loopNTimes
+              component:
+                isPublic: true
+                key: loop
+                version: LATEST
+            description: ''
+            inputs:
+              iterationCount:
+                type: value
+                value: '10'
+            name: Wait until complete
+            steps:
+              - action:
+                  key: rawRequest
+                  component:
+                    isPublic: true
+                    key: prismatic
+                    version: LATEST
+                description: ''
+                inputs:
+                  connection:
+                    type: configVar
+                    value: Prismatic Connection
+                  query:
+                    type: value
+                    value: >
+                      query myGetExecutionResults($id: ID!, $stepName: String!)
+                      {
+                        executionResult(id: $id) {
+                          id
+                          endedAt
+                          stepResults(displayStepName: $stepName) {
+                            nodes {
+                              resultsUrl
+                            }
+                          }
+                        }
+                      }
+                  variables:
+                    type: complex
+                    value:
+                      - name: id
+                        type: reference
+                        value: fetchTheResults.currentItem.executionId
+                      - name: stepName
+                        type: value
+                        value: Loop Over Items
+                name: Get Execution Results
+              - action:
+                  key: branchOnExpression
+                  component:
+                    isPublic: true
+                    key: branch
+                    version: LATEST
+                branches:
+                  - name: Execution Complete
+                    steps:
+                      - action:
+                          key: httpGet
+                          component:
+                            isPublic: true
+                            key: http
+                            version: LATEST
+                        description: ''
+                        inputs:
+                          connection:
+                            type: configVar
+                            value: ''
+                          debugRequest:
+                            type: value
+                            value: 'false'
+                          headers:
+                            type: complex
+                            value: []
+                          ignoreSslErrors:
+                            type: value
+                            value: 'false'
+                          includeFullResponse:
+                            type: value
+                            value: 'false'
+                          maxRetries:
+                            type: value
+                            value: '0'
+                          queryParams:
+                            type: complex
+                            value: []
+                          responseType:
+                            type: value
+                            value: binary
+                          retryDelayMS:
+                            type: value
+                            value: '0'
+                          retryOnAllErrors:
+                            type: value
+                            value: 'false'
+                          timeout:
+                            type: value
+                            value: ''
+                          url:
+                            type: reference
+                            value: >-
+                              getExecutionResults.results.data.data.executionResult.stepResults.nodes.0.resultsUrl
+                          useExponentialBackoff:
+                            type: value
+                            value: 'false'
+                        name: Get Step Results
+                      - action:
+                          key: decodeMessage
+                          component:
+                            isPublic: true
+                            key: messagepack
+                            version: LATEST
+                        description: ''
+                        inputs:
+                          message:
+                            type: reference
+                            value: getStepResults.results
+                        name: Decode
+                      - action:
+                          key: appendExecutionValueToList
+                          component:
+                            isPublic: true
+                            key: persist-data
+                            version: LATEST
+                        description: ''
+                        inputs:
+                          keyInput:
+                            type: value
+                            value: results
+                          valueInput:
+                            type: reference
+                            value: decode.results.data
+                        name: Execution - Append Value To List
+                      - action:
+                          key: breakLoop
+                          component:
+                            isPublic: true
+                            key: loop
+                            version: LATEST
+                        description: ''
+                        inputs: {}
+                        name: Break Loop
+                  - name: Else
+                    steps:
+                      - action:
+                          key: sleep
+                          component:
+                            isPublic: true
+                            key: sleep
+                            version: LATEST
+                        description: ''
+                        inputs:
+                          ms:
+                            type: value
+                            value: '2000'
+                        name: Sleep
+                description: ''
+                inputs:
+                  conditions:
+                    type: complex
+                    value:
+                      - name: Execution Complete
+                        type: complex
+                        value:
+                          - and
+                          - - exists
+                            - type: reference
+                              value: >-
+                                getExecutionResults.results.data.data.executionResult.endedAt
+                name: Branch on Expression
+      - action:
+          key: getExecutionValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ''
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ''
+          keyInput:
+            type: value
+            value: results
+        name: Execution - Get Value
+      - action:
+          key: flatten
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: ''
+        inputs:
+          listInput:
+            type: reference
+            value: executionGetValue.results
+        name: Flatten
+  - description: ''
+    isSynchronous: false
+    name: Capitalize Titles
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ''
+        inputs:
+          body:
+            type: value
+            value: ''
+          contentType:
+            type: value
+            value: ''
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ''
+        isTrigger: true
+        name: Flow 2 Trigger
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ''
+        inputs:
+          items:
+            type: reference
+            value: flow2Trigger.results.body.data
+        name: Loop Over Items
+        steps:
+          - action:
+              key: upperCase
+              component:
+                isPublic: true
+                key: text-manipulation
+                version: LATEST
+            description: ''
+            inputs:
+              text:
+                type: reference
+                value: loopOverItems.currentItem.title
+            name: Upper Case
+          - action:
+              key: addKey
+              component:
+                isPublic: true
+                key: collection-tools
+                version: LATEST
+            description: ''
+            inputs:
+              key:
+                type: value
+                value: title
+              object:
+                type: reference
+                value: loopOverItems.currentItem
+              objectPath:
+                type: value
+                value: ''
+              value:
+                type: reference
+                value: upperCase.results
+            name: Add Key/Value to Object
+name: Split payload example
+requiredConfigVars:
+  - connection:
+      key: apiKey
+      component:
+        isPublic: true
+        key: prismatic
+        version: LATEST
+    dataType: connection
+    inputs:
+      apiKey:
+        type: value
+        value: ''
+    key: Prismatic Connection
+    orgOnly: false
