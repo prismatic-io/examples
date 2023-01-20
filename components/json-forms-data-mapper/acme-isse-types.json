@@ -1,0 +1,7 @@
+[
+  { "name": "Bug", "id": 100 },
+  { "name": "Story", "id": 200 },
+  { "name": "Epic", "id": 300 },
+  { "name": "Task", "id": 400 },
+  { "name": "Support", "id": 500 }
+]
