@@ -50,7 +50,12 @@ export const jiraExampleJsonForms = dataSource({
 
     // Fetch some dummy Acme issue types
     const { data: acmeType } = await axios.get<{ name: string; id: number }[]>(
-      "https://REPLACE-ME"
+      "https://raw.githubusercontent.com/prismatic-io/examples/tr/json-forms-data-mapper-example/components/json-forms-data-mapper/acme-isse-types.json",
+      {
+        headers: {
+          "x-api-key": util.types.toString(params.acmeConnection.fields.apiKey),
+        },
+      }
     );
 
     const schema = {
@@ -64,21 +69,17 @@ export const jiraExampleJsonForms = dataSource({
             type: "object",
             properties: {
               jiraIssueType: {
-                type: "string",
+                type: "number",
                 // Have users select "one of" a dropdown of items
                 oneOf: allIssueTypes.map((issueType) => ({
                   const: util.types.toString(issueType.id),
                   title: issueType.name,
                 })),
               },
-              to: {
-                type: "label",
-                string: "<>",
-              },
               plutoraIssueType: {
                 type: "number",
                 oneOf: acmeType.map((issueType) => ({
-                  const: util.types.toString(issueType.id),
+                  const: issueType.id,
                   title: issueType.name,
                 })),
               },
@@ -102,6 +103,11 @@ export const jiraExampleJsonForms = dataSource({
   },
   inputs: {
     jiraConnection: input({
+      label: "Connection",
+      type: "connection",
+      required: true,
+    }),
+    acmeConnection: input({
       label: "Connection",
       type: "connection",
       required: true,
