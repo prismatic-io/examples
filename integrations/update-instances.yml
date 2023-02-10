@@ -1,0 +1,593 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: Prismatic Connection
+      - type: configVar
+        value: Integration Name
+    name: Configuration
+    tagline: ""
+definitionVersion: 7
+description: ""
+documentation: >-
+  ## Update Instances
+
+
+  This integration will update all **enabled** instances of an integration.
+  Instances that are already on the latest version are skipped. Instances that
+  can be upgraded are, and instances that run into errors (for example, if you
+  have a new required config variable that requires human interaction) are
+  noted.
+
+
+  The final step of the integration produces a report of which instances were
+  upgraded, errored, or skipped.
+
+  ### Authentication
+
+
+  To run this integration, first generate a Prismatic refresh token by running
+  `prism me:token --type refresh`, and enter that token into the config wizard.
+  Also enter the name of the integration that you would like to update into the
+  wizard.
+endpointType: flow_specific
+flows:
+  - description: ""
+    isSynchronous: false
+    name: Flow 1
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Integration Trigger
+      - action:
+          key: rawRequest
+          component:
+            isPublic: true
+            key: prismatic
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Prismatic Connection
+          query:
+            type: value
+            value: |
+              query getIntegration($integrationName: String) {
+                marketplaceIntegrations(
+                  name: $integrationName
+                  sortBy: [{field: CATEGORY, direction: ASC}, {field: NAME, direction: ASC}]
+                ) {
+                  nodes {
+                    id
+                    name
+                    versionSequence(first: 1, versionIsAvailable: true) {
+                      nodes {
+                        id
+                        versionNumber
+                      }
+                    }
+                  }
+                }
+              }
+          variables:
+            type: complex
+            value:
+              - name: integrationName
+                type: configVar
+                value: Integration Name
+        name: Get Latest Available Version
+      - action:
+          key: loopNTimes
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ""
+        inputs:
+          iterationCount:
+            type: value
+            value: "4"
+        name: Loop over pages of instances
+        steps:
+          - action:
+              key: getExecutionValue
+              component:
+                isPublic: true
+                key: persist-data
+                version: LATEST
+            description: ""
+            inputs:
+              defaultValueInput:
+                type: value
+                value: ""
+              keyInput:
+                type: value
+                value: instance_cursor
+            name: Get Current Cursor
+          - action:
+              key: rawRequest
+              component:
+                isPublic: true
+                key: prismatic
+                version: LATEST
+            description: ""
+            inputs:
+              connection:
+                type: configVar
+                value: Prismatic Connection
+              query:
+                type: value
+                value: >
+                  query getMyInstances($integrationId: ID!, $cursor: String,
+                  $limit: Int) {
+                    integration(id: $integrationId) {
+                      instances(after: $cursor, first: $limit, isSystem: false, enabled: true) {
+                        nodes {
+                          id
+                          name
+                          customer {
+                            id
+                            name
+                          }
+                          deployedVersion
+                        }
+                        pageInfo {
+                          hasNextPage
+                          endCursor
+                        }
+                      }
+                    }
+                  }
+              variables:
+                type: complex
+                value:
+                  - name: integrationId
+                    type: reference
+                    value: >-
+                      getLatestAvailableVersion.results.data.data.marketplaceIntegrations.nodes.0.id
+                  - name: cursor
+                    type: reference
+                    value: getCurrentCursor.results
+                  - name: limit
+                    type: value
+                    value: "50"
+            name: List Instances
+          - action:
+              key: loopOverItems
+              component:
+                isPublic: true
+                key: loop
+                version: LATEST
+            description: ""
+            inputs:
+              items:
+                type: reference
+                value: listInstances.results.data.data.integration.instances.nodes
+            name: Loop over instances
+            steps:
+              - action:
+                  key: branchOnExpression
+                  component:
+                    isPublic: true
+                    key: branch
+                    version: LATEST
+                branches:
+                  - name: Update Needed?
+                    steps:
+                      - action:
+                          key: writeLog
+                          component:
+                            isPublic: true
+                            key: log
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          level:
+                            type: value
+                            value: info
+                          message:
+                            type: template
+                            value: >-
+                              Updating instance of
+                              {{$getLatestAvailableVersion.results.data.data.marketplaceIntegrations.nodes.0.name}}
+                              from version
+                              {{$loopOverInstances.currentItem.deployedVersion}}
+                              to version
+                              {{$getLatestAvailableVersion.results.data.data.marketplaceIntegrations.nodes.0.versionSequence.nodes.0.versionNumber}}
+                              for customer
+                              {{$loopOverInstances.currentItem.customer.name}}
+                        name: Write Log Message
+                      - action:
+                          key: rawRequest
+                          component:
+                            isPublic: true
+                            key: prismatic
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          connection:
+                            type: configVar
+                            value: Prismatic Connection
+                          query:
+                            type: value
+                            value: >
+                              mutation upgradeMyInstance($instanceId: ID!,
+                              $integrationVersionID: ID!) {
+                                updateInstance(input: {id: $instanceId, integration: $integrationVersionID}) {
+                                  instance {
+                                    id
+                                  }
+                                  errors {
+                                    field
+                                    messages
+                                  }
+                                }
+                              }
+                          variables:
+                            type: complex
+                            value:
+                              - name: instanceId
+                                type: reference
+                                value: loopOverInstances.currentItem.id
+                              - name: integrationVersionID
+                                type: reference
+                                value: >-
+                                  getLatestAvailableVersion.results.data.data.marketplaceIntegrations.nodes.0.versionSequence.nodes.0.id
+                        name: Update Instance
+                      - action:
+                          key: deployInstance
+                          component:
+                            isPublic: true
+                            key: prismatic
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          connection:
+                            type: configVar
+                            value: Prismatic Connection
+                          instanceId:
+                            type: reference
+                            value: >-
+                              updateInstance.results.data.data.updateInstance.instance.id
+                        name: Deploy Instance
+                      - action:
+                          key: branchOnExpression
+                          component:
+                            isPublic: true
+                            key: branch
+                            version: LATEST
+                        branches:
+                          - name: Errors Occurred
+                            steps:
+                              - action:
+                                  key: createObject
+                                  component:
+                                    isPublic: true
+                                    key: collection-tools
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  keyValueInput:
+                                    type: complex
+                                    value:
+                                      - name: instanceId
+                                        type: reference
+                                        value: loopOverInstances.currentItem.id
+                                      - name: instanceName
+                                        type: reference
+                                        value: loopOverInstances.currentItem.name
+                                      - name: customerId
+                                        type: reference
+                                        value: >-
+                                          loopOverInstances.currentItem.customer.id
+                                      - name: customerName
+                                        type: reference
+                                        value: >-
+                                          loopOverInstances.currentItem.customer.name
+                                      - name: errors
+                                        type: reference
+                                        value: >-
+                                          deployInstance.results.data.data.deployInstance.errors
+                                name: Create Failed Deploy Object
+                              - action:
+                                  key: appendExecutionValueToList
+                                  component:
+                                    isPublic: true
+                                    key: persist-data
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  keyInput:
+                                    type: value
+                                    value: failed_instance_deploys
+                                  valueInput:
+                                    type: reference
+                                    value: createFailedDeployObject.results
+                                name: Save Failed Instance
+                          - name: Else
+                            steps:
+                              - action:
+                                  key: createObject
+                                  component:
+                                    isPublic: true
+                                    key: collection-tools
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  keyValueInput:
+                                    type: complex
+                                    value:
+                                      - name: instanceId
+                                        type: reference
+                                        value: loopOverInstances.currentItem.id
+                                      - name: instanceName
+                                        type: reference
+                                        value: loopOverInstances.currentItem.name
+                                      - name: customerId
+                                        type: reference
+                                        value: >-
+                                          loopOverInstances.currentItem.customer.id
+                                      - name: customerName
+                                        type: reference
+                                        value: >-
+                                          loopOverInstances.currentItem.customer.name
+                                name: Create Successful Deploy Object
+                              - action:
+                                  key: appendExecutionValueToList
+                                  component:
+                                    isPublic: true
+                                    key: persist-data
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  keyInput:
+                                    type: value
+                                    value: successful_instance_deploys
+                                  valueInput:
+                                    type: reference
+                                    value: createSuccessfulDeployObject.results
+                                name: Save Successful Instance
+                        description: ""
+                        inputs:
+                          conditions:
+                            type: complex
+                            value:
+                              - name: Errors Occurred
+                                type: complex
+                                value:
+                                  - and
+                                  - - exists
+                                    - type: reference
+                                      value: >-
+                                        deployInstance.results.data.data.deployInstance.errors.0.messages.0
+                        name: Check for errors
+                  - name: Else
+                    steps:
+                      - action:
+                          key: writeLog
+                          component:
+                            isPublic: true
+                            key: log
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          level:
+                            type: value
+                            value: info
+                          message:
+                            type: template
+                            value: >-
+                              Skipping update for customer
+                              {{$loopOverInstances.currentItem.customer.name}} -
+                              already on latest version.
+                        name: Write skipping log message
+                      - action:
+                          key: createObject
+                          component:
+                            isPublic: true
+                            key: collection-tools
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          keyValueInput:
+                            type: complex
+                            value:
+                              - name: instanceId
+                                type: reference
+                                value: loopOverInstances.currentItem.id
+                              - name: instanceName
+                                type: reference
+                                value: loopOverInstances.currentItem.name
+                              - name: customerId
+                                type: reference
+                                value: loopOverInstances.currentItem.customer.id
+                              - name: customerName
+                                type: reference
+                                value: loopOverInstances.currentItem.customer.name
+                        name: Create Skipped Deploy Object
+                      - action:
+                          key: appendExecutionValueToList
+                          component:
+                            isPublic: true
+                            key: persist-data
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          keyInput:
+                            type: value
+                            value: skipped_instance_deploys
+                          valueInput:
+                            type: reference
+                            value: createSkippedDeployObject.results
+                        name: Save Skipped Instance
+                description: ""
+                inputs:
+                  conditions:
+                    type: complex
+                    value:
+                      - name: Update Needed?
+                        type: complex
+                        value:
+                          - and
+                          - - greaterThan
+                            - type: reference
+                              value: >-
+                                getLatestAvailableVersion.results.data.data.marketplaceIntegrations.nodes.0.versionSequence.nodes.0.versionNumber
+                            - type: reference
+                              value: loopOverInstances.currentItem.deployedVersion
+                name: Check if update necessary
+          - action:
+              key: saveExecutionValue
+              component:
+                isPublic: true
+                key: persist-data
+                version: LATEST
+            description: ""
+            inputs:
+              keyInput:
+                type: value
+                value: instance_cursor
+              valueInput:
+                type: reference
+                value: >-
+                  listInstances.results.data.data.integration.instances.pageInfo.endCursor
+            name: Execution - Save Value
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: More Results Available?
+                steps: []
+              - name: Else
+                steps:
+                  - action:
+                      key: breakLoop
+                      component:
+                        isPublic: true
+                        key: loop
+                        version: LATEST
+                    description: ""
+                    inputs: {}
+                    name: Break Loop
+            description: ""
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: More Results Available?
+                    type: complex
+                    value:
+                      - and
+                      - - isTrue
+                        - type: reference
+                          value: >-
+                            listInstances.results.data.data.integration.instances.pageInfo.hasNextPage
+            name: Check for more instances
+      - action:
+          key: getExecutionValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ""
+          keyInput:
+            type: value
+            value: failed_instance_deploys
+        name: Get Failed Instances
+      - action:
+          key: getExecutionValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ""
+          keyInput:
+            type: value
+            value: skipped_instance_deploys
+        name: Get Skipped Instances
+      - action:
+          key: getExecutionValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ""
+          keyInput:
+            type: value
+            value: successful_instance_deploys
+        name: Get Successful Instances
+      - action:
+          key: createObject
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: ""
+        inputs:
+          keyValueInput:
+            type: complex
+            value:
+              - name: failed_instances
+                type: reference
+                value: getFailedInstances.results
+              - name: successful_instances
+                type: reference
+                value: getSuccessfulInstances.results
+              - name: skipped_instances
+                type: reference
+                value: getSkippedInstances.results
+        name: Execution Report
+name: Update Instances
+requiredConfigVars:
+  - connection:
+      key: apiKey
+      component:
+        isPublic: true
+        key: prismatic
+        version: LATEST
+    dataType: connection
+    inputs:
+      apiKey:
+        type: value
+        value: ""
+    key: Prismatic Connection
+    orgOnly: false
+  - dataType: string
+    defaultValue: ""
+    key: Integration Name
+    orgOnly: false
