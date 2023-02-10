@@ -106,7 +106,7 @@ flows:
         inputs:
           iterationCount:
             type: value
-            value: "4"
+            value: "1000"
         name: Loop over pages of instances
         steps:
           - action:
