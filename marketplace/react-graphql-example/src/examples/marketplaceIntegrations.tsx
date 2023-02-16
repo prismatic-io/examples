@@ -1,5 +1,5 @@
 import { Button, Typography } from "@mui/material";
-import prismatic from "@prismatic-io/marketplace";
+import prismatic from "@prismatic-io/embedded";
 import { useState } from "react";
 
 // This file shows how you can load some data (in this case, integrations in marketplace)

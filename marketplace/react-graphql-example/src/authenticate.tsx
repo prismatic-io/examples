@@ -7,7 +7,7 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import prismatic from "@prismatic-io/marketplace";
+import prismatic from "@prismatic-io/embedded";
 import jsrsasign from "jsrsasign";
 
 /* Authenticating client-side is a bad security practice, and is done 
