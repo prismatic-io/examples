@@ -12,6 +12,16 @@ import jsrsasign from "jsrsasign";
 
 /* Authenticating client-side is a bad security practice, and is done 
   for demonstration purposes only. */
+interface AuthenticateProps {
+  signingKey: string;
+  prismaticUrl: string;
+  customerExternalId: string;
+  orgId: string;
+  userId: string;
+  setJwt: Function;
+  setShowAuthDetails: Function;
+}
+
 const authenticate = async ({
   signingKey,
   prismaticUrl,
@@ -20,9 +30,9 @@ const authenticate = async ({
   userId,
   setJwt,
   setShowAuthDetails,
-}) => {
+}: AuthenticateProps) => {
   const currentTime = Math.floor(Date.now() / 1000);
-  const privateKey = jsrsasign.KEYUTIL.getKey(signingKey);
+  const privateKey = jsrsasign.KEYUTIL.getKey(signingKey) as jsrsasign.RSAKey;
   const headers = { alg: "RS256" };
   const payload = {
     sub: userId,
@@ -47,19 +57,23 @@ const authenticate = async ({
 };
 
 function Authenticate() {
-  const [prismaticUrl, setPrismaticUrl] = useState(
+  const [prismaticUrl, setPrismaticUrl] = useState<string>(
     window.localStorage.getItem("prismaticUrl") || "https://app.prismatic.io"
   );
-  const [customerExternalId, setCustomerExternalId] = useState(
-    window.localStorage.getItem("customerExternalId")
+  const [customerExternalId, setCustomerExternalId] = useState<string>(
+    window.localStorage.getItem("customerExternalId") || ""
   );
-  const [signingKey, setSigningKey] = useState(
-    window.localStorage.getItem("signingKey")
+  const [signingKey, setSigningKey] = useState<string>(
+    window.localStorage.getItem("signingKey") || ""
   );
-  const [userId, setUserId] = useState(window.localStorage.getItem("userId"));
-  const [orgId, setOrgId] = useState(window.localStorage.getItem("orgId"));
-  const [jwt, setJwt] = useState("");
-  const [showAuthDetails, setShowAuthDetails] = useState(true);
+  const [userId, setUserId] = useState<string>(
+    window.localStorage.getItem("userId") || ""
+  );
+  const [orgId, setOrgId] = useState<string>(
+    window.localStorage.getItem("orgId") || ""
+  );
+  const [jwt, setJwt] = useState<string>("");
+  const [showAuthDetails, setShowAuthDetails] = useState<boolean>(true);
 
   useEffect(() => {
     window.localStorage.setItem("prismaticUrl", prismaticUrl);

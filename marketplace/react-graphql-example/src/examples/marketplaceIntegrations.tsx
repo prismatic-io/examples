@@ -5,7 +5,7 @@ import { useState } from "react";
 // This file shows how you can load some data (in this case, integrations in marketplace)
 // from Prismatic's API, and present them as ReactJS UI elements
 
-const loadMarketplaceIntegrations = async (setResult) => {
+const loadMarketplaceIntegrations = async (setResult: Function) => {
   const query = `query getMarketplaceIntegrations {
     marketplaceIntegrations(
       sortBy: [{field: CATEGORY, direction: ASC}, {field: NAME, direction: ASC}]

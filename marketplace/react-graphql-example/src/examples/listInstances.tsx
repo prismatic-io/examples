@@ -5,7 +5,7 @@ import { useState } from "react";
 // This file shows how you can load your customer's existing instances and display
 // each one's webhook URLs
 
-const loadInstances = async (setInstances) => {
+const loadInstances = async (setInstances: Function) => {
   const query = `{
     authenticatedUser {
       customer {
@@ -32,8 +32,22 @@ const loadInstances = async (setInstances) => {
   setInstances(result.data.authenticatedUser.customer.instances.nodes);
 };
 
+interface FlowConfig {
+  id: string;
+  flow: { name: string };
+  webhookUrl: string;
+}
+
+interface Instance {
+  id: string;
+  name: string;
+  flowConfigs: {
+    nodes: FlowConfig[];
+  };
+}
+
 function ListInstances() {
-  const [instances, setInstances] = useState([]);
+  const [instances, setInstances] = useState<Instance[]>([]);
 
   return (
     <>

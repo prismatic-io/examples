@@ -39,11 +39,17 @@ const getCustomerId = async () => {
   return result.data.authenticatedUser.customer.id;
 };
 
+interface CreateInstanceProps {
+  dropboxVersionId: string;
+  customerId: string;
+  instanceName: string;
+}
+
 const createInstance = async ({
   dropboxVersionId,
   customerId,
   instanceName,
-}) => {
+}: CreateInstanceProps) => {
   const query = `mutation createDropboxInstance($customerId: ID!, $integrationId: ID!, $instanceName: String!) {
     createInstance(input: {customer: $customerId, integration: $integrationId, name: $instanceName}){
       instance {
@@ -75,7 +81,11 @@ const createInstance = async ({
   return result;
 };
 
-const deployInstance = async ({ instanceId }) => {
+interface DeployInstanceProps {
+  instanceId: string;
+}
+
+const deployInstance = async ({ instanceId }: DeployInstanceProps) => {
   const query = `mutation deployDropbox($instanceId: ID!){
     deployInstance(input:{id:$instanceId}) {
       instance {
@@ -87,8 +97,16 @@ const deployInstance = async ({ instanceId }) => {
   await prismatic.graphqlRequest({ query, variables });
 };
 
+interface Instance {
+  data?: {
+    createInstance: {
+      instance: { id: string };
+    };
+  };
+}
+
 function DeployDropbox() {
-  const [instance, setInstance] = useState({});
+  const [instance, setInstance] = useState<Instance>({});
   return (
     <>
       <Typography variant="body1">
@@ -106,7 +124,7 @@ function DeployDropbox() {
           const dropboxInstance = await createInstance({
             dropboxVersionId,
             customerId,
-            instanceName: `Dropbox ${Math.floor(new Date())}`,
+            instanceName: `Dropbox ${Math.floor(Number(new Date()))}`,
           });
           const oauthEndpoint =
             dropboxInstance.data.createInstance.instance.configVariables
@@ -121,8 +139,10 @@ function DeployDropbox() {
       <Button
         variant={"outlined"}
         onClick={async () => {
-          const instanceId = instance.data.createInstance.instance.id;
-          await deployInstance({ instanceId });
+          const instanceId = instance.data?.createInstance.instance.id;
+          if (instanceId) {
+            await deployInstance({ instanceId });
+          }
         }}
       >
         Deploy Instance
