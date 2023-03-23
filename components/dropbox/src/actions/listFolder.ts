@@ -1,17 +1,7 @@
-import { action, input, util } from "@prismatic-io/spectral";
+import { action, util } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
-import { connectionInput, limit, cursor } from "../inputs";
+import { connectionInput, directoryPath, limit, cursor } from "../inputs";
 import { handleDropboxError } from "../util";
-
-const path = input({
-  label: "Directory Path",
-  placeholder: "Directory Path Prefix",
-  type: "string",
-  required: false,
-  comments:
-    "The path to a directory within a Dropbox share. Include a leading /.",
-  example: "/path/to/my/directory/",
-});
 
 export const listFolder = action({
   display: {
@@ -19,8 +9,6 @@ export const listFolder = action({
     description: "List Folder contents at the specified path",
   },
   perform: async (context, params) => {
-    // path may be left undefined to indicate the root folder
-    const dirPath = util.types.toString(params.path).replace(/\/$/, "");
     const dbx = await createAuthorizedClient(params.dropboxConnection);
 
     try {
@@ -30,7 +18,7 @@ export const listFolder = action({
               cursor: util.types.toString(params.cursor),
             })
           : await dbx.filesListFolder({
-              path: util.types.toString(dirPath),
+              path: util.types.toString(params.path),
               limit: util.types.toInt(params.limit) || undefined,
             });
 
@@ -41,7 +29,12 @@ export const listFolder = action({
       handleDropboxError(err, [params.path]);
     }
   },
-  inputs: { dropboxConnection: connectionInput, path, cursor, limit },
+  inputs: {
+    dropboxConnection: connectionInput,
+    path: directoryPath,
+    cursor,
+    limit,
+  },
   examplePayload: {
     data: {
       status: 200,

@@ -1,4 +1,4 @@
-import { input } from "@prismatic-io/spectral";
+import { input, util } from "@prismatic-io/spectral";
 
 export const path = input({
   label: "Path",
@@ -8,6 +8,17 @@ export const path = input({
   comments:
     "The location of a file within a Dropbox share. Include a leading /.",
   example: "/path/to/file.txt",
+});
+
+export const directoryPath = input({
+  label: "Directory Path",
+  placeholder: "Directory Path Prefix",
+  type: "string",
+  required: false,
+  comments:
+    "The path to a directory within a Dropbox share. Include a leading /.",
+  example: "/path/to/my/directory/",
+  clean: (value) => util.types.toString(value).replace(/\/$/, ""),
 });
 
 export const fromPath = input({

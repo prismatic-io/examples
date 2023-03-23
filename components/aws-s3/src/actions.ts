@@ -12,9 +12,10 @@ import {
   tagging,
   maxKeys,
   continuationToken,
+  acl,
 } from "./inputs";
 import querystring from "querystring";
-import { action, util } from "@prismatic-io/spectral";
+import { action, input, util } from "@prismatic-io/spectral";
 import { S3 } from "aws-sdk";
 import { createS3Client } from "./auth";
 
@@ -33,6 +34,7 @@ const copyObject = action({
   perform: async (
     context,
     {
+      acl,
       awsRegion,
       accessKey,
       sourceBucket,
@@ -41,11 +43,12 @@ const copyObject = action({
       destinationKey,
     }
   ) => {
-    const s3 = await createS3Client(accessKey, util.types.toString(awsRegion));
-    const copyParameters = {
-      Bucket: util.types.toString(destinationBucket),
+    const s3 = await createS3Client(accessKey, awsRegion);
+    const copyParameters: S3.CopyObjectRequest = {
+      ACL: acl || null,
+      Bucket: destinationBucket,
       CopySource: `/${sourceBucket}/${sourceKey}`,
-      Key: util.types.toString(destinationKey),
+      Key: destinationKey,
     };
     const response = await s3.copyObject(copyParameters).promise();
     return {
@@ -59,6 +62,7 @@ const copyObject = action({
     destinationBucket,
     sourceKey,
     destinationKey,
+    acl,
   },
   examplePayload: { data: copyObjectSampleOutput },
 });
@@ -78,10 +82,10 @@ const deleteObject = action({
     description: "Delete an Object within an S3 Bucket",
   },
   perform: async (context, { awsRegion, accessKey, bucket, objectKey }) => {
-    const s3 = await createS3Client(accessKey, util.types.toString(awsRegion));
+    const s3 = await createS3Client(accessKey, awsRegion);
     const deleteParameters = {
-      Bucket: util.types.toString(bucket),
-      Key: util.types.toString(objectKey),
+      Bucket: bucket,
+      Key: objectKey,
     };
     const response = await s3.deleteObject(deleteParameters).promise();
     return { data: response };
@@ -102,10 +106,10 @@ const getObject = action({
     description: "Get the contents of an object",
   },
   perform: async (context, { awsRegion, accessKey, bucket, objectKey }) => {
-    const s3 = await createS3Client(accessKey, util.types.toString(awsRegion));
+    const s3 = await createS3Client(accessKey, awsRegion);
     const getObjectParameters = {
-      Bucket: util.types.toString(bucket),
-      Key: util.types.toString(objectKey),
+      Bucket: bucket,
+      Key: objectKey,
     };
     const response = await s3.getObject(getObjectParameters).promise();
     return {
@@ -134,22 +138,20 @@ const listObjects = action({
     description: "List Objects in a Bucket",
   },
   perform: async (context, params) => {
-    const s3 = await createS3Client(
-      params.accessKey,
-      util.types.toString(params.awsRegion)
-    );
+    const s3 = await createS3Client(params.accessKey, params.awsRegion);
 
     const response = await s3
       .listObjectsV2({
-        Bucket: util.types.toString(params.bucket),
-        Prefix: util.types.toString(params.prefix),
-        MaxKeys: util.types.toInt(params.maxKeys) || undefined,
-        ContinuationToken:
-          util.types.toString(params.continuationToken) || undefined,
+        Bucket: params.bucket,
+        Prefix: params.prefix,
+        MaxKeys: params.maxKeys || undefined,
+        ContinuationToken: params.continuationToken || undefined,
       })
       .promise();
     return {
-      data: response.Contents.map(({ Key }) => Key),
+      data: params.includeMetadata
+        ? response
+        : response.Contents.map(({ Key }) => Key),
     };
   },
   inputs: {
@@ -159,6 +161,15 @@ const listObjects = action({
     prefix,
     maxKeys,
     continuationToken,
+    includeMetadata: input({
+      label: "Include Metadata",
+      type: "boolean",
+      required: true,
+      default: "false",
+      comments:
+        "By default, this action returns a list of object keys. When this is set to true, additional metadata about each object is returned, along with pagination information.",
+      clean: util.types.toBool,
+    }),
   },
   examplePayload: listObjectOutput,
 });
@@ -177,10 +188,10 @@ const putObject = action({
   },
   perform: async (
     context,
-    { awsRegion, accessKey, bucket, fileContents, objectKey, tagging }
+    { acl, awsRegion, accessKey, bucket, fileContents, objectKey, tagging }
   ) => {
-    const s3 = await createS3Client(accessKey, util.types.toString(awsRegion));
-    const { data, contentType } = util.types.toData(fileContents);
+    const s3 = await createS3Client(accessKey, awsRegion);
+    const { data, contentType } = fileContents;
     const tags = querystring.encode(
       (tagging || []).reduce(
         (acc, { key, value }) => ({ ...acc, [key]: value }),
@@ -188,8 +199,9 @@ const putObject = action({
       )
     );
     const putParameters: S3.PutObjectRequest = {
-      Bucket: util.types.toString(bucket),
-      Key: util.types.toString(objectKey),
+      ACL: acl || null,
+      Bucket: bucket,
+      Key: objectKey,
       Body: data,
       ContentType: contentType,
       Tagging: tags,
@@ -206,6 +218,7 @@ const putObject = action({
     fileContents,
     objectKey,
     tagging,
+    acl,
   },
   examplePayload: putObjectOutput,
 });

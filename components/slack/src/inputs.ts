@@ -161,3 +161,31 @@ export const blocks = input({
     return "blocks" in value ? value : { blocks: value };
   },
 });
+
+export const includePublicChannels = input({
+  label: "Include public channels?",
+  type: "boolean",
+  default: "true",
+  clean: util.types.toBool,
+});
+
+export const includePrivateChannels = input({
+  label: "Include private channels?",
+  type: "boolean",
+  default: "false",
+  clean: util.types.toBool,
+});
+
+export const includeMultiPartyImchannels = input({
+  label: "Include multi-party IM (mpim) channels?",
+  type: "boolean",
+  default: "false",
+  clean: util.types.toBool,
+});
+
+export const includeImChannels = input({
+  label: "Include IM channels?",
+  type: "boolean",
+  default: "false",
+  clean: util.types.toBool,
+});

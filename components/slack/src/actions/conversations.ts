@@ -10,8 +10,13 @@ import {
   limit,
   excludeArchived,
   userId,
+  includePublicChannels,
+  includePrivateChannels,
+  includeMultiPartyImchannels,
+  includeImChannels,
 } from "../inputs";
 import { handleErrors } from "../errors";
+import { generateChannelTypesString } from "../utils";
 
 export const createConversation = action({
   display: {
@@ -188,17 +193,17 @@ export const listConversations = action({
     label: "List Conversations",
     description: "List all conversations",
   },
-  perform: async (
-    context,
-    { connection, cursor, excludeArchived, limit, teamId }
-  ) => {
-    const client = createOauthClient({ slackConnection: connection });
+  perform: async (context, params) => {
+    const client = createOauthClient({ slackConnection: params.connection });
+
     const data = await handleErrors(
       client.conversations.list({
-        cursor: util.types.toString(cursor) || undefined,
-        exclude_archived: util.types.toBool(excludeArchived) || undefined,
-        limit: util.types.toNumber(limit) || undefined,
-        team_id: util.types.toString(teamId) || undefined,
+        cursor: util.types.toString(params.cursor) || undefined,
+        exclude_archived:
+          util.types.toBool(params.excludeArchived) || undefined,
+        limit: util.types.toNumber(params.limit) || undefined,
+        team_id: util.types.toString(params.teamId) || undefined,
+        types: generateChannelTypesString(params),
       })
     );
     return { data };
@@ -209,6 +214,10 @@ export const listConversations = action({
     cursor,
     excludeArchived,
     connection: connectionInput,
+    includePublicChannels,
+    includePrivateChannels,
+    includeMultiPartyImchannels,
+    includeImChannels,
   },
   examplePayload: {
     data: {
@@ -261,7 +270,7 @@ export const listConversationMembers = action({
     label: "List Conversation Members",
     description: "List all members of a conversation",
   },
-  perform: async (context, { connection, channelName }) => {
+  perform: async (context, { connection, channelName, cursor, limit }) => {
     const client = createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.members({
@@ -276,7 +285,6 @@ export const listConversationMembers = action({
     channelName,
     limit,
     cursor,
-    excludeArchived,
     connection: connectionInput,
   },
 });

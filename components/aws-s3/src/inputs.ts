@@ -1,4 +1,4 @@
-import { input } from "@prismatic-io/spectral";
+import { input, util } from "@prismatic-io/spectral";
 import awsRegions from "./aws-regions.json";
 
 export const objectKey = input({
@@ -9,6 +9,7 @@ export const objectKey = input({
   comments:
     "An object in S3 is a file that is saved in a 'bucket'. This represents the object's key (file path). Do not include a leading /.",
   example: "path/to/file.txt",
+  clean: util.types.toString,
 });
 
 export const sourceKey = input({
@@ -19,6 +20,7 @@ export const sourceKey = input({
   comments:
     "An object in S3 is a file that is saved in a 'bucket'. This represents the source object's key (file path). Do not include a leading /.",
   example: "path/to/source/file.txt",
+  clean: util.types.toString,
 });
 
 export const destinationKey = input({
@@ -29,6 +31,7 @@ export const destinationKey = input({
   comments:
     "An object in S3 is a file that is saved in a 'bucket'. This represents the destination object's key (file path). Do not include a leading /.",
   example: "path/to/destination/file.txt",
+  clean: util.types.toString,
 });
 
 export const fileContents = input({
@@ -39,6 +42,7 @@ export const fileContents = input({
   comments:
     "The contents to write to a file. This can be a string of text, it can be binary data (like an image or PDF) that was generated in a previous step.",
   example: "My File Contents",
+  clean: util.types.toData,
 });
 
 export const bucket = input({
@@ -49,6 +53,7 @@ export const bucket = input({
   comments:
     "An Amazon S3 'bucket' is a container where files are stored. You can create a bucket from within the AWS console. Bucket names contain only letters, numbers, and dashes.",
   example: "my-s3-bucket-abc123",
+  clean: util.types.toString,
 });
 
 export const sourceBucket = input({
@@ -59,6 +64,7 @@ export const sourceBucket = input({
   comments:
     "An Amazon S3 'bucket' is a container where files are stored. The source bucket indicates the bucket containing the file you want to copy. If you are copying files within a single bucket, list the same bucket as the source and destination bucket.",
   example: "my-source-bucket",
+  clean: util.types.toString,
 });
 
 export const destinationBucket = input({
@@ -69,6 +75,7 @@ export const destinationBucket = input({
   comments:
     "An Amazon S3 'bucket' is a container where files are stored. The destination bucket indicates the bucket where you want a file to be stored. If you are copying files within a single bucket, list the same bucket as the source and destination bucket.",
   example: "my-destination-bucket",
+  clean: util.types.toString,
 });
 
 export const awsRegion = input({
@@ -86,6 +93,7 @@ export const awsRegion = input({
       value: region,
     };
   }),
+  clean: util.types.toString,
 });
 
 export const prefix = input({
@@ -97,6 +105,7 @@ export const prefix = input({
   comments:
     "List only objects prefixed with this string. For example, if you only want files in a directory called 'unprocessed', you can enter 'unprocessed/'. If this is left blank, all files in the selected bucket will be listed.",
   example: "path/to/files/",
+  clean: util.types.toString,
 });
 
 export const tagging = input({
@@ -116,6 +125,7 @@ export const maxKeys = input({
   comments:
     "Provide an integer value for the maximum amount of items that will be returned. Provide a value from 1 to 1000.",
   example: `1000`,
+  clean: util.types.toInt,
 });
 
 export const continuationToken = input({
@@ -125,6 +135,7 @@ export const continuationToken = input({
   comments:
     "Specify the pagination token that's returned by a previous request to retrieve the next page of results",
   example: `lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E`,
+  clean: util.types.toString,
 });
 
 export const accessKeyInput = input({
@@ -134,4 +145,26 @@ export const accessKeyInput = input({
   required: true,
   comments:
     "Access keys provide programmatic access to access resources in AWS. See https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html.",
+});
+
+export const acl = input({
+  label: "ACL Permissions",
+  comments:
+    "A set of canned ACL permissions to apply to the object. See https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl",
+  type: "string",
+  model: [
+    { label: "BUCKET DEFAULT", value: "" },
+    { label: "authenticated-read", value: "authenticated-read" },
+    { label: "aws-exec-read", value: "aws-exec-read" },
+    {
+      label: "bucket-owner-full-control",
+      value: "bucket-owner-full-control",
+    },
+    { label: "bucket-owner-read", value: "bucket-owner-read" },
+    { label: "private", value: "private" },
+    { label: "public-read", value: "public-read" },
+    { label: "public-read-write", value: "public-read-write" },
+  ],
+  default: "",
+  clean: util.types.toString,
 });

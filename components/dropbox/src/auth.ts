@@ -1,4 +1,4 @@
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 import { Dropbox } from "dropbox";
 import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
 

@@ -1,7 +1,14 @@
-import { dataSource, Element } from "@prismatic-io/spectral";
-import { connectionInput } from "./inputs";
+import { dataSource, Element, input, util } from "@prismatic-io/spectral";
+import {
+  connectionInput,
+  includeImChannels,
+  includeMultiPartyImchannels,
+  includePrivateChannels,
+  includePublicChannels,
+} from "./inputs";
 import { createOauthClient } from "./client";
 import { Channel } from "@slack/web-api/dist/response/ConversationsListResponse";
+import { generateChannelTypesString } from "./utils";
 
 const selectChannels = dataSource({
   display: {
@@ -10,6 +17,17 @@ const selectChannels = dataSource({
   },
   inputs: {
     connection: connectionInput,
+    showIdInDropdown: input({
+      label: "Show channel ID in dropdown?",
+      comments: "Show '#my-channel' vs. '#my-channel (ID: C123456)'",
+      type: "boolean",
+      default: "false",
+      clean: util.types.toBool,
+    }),
+    includePublicChannels,
+    includePrivateChannels,
+    includeMultiPartyImchannels,
+    includeImChannels,
   },
   perform: async (context, params) => {
     const client = createOauthClient({ slackConnection: params.connection });
@@ -20,7 +38,7 @@ const selectChannels = dataSource({
     do {
       const data = await client.conversations.list({
         exclude_archived: true,
-        types: "public_channel,private_channel",
+        types: generateChannelTypesString(params),
         cursor,
         limit: 1000,
       });
@@ -33,7 +51,9 @@ const selectChannels = dataSource({
       .sort((a, b) => (a.name < b.name ? -1 : 1))
       .map<Element>((channel) => ({
         key: channel.id,
-        label: `#${channel.name} (id: ${channel.id})`,
+        label: params.showIdInDropdown
+          ? `#${channel.name} (ID: ${channel.id})`
+          : `#${channel.name}`,
       }));
 
     return { result: objects };
@@ -41,9 +61,9 @@ const selectChannels = dataSource({
   dataSourceType: "picklist",
   examplePayload: {
     result: [
-      { key: "C123456", label: "#general (id: C123456)" },
-      { key: "C000000", label: "#other-channel (id: C000000)" },
-      { key: "C555555", label: "#random (id: C555555)" },
+      { key: "C123456", label: "#general (ID: C123456)" },
+      { key: "C000000", label: "#other-channel (ID: C000000)" },
+      { key: "C555555", label: "#random (ID: C555555)" },
     ],
   },
 });

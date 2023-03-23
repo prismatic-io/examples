@@ -1,6 +1,7 @@
 import { component } from "@prismatic-io/spectral";
 import { actions } from "./actions";
 import connections from "./connections";
+import dataSources from "./dataSources";
 
 export default component({
   key: "aws-s3",
@@ -14,4 +15,5 @@ export default component({
   },
   connections,
   actions,
+  dataSources,
 });

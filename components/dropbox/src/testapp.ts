@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import fetch from "isomorphic-fetch";
+import fetch from "cross-fetch";
 
 import { Dropbox } from "dropbox";
 

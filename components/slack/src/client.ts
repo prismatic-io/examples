@@ -30,6 +30,12 @@ export const createOauthClient = ({ slackConnection }: CreateClientProps) => {
 
   const app = new App({
     token,
+    clientOptions: {
+      // Generally use https://slack.com/api/, but use https://slack-gov.com/api/ when the access token uses Slack Gov
+      slackApiUrl: util.types
+        .toString(slackConnection.fields.tokenUrl)
+        .replace("oauth.v2.access", ""),
+    },
     signingSecret: util.types.toString(slackConnection.fields.signingSecret),
     scopes: util.types.toString(slackConnection.fields.scopes),
     clientId: util.types.toString(slackConnection.fields.clientId),
