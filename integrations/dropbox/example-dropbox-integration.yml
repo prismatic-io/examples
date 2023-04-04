@@ -1,0 +1,190 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: Dropbox Connection
+      - type: configVar
+        value: Router Integration Endpoint
+    name: Configuration
+    tagline: ""
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: >-
+      Register a mapping of Dropbox Account ID <> Instance URL with the router
+      integration
+    isSynchronous: false
+    name: Register account ID
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Integration Trigger
+      - action:
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: ""
+        inputs:
+          code:
+            type: value
+            value: |
+              module.exports = async ({ configVars }, stepResults) => {
+                const dropboxAccount = configVars['Dropbox Connection']['token']['account_id'];
+                return { data: dropboxAccount };
+              };
+        name: Get Dropbox Account ID
+      - action:
+          key: createObject
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: ""
+        inputs:
+          keyValueInput:
+            type: complex
+            value:
+              - name: dropboxAccountId
+                type: reference
+                value: getDropboxAccountId.results
+              - name: instanceChangesWebhookUrl
+                type: reference
+                value: integrationTrigger.results.webhookUrls.Process Dropbox Changes
+        name: Create Object
+      - action:
+          key: httpPost
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: ""
+          data:
+            type: reference
+            value: createObject.results
+          debugRequest:
+            type: value
+            value: "false"
+          headers:
+            type: complex
+            value: []
+          ignoreSslErrors:
+            type: value
+            value: "false"
+          includeFullResponse:
+            type: value
+            value: "false"
+          maxRetries:
+            type: value
+            value: "0"
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: "0"
+          retryOnAllErrors:
+            type: value
+            value: "false"
+          timeout:
+            type: value
+            value: ""
+          url:
+            type: configVar
+            value: Router Integration Endpoint
+          useExponentialBackoff:
+            type: value
+            value: "false"
+        name: POST Request
+  - description: ""
+    isSynchronous: false
+    name: Process Dropbox Changes
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Process Dropbox Changes Trigger
+      - action:
+          key: listChanges
+          component:
+            isPublic: true
+            key: dropbox
+            version: LATEST
+        description: ""
+        inputs:
+          directoryPath:
+            type: value
+            value: ""
+          dropboxConnection:
+            type: configVar
+            value: Dropbox Connection
+          includeDeleted:
+            type: value
+            value: "false"
+          recursive:
+            type: value
+            value: "false"
+        name: List Changes
+name: Example Dropbox Integration
+requiredConfigVars:
+  - connection:
+      key: oauth
+      component:
+        isPublic: true
+        key: dropbox
+        version: LATEST
+    dataType: connection
+    inputs:
+      clientId:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+    key: Dropbox Connection
+    orgOnly: false
+  - dataType: string
+    defaultValue: ""
+    key: Router Integration Endpoint
+    orgOnly: true

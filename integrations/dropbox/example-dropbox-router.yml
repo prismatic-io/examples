@@ -1,0 +1,168 @@
+category: ""
+configPages:
+  - elements: []
+    name: Configuration
+    tagline: ""
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: >-
+      Other instances would call this endpoint to register a mapping of Dropbox
+      account <> customer external ID
+    isSynchronous: false
+    name: Register Dropbox Account Mapping
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Integration Trigger
+      - action:
+          key: saveCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          keyInput:
+            type: reference
+            value: integrationTrigger.results.body.data.dropboxAccountId
+          valueInput:
+            type: reference
+            value: integrationTrigger.results.body.data.instanceChangesWebhookUrl
+        name: Cross Flow - Save Value
+  - description: Dispatch a Dropbox request to a customer
+    isSynchronous: false
+    name: Dispatch Request
+    steps:
+      - action:
+          key: dropboxWebhook
+          component:
+            isPublic: true
+            key: dropbox
+            version: LATEST
+        branches:
+          - name: Notification
+            steps:
+              - action:
+                  key: loopOverItems
+                  component:
+                    isPublic: true
+                    key: loop
+                    version: LATEST
+                description: ""
+                inputs:
+                  items:
+                    type: reference
+                    value: >-
+                      dispatchRequestTrigger.results.body.data.list_folder.accounts
+                name: Loop Over Items
+                steps:
+                  - action:
+                      key: getCrossFlowValue
+                      component:
+                        isPublic: true
+                        key: persist-data
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      defaultValueInput:
+                        type: value
+                        value: ""
+                      keyInput:
+                        type: reference
+                        value: loopOverItems.currentItem
+                    name: Get Webhook URL from Dropbox Account ID
+                  - action:
+                      key: httpGet
+                      component:
+                        isPublic: true
+                        key: http
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      connection:
+                        type: configVar
+                        value: ""
+                      debugRequest:
+                        type: value
+                        value: "false"
+                      headers:
+                        type: complex
+                        value: []
+                      ignoreSslErrors:
+                        type: value
+                        value: "false"
+                      includeFullResponse:
+                        type: value
+                        value: "false"
+                      maxRetries:
+                        type: value
+                        value: "0"
+                      queryParams:
+                        type: complex
+                        value: []
+                      responseType:
+                        type: value
+                        value: json
+                      retryDelayMS:
+                        type: value
+                        value: "0"
+                      retryOnAllErrors:
+                        type: value
+                        value: "false"
+                      timeout:
+                        type: value
+                        value: ""
+                      url:
+                        type: reference
+                        value: getWebhookUrlFromDropboxAccountId.results
+                      useExponentialBackoff:
+                        type: value
+                        value: "false"
+                    name: GET Request
+          - name: Verification Request
+            steps:
+              - action:
+                  key: stopExecution
+                  component:
+                    isPublic: true
+                    key: stop-execution
+                    version: LATEST
+                description: ""
+                inputs:
+                  jsonBody:
+                    type: value
+                    value: ""
+                  statusCode:
+                    type: value
+                    value: "200"
+                name: Stop Execution
+        description: ""
+        inputs:
+          signingSecret:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Dispatch Request Trigger
+name: Example Dropbox Router
