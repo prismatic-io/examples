@@ -4,6 +4,7 @@ import { useState } from "react";
 import MarketplaceIntegrations from "./examples/marketplaceIntegrations";
 import ListInstances from "./examples/listInstances";
 import DeployDropbox from "./examples/deployDropbox";
+import Marketplace from "./examples/marketplace";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -58,6 +59,7 @@ export default function ApiExamples() {
           <Tab label="Marketplace Integrations" {...a11yProps(0)} />
           <Tab label="List My Instances" {...a11yProps(1)} />
           <Tab label="Deploy Dropbox" {...a11yProps(2)} />
+          <Tab label="Marketplace" {...a11yProps(3)} />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
@@ -68,6 +70,9 @@ export default function ApiExamples() {
       </TabPanel>
       <TabPanel value={value} index={2}>
         <DeployDropbox />
+      </TabPanel>
+      <TabPanel value={value} index={3}>
+        <Marketplace />
       </TabPanel>
     </Box>
   );
