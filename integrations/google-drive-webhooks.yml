@@ -1,0 +1,355 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: Google Drive Connection
+    name: Configuration
+    tagline: ""
+  - elements:
+      - type: configVar
+        value: Select Google Drive
+    name: Select Drive
+    tagline: ""
+    userLevelConfigured: false
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create Webhook
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Create Webhook Trigger
+      - action:
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: Compute when the webhook should expire
+        inputs:
+          code:
+            type: value
+            value: |
+              /**
+               * Compute the Unix epoch timestamp of when the webhook should expire.
+               * Always expire 10 seconds into the next hour, so webhook overlap is
+               * minimal.
+               */
+
+              module.exports = async ({ logger }, stepResults) => {
+                const currentDate = new Date();
+                const expiration = currentDate.setHours(currentDate.getHours() + 1, 0, 10, 0);
+                return { data: expiration };
+              };
+        name: Compute Expiration Time
+      - action:
+          key: createDriveWebhook
+          component:
+            isPublic: true
+            key: google-drive
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Google Drive Connection
+          driveId:
+            type: configVar
+            value: Select Google Drive
+          endpoint:
+            type: reference
+            value: createWebhookTrigger.results.webhookUrls.Process Changes
+          expiration:
+            type: reference
+            value: computeExpirationTime.results
+        name: Create Webhook
+      - action:
+          key: saveCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: "Persist webhook configuration, so it can be removed on instance delete"
+        inputs:
+          keyInput:
+            type: value
+            value: webhook_config
+          valueInput:
+            type: reference
+            value: createWebhook.results
+        name: Cross Flow - Save Value
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Renew Webhook Hourly
+    steps:
+      - action:
+          key: schedule
+          component:
+            isPublic: true
+            key: schedule-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Renew Webhook Hourly Trigger
+        schedule:
+          meta:
+            scheduleType: hour
+            timeZone: ""
+          type: value
+          value: 0 */1 * * *
+      - action:
+          key: httpGet
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: ""
+          debugRequest:
+            type: value
+            value: "false"
+          headers:
+            type: complex
+            value: []
+          ignoreSslErrors:
+            type: value
+            value: "false"
+          includeFullResponse:
+            type: value
+            value: "false"
+          maxRetries:
+            type: value
+            value: "0"
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: "0"
+          retryOnAllErrors:
+            type: value
+            value: "false"
+          timeout:
+            type: value
+            value: ""
+          url:
+            type: reference
+            value: renewWebhookHourlyTrigger.results.webhookUrls.Create Webhook
+          useExponentialBackoff:
+            type: value
+            value: "false"
+        name: GET Request
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Process Changes
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Process Changes Trigger
+      - action:
+          key: listChanges
+          component:
+            isPublic: true
+            key: google-drive
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Google Drive Connection
+          driveId:
+            type: configVar
+            value: Select Google Drive
+        name: List Changes
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ""
+        inputs:
+          items:
+            type: reference
+            value: listChanges.results.changes
+        name: Loop Over Items
+        steps:
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: Is Folder?
+                steps: []
+              - name: Else
+                steps:
+                  - action:
+                      key: writeLog
+                      component:
+                        isPublic: true
+                        key: log
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      level:
+                        type: value
+                        value: info
+                      message:
+                        type: template
+                        value: >-
+                          Received a non-folder file change. The file has name
+                          "{{$loopOverItems.currentItem.file.name}}" and ID
+                          "{{$loopOverItems.currentItem.file.id}}"
+                    name: Write Log Message
+            description: ""
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: Is Folder?
+                    type: complex
+                    value:
+                      - and
+                      - - equal
+                        - type: reference
+                          value: loopOverItems.currentItem.file.mimeType
+                        - type: value
+                          value: application/vnd.google-apps.folder
+            name: Filter out folder changes
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Remove Webhook
+    steps:
+      - action:
+          key: instanceRemove
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Remove Webhook Trigger
+      - action:
+          key: getCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ""
+          keyInput:
+            type: value
+            value: webhook_config
+        name: Cross Flow - Get Value
+      - action:
+          key: deleteWebhook
+          component:
+            isPublic: true
+            key: google-drive
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Google Drive Connection
+          resourceId:
+            type: reference
+            value: crossFlowGetValue.results.resourceId
+          webhookId:
+            type: reference
+            value: crossFlowGetValue.results.id
+        name: Delete Webhook
+name: Google Drive Webhooks Example
+requiredConfigVars:
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: google-drive
+        version: LATEST
+    dataType: connection
+    inputs:
+      clientId:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      scopes:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://www.googleapis.com/auth/drive"
+    key: Google Drive Connection
+    orgOnly: false
+  - dataSource:
+      key: selectDrive
+      component:
+        isPublic: true
+        key: google-drive
+        version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    inputs:
+      connection:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Google Drive Connection
+    key: Select Google Drive
+    orgOnly: false
