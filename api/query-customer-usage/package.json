@@ -1,0 +1,25 @@
+{
+  "name": "query-customer-usage",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^20.4.1",
+    "fetch-retry": "^5.0.6",
+    "graphql": "^16.7.1",
+    "graphql-request": "^6.1.0",
+    "isomorphic-fetch": "^3.0.0",
+    "papaparse": "^5.4.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/isomorphic-fetch": "^0.0.36",
+    "@types/papaparse": "^5.3.7"
+  }
+}
