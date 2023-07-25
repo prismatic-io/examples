@@ -10,6 +10,7 @@ import fetch from "isomorphic-fetch";
 import fetchRetry from "fetch-retry";
 
 const INSTANCE_ID = "SW5z_REPLACE_ME";
+const API_ENDPOINT = "https://app.prismatic.io/api";
 
 /**
  * Set up GraphQL Client. You must set a PRISMATIC_API_KEY environment variable.
@@ -20,7 +21,7 @@ const PRISMATIC_API_KEY = process.env.PRISMATIC_API_KEY;
 if (!PRISMATIC_API_KEY) {
   throw new Error("You must set a PRISMATIC_API_KEY environment variable.");
 }
-const client = new GraphQLClient("https://app.dev.prismatic-dev.io/api", {
+const client = new GraphQLClient(API_ENDPOINT, {
   headers: { Authorization: `Bearer ${PRISMATIC_API_KEY}` },
   fetch: fetchRetry(fetch, { retries: 5, retryDelay: 800 }),
 });
