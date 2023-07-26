@@ -1,5 +1,5 @@
 {
-  "name": "retry-failed-executions",
+  "name": "replay-failed-executions",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
