@@ -30,8 +30,8 @@
     "ts-jest": "^26.1.0",
     "ts-loader": "^6.2.2",
     "typescript": "^3.8.3",
-    "webpack": "5.76.2",
-    "webpack-cli": "^3.3.11"
+    "webpack": "5.88.2",
+    "webpack-cli": "^5.1.4"
   },
   "eslintConfig": {
     "root": true,

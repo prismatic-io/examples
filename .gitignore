@@ -13,3 +13,5 @@ node_modules
 
 # Build logs
 components/**/*.log
+
+.eslintcache
