@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@prismatic-io/spectral": "7.3.7",
-    "aws-sdk": "2.1315.0"
+    "aws-sdk": "2.1436.0"
   },
   "author": "Prismatic",
   "license": "MIT",
