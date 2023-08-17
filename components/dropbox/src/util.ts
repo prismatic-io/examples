@@ -43,3 +43,35 @@ export const validatePath = (path) => {
 };
 
 export default { validatePath };
+
+export const getHeadersRawRequest = (dropboxToken, httpClientInputs) => {
+  const headers = {
+    Authorization: `Bearer ${dropboxToken}`,
+  };
+  if (httpClientInputs.headers.length > 0) {
+    let contentTypeHeader = null;
+    httpClientInputs.headers.forEach((header) => {
+      const headerName = header.key.toLowerCase();
+      const headerValue = header.value;
+      if (headerName === "content-type") {
+        contentTypeHeader = headerValue;
+      }
+    });
+    headers["Content-Type"] = contentTypeHeader || "";
+  } else {
+    headers["Content-Type"] = "";
+  }
+  return headers;
+};
+
+export const getUserTypeHeader = (userType, teamMemberId) => {
+  const headers = {};
+  if (userType === "user") {
+    headers["Dropbox-API-Select-User"] = teamMemberId;
+  } else if (userType === "admin") {
+    headers["Dropbox-API-Select-Admin"] = teamMemberId;
+  } else {
+    throw new Error("Invalid user type. Must be 'user' or 'admin'.");
+  }
+  return headers;
+};

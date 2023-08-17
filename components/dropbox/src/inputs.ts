@@ -1,5 +1,23 @@
 import { input, util } from "@prismatic-io/spectral";
-
+export const userType = input({
+  label: "Team User Type",
+  comments: "The type of user to connect with. Admin or User",
+  type: "string",
+  required: false,
+  model: [
+    { label: "Admin", value: "admin" },
+    { label: "User", value: "user" },
+    { label: "", value: "" },
+  ],
+  clean: (value) => (value !== "" ? (value as "admin" | "user") : undefined),
+});
+export const teamMemberId = input({
+  label: "Team Member ID",
+  comments: "The ID of the team member. Required if Team User Type is set",
+  type: "string",
+  required: false,
+  clean: (value) => (value !== "" ? util.types.toString(value) : undefined),
+});
 export const path = input({
   label: "Path",
   placeholder: "File Path",
@@ -41,6 +59,24 @@ export const toPath = input({
   example: "/path/to/destination/file.txt",
 });
 
+export const folderActions = input({
+  label: "Folder Actions",
+  placeholder: "Folder Action",
+  collection: "keyvaluelist",
+  type: "string",
+  required: false,
+  comments:
+    "A list of `FolderAction`s corresponding to `FolderPermission`s that should appear in the response's SharedFolderMetadata.permissions field describing the actions the authenticated user can perform on the folder. This field is optional.",
+  example: "disable_viewer_info",
+  clean: (value) => {
+    const folderActions = (value as []) || [];
+    if (folderActions.length === 0) {
+      return undefined;
+    }
+    return folderActions.map((value) => ({ ".tag": value }));
+  },
+});
+
 export const fileContents = input({
   label: "File Contents",
   placeholder: "Output data from previous step",
@@ -73,4 +109,16 @@ export const connectionInput = input({
   label: "Connection",
   type: "connection",
   required: true,
+});
+
+export const filePaths = input({
+  label: "File Path",
+  placeholder: "File Path",
+  type: "string",
+  collection: "valuelist",
+  comments: "This represents the source files's path. Include a leading /",
+  example: "/path/to/source/file.txt",
+  required: true,
+  clean: (stringArray: any) =>
+    stringArray.map((string: string) => util.types.toString(string)),
 });

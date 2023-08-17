@@ -16,7 +16,7 @@ const PRISMATIC_API_KEY = process.env.PRISMATIC_API_KEY;
 if (!PRISMATIC_API_KEY) {
   throw new Error("You must set a PRISMATIC_API_KEY environment variable.");
 }
-const client = new GraphQLClient("https://app.dev.prismatic-dev.io/api", {
+const client = new GraphQLClient("https://app.prismatic.io/api", {
   headers: {
     Authorization: `Bearer ${PRISMATIC_API_KEY}`,
   },

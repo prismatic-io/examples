@@ -35,6 +35,7 @@ import {
   listUsersConversations,
 } from "./actions/users";
 import { listFiles, uploadFile } from "./actions/files";
+import rawRequest from "./actions/rawRequest";
 
 export default component({
   key: "slack",
@@ -75,6 +76,7 @@ export default component({
     listUsersConversations,
     uploadFile,
     getConversationsHistory,
+    rawRequest,
   },
   triggers,
   dataSources,

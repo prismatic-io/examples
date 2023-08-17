@@ -139,7 +139,7 @@ export const continuationToken = input({
 });
 
 export const accessKeyInput = input({
-  label: "AWS Access Key",
+  label: "Connection",
   type: "connection",
   placeholder: "AWS IAM Access Key",
   required: true,
@@ -166,5 +166,72 @@ export const acl = input({
     { label: "public-read-write", value: "public-read-write" },
   ],
   default: "",
+  clean: util.types.toString,
+});
+
+export const name = input({
+  label: "Name",
+  type: "string",
+  required: true,
+  example: "MyExampleTopic",
+  comments: "Provide a string for the name of the topic.",
+  clean: util.types.toString,
+});
+
+export const snsTopicArn = input({
+  label: "SNS Topic ARN",
+  type: "string",
+  required: true,
+  example: "arn:aws:sns:us-east-1:123456789012:MyExampleTopic",
+  clean: util.types.toString,
+});
+
+export const bucketOwnerAccountid = input({
+  label: "Bucket Owner Account ID",
+  type: "string",
+  required: true,
+  example: "123456789012",
+  comments:
+    "Provide the AWS Account ID of the bucket owner. It can be found in the account settings of the AWS console.",
+  clean: util.types.toString,
+});
+
+export const endpoint = input({
+  label: "Webhook Endpoint",
+  type: "string",
+  required: true,
+  example:
+    "https://hooks.prismatic.io/trigger/SW5zdGFuY2VGbG93Q29uZmlnOjhiNGY0ZTRkLWIyODMtNDE4Yy04YmZhLTg1NGI11234567890==",
+  comments: "The endpoint that you want to trigger when an S3 event occurs.",
+  clean: util.types.toString,
+});
+
+export const subscriptionArn = input({
+  label: "Subscription Arn",
+  type: "string",
+  required: true,
+  example:
+    "arn:aws:sns:us-east-2:123456789012:MyExampleTopic:00000000-00000000-00000000-00000000",
+  comments: "The unique identifier for a topic subscription",
+  clean: util.types.toString,
+});
+
+export const eventsList = input({
+  label: "Event",
+  comments: "S3 Bucket change event type to trigger the webhook",
+  type: "string",
+  collection: "valuelist",
+  example: "s3:ObjectCreated:*",
+  required: true,
+  clean: (stringArray: any) =>
+    stringArray.map((string: string) => util.types.toString(string).trim()),
+});
+
+export const eventNotificationName = input({
+  label: "Event Notification Name",
+  type: "string",
+  required: true,
+  example: "MyExampleEventNotification",
+  comments: "Provide a string for the name of the event notification.",
   clean: util.types.toString,
 });

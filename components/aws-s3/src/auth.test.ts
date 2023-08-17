@@ -1,17 +1,13 @@
 const getCallerIdentityMock = jest.fn();
 const s3Mock = jest.fn();
 
-jest.mock("aws-sdk", () => {
+jest.mock("@aws-sdk/client-s3", () => {
   return {
-    STS: jest.fn(() => ({
-      getCallerIdentity: jest.fn().mockImplementation(() => ({
-        promise: getCallerIdentityMock,
-      })),
-    })),
-    S3: s3Mock,
+    S3Client: s3Mock,
   };
 });
 
+import { ConnectionError } from "@prismatic-io/spectral";
 import { createS3Client } from "./auth";
 import { accessKeySecretPair } from "./connections";
 import { createConnection } from "@prismatic-io/spectral/dist/testing";
@@ -19,29 +15,31 @@ import { createConnection } from "@prismatic-io/spectral/dist/testing";
 describe("createS3Client", () => {
   describe("invalid credentials", () => {
     beforeAll(() => {
-      getCallerIdentityMock.mockRejectedValue("Invalid!");
+      s3Mock.mockImplementationOnce(() => {
+        throw new Error("!Invalid");
+      });
     });
 
-    test("throws error if invalid credentials provided", async () => {
-      await expect(
-        createS3Client(
-          createConnection(accessKeySecretPair, {
-            accessKeyId: "fakeKey",
-            secretAccessKey: "fakeKey",
-          }),
-          "us-east-2"
-        )
-      ).rejects.toThrow(/Invalid AWS Credentials/);
+    test("throws error if invalid credentials provided", () => {
+      const connection = createConnection(accessKeySecretPair, {
+        accessKeyId: "fakeKey",
+        secretAccessKey: "fakeKey",
+      });
+      try {
+        createS3Client(connection, "us-east-2");
+      } catch (error) {
+        expect(error).toBeInstanceOf(ConnectionError);
+      }
     });
   });
 
   describe("valid credentials", () => {
     beforeAll(() => {
-      getCallerIdentityMock.mockResolvedValue("foo");
+      s3Mock.mockResolvedValue("foo");
     });
 
-    test("returns S3 client with api key secret credentials", async () => {
-      await createS3Client(
+    test("returns S3 client with api key secret credentials", () => {
+      createS3Client(
         createConnection(accessKeySecretPair, {
           accessKeyId: "fakeKey",
           secretAccessKey: "fakeKey",

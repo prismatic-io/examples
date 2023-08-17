@@ -1,6 +1,13 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
-import { connectionInput, directoryPath, limit, cursor } from "../inputs";
+import {
+  connectionInput,
+  directoryPath,
+  limit,
+  cursor,
+  teamMemberId,
+  userType,
+} from "../inputs";
 import { handleDropboxError } from "../util";
 
 export const listFolder = action({
@@ -9,7 +16,11 @@ export const listFolder = action({
     description: "List Folder contents at the specified path",
   },
   perform: async (context, params) => {
-    const dbx = await createAuthorizedClient(params.dropboxConnection);
+    const dbx = await createAuthorizedClient(
+      params.dropboxConnection,
+      params.userType,
+      params.teamMemberId
+    );
 
     try {
       const data =
@@ -20,6 +31,7 @@ export const listFolder = action({
           : await dbx.filesListFolder({
               path: util.types.toString(params.path),
               limit: util.types.toInt(params.limit) || undefined,
+              recursive: util.types.toBool(params.recursive),
             });
 
       return {
@@ -34,6 +46,14 @@ export const listFolder = action({
     path: directoryPath,
     cursor,
     limit,
+    recursive: {
+      label: "Recursive",
+      type: "boolean",
+      default: false,
+      comments: "Recursively list all contents of a directory",
+    },
+    userType,
+    teamMemberId,
   },
   examplePayload: {
     data: {

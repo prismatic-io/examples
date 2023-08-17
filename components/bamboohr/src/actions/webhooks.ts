@@ -110,6 +110,16 @@ const createWebhook = action({
       collection: "valuelist",
       model: webhookFields.map((field) => ({ label: field, value: field })),
     }),
+    postFields: input({
+      label: "Fields to send to Webhook",
+      required: true,
+      comments: `A list of fields to post to the webhook url. This can be any of the following: ${webhookFields.join(
+        ", "
+      )}`,
+      type: "string",
+      collection: "valuelist",
+      model: webhookFields.map((field) => ({ label: field, value: field })),
+    }),
     allowDuplicates: input({
       label: "Allow Duplicates?",
       type: "boolean",
@@ -144,13 +154,42 @@ const createWebhook = action({
     }
 
     // If duplicates are allowed, or no duplicates exist, continue with creating a new webhook
+    const {
+      data: { fields: clientFields },
+    } = await client.get("/v1/webhooks/monitor_fields");
+    const aliasClientFields = clientFields
+      .map((field) => field.alias)
+      .filter((data) => data);
+
     const postFields = Object.fromEntries(
-      webhookFields.map((field) => [field, field])
+      params.postFields
+        .map((field) => {
+          if (aliasClientFields.find((clientField) => clientField === field)) {
+            return [field, field];
+          }
+          context.logger.debug(
+            `${field} will not be monitored as it is not enabled in this BambooHR account`
+          );
+          return null;
+        })
+        .filter((field) => field)
     );
+
+    const monitorAvailableFields = params.monitorFields
+      .map((field) => {
+        if (aliasClientFields.find((clientField) => clientField === field)) {
+          return field;
+        }
+        context.logger.debug(
+          `${field} will not be included in webhook payloads as it is not enabled in this BambooHR account`
+        );
+        return null;
+      })
+      .filter((field) => field);
 
     const { data } = await client.post("/v1/webhooks", {
       name: params.name,
-      monitorFields: params.monitorFields,
+      monitorFields: monitorAvailableFields,
       postFields,
       url: params.url,
       format: "json",
@@ -163,7 +202,10 @@ const createWebhook = action({
       ? [...context.crossFlowState["webhookSecrets"], data.privateKey]
       : [data.privateKey];
 
-    return { data, crossFlowState: { webhookSecrets } };
+    return {
+      data,
+      crossFlowState: { webhookSecrets },
+    };
   },
 });
 

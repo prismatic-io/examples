@@ -1,6 +1,9 @@
 import { component } from "@prismatic-io/spectral";
 import { oauthConnection } from "./connections";
 import actions from "./actions";
+import triggers from "./triggers";
+import { handleErrors } from "@prismatic-io/spectral/dist/clients/http";
+import dataSources from "./datasources";
 
 export default component({
   key: "dropbox",
@@ -13,5 +16,8 @@ export default component({
     category: "Data Platforms",
   },
   actions,
+  triggers,
   connections: [oauthConnection],
+  dataSources,
+  hooks: { error: handleErrors },
 });

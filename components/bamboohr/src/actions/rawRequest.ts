@@ -6,10 +6,19 @@ import {
 import { connectionInput } from "../inputs";
 
 const rawRequest = action({
-  display: { label: "Raw Request", description: "Send Raw Request" },
+  display: {
+    label: "Raw Request",
+    description: "Send a raw HTTP request to Bamboohr's API",
+  },
   inputs: {
     connection: connectionInput,
     ...httpClientInputs,
+    url: {
+      ...httpClientInputs.url,
+      comments:
+        "Input the path only (/v1/employees/directory), The base URL is already included (https://api.bamboohr.com/api/gateway.php/COMPANY_DOMAIN). For example, to connect to https://api.bamboohr.com/api/gateway.php/COMPANY_DOMAIN/v1/employees/directory, only /v1/employees/directory is entered in this field.",
+      example: "/v1/employees/directory",
+    },
   },
   perform: async (context, { connection, ...httpClientInputs }) => {
     const encodedAuth = Buffer.from(`${connection.fields.apiKey}:x`).toString(

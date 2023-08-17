@@ -66,7 +66,7 @@ export const endpoint = input({
   label: "Endpoint",
   type: "string",
   required: true,
-  example: "example@prismatic.io",
+  example: "example@company.com",
   comments:
     "The endpoint that you want to receive notifications. This could be an email address, URL, phone number, or SQS/application/Lambda/Firehose ARN.",
 });

@@ -1,6 +1,7 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createSNSClient } from "../client";
 import { awsRegion, subscriptionArn, connectionInput } from "../inputs";
+import { UnsubscribeCommand } from "@aws-sdk/client-sns";
 
 export const unsubscribe = action({
   display: {
@@ -8,16 +9,17 @@ export const unsubscribe = action({
     description: "Unsubscribe from an Amazon SNS Topic",
   },
   perform: async (context, params) => {
-    const sns = await createSNSClient({
+    const sns = createSNSClient({
       awsConnection: params.awsConnection,
       awsRegion: util.types.toString(params.awsRegion),
     });
+    const unsubscribeParams = {
+      SubscriptionArn: util.types.toString(params.subscriptionArn),
+    };
+    const command = new UnsubscribeCommand(unsubscribeParams);
+    const response = await sns.send(command);
     return {
-      data: await sns
-        .unsubscribe({
-          SubscriptionArn: util.types.toString(params.subscriptionArn),
-        })
-        .promise(),
+      data: response,
     };
   },
   inputs: { awsRegion, subscriptionArn, awsConnection: connectionInput },

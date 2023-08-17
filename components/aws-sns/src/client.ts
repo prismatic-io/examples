@@ -1,40 +1,37 @@
-import AWS from "aws-sdk";
+import { SNSClient } from "@aws-sdk/client-sns";
 import { util } from "@prismatic-io/spectral";
 import { Connection, ConnectionError } from "@prismatic-io/spectral";
 
 interface ClientProps {
-  awsRegion: unknown;
+  awsRegion: string;
   awsConnection: Connection;
 }
 
-export const createSNSClient = async ({
-  awsRegion,
-  awsConnection,
-}: ClientProps) => {
+export const createSNSClient = ({ awsRegion, awsConnection }: ClientProps) => {
   if (awsConnection.key !== "apiKeySecret") {
     throw new ConnectionError(
       awsConnection,
       `Unsupported connection method ${awsConnection.key}.`
     );
   }
-
-  const credentials = {
-    accessKeyId: util.types.toString(awsConnection.fields.accessKeyId).trim(),
-    secretAccessKey: util.types
-      .toString(awsConnection.fields.secretAccessKey)
-      .trim(),
-    region: util.types.toString(awsRegion),
-  };
-
-  const sts = new AWS.STS(credentials);
   try {
-    await sts.getCallerIdentity({}).promise();
+    return new SNSClient({
+      region: awsRegion,
+      credentials: {
+        accessKeyId: util.types
+          .toString(awsConnection.fields.accessKeyId)
+          .trim(),
+        secretAccessKey: util.types
+          .toString(awsConnection.fields.secretAccessKey)
+          .trim(),
+      },
+    });
   } catch (err) {
     throw new ConnectionError(
       awsConnection,
-      `Invalid AWS Credentials have been configured. This is sometimes caused by missing characters from a copy/paste. Original AWS error message: ${err.message}`
+      `Invalid AWS Credentials have been configured. This is sometimes caused by missing characters from a copy/paste. Original AWS error message: ${
+        (err as Error).message
+      }`
     );
   }
-
-  return new AWS.SNS(credentials);
 };

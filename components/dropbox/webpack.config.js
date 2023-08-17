@@ -44,18 +44,4 @@ const componentConfig = {
   },
 };
 
-const testappConfig = {
-  ...baseConfig,
-  ...{
-    entry: {
-      testapp: "./src/testapp.ts",
-    },
-    output: {
-      filename: "[name].js",
-      path: path.resolve(__dirname, "test"),
-      libraryTarget: "commonjs2",
-    },
-  },
-};
-
-module.exports = [componentConfig, testappConfig];
+module.exports = [componentConfig];

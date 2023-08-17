@@ -11,13 +11,13 @@
     "generate-regions-json": "aws ec2 describe-regions | jq '.Regions | map(.RegionName) | sort' > src/aws-regions.json",
     "check-format": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "build": "npm run format && npm run lint && webpack",
-    "test": "jest --maxWorkers=4"
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "5.0.0",
-    "sns-validator": "0.3.5",
-    "aws-sdk": "2.1436.0",
-    "axios": "0.21.4"
+    "@aws-sdk/client-sns": "^3.332.0",
+    "@prismatic-io/spectral": "7.6.3",
+    "axios": "0.21.4",
+    "sns-validator": "^0.3.5"
   },
   "author": "Prismatic",
   "license": "MIT",
@@ -28,13 +28,13 @@
     "@types/sns-validator": "0.3.1",
     "copy-webpack-plugin": "6.0.3",
     "eslint": "6.8.0",
+    "jest": "26.6.3",
+    "prettier": "2.0.5",
+    "ts-jest": "26.4.0",
     "ts-loader": "8.0.2",
     "typescript": "4.3.4",
-    "webpack": "5.88.2",
-    "webpack-cli": "5.1.4",
-    "ts-jest": "26.4.0",
-    "prettier": "2.0.5",
-    "jest": "26.6.3"
+    "webpack": "5.76.2",
+    "webpack-cli": "5.0.1"
   },
   "eslintConfig": {
     "root": true,

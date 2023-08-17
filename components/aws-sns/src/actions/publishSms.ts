@@ -1,10 +1,10 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createSNSClient } from "../client";
 import { awsRegion, message, phoneNumber, connectionInput } from "../inputs";
-import { SNS } from "aws-sdk";
+import { PublishCommand, PublishResponse } from "@aws-sdk/client-sns";
 
 interface Response {
-  data: SNS.Types.PublishResponse;
+  data: PublishResponse;
 }
 
 const examplePayload: Response = {
@@ -19,17 +19,18 @@ export const publishSms = action({
     description: "Publish an SMS message to an Amazon SNS Topic",
   },
   perform: async (context, params) => {
-    const sns = await createSNSClient({
+    const sns = createSNSClient({
       awsConnection: params.awsConnection,
       awsRegion: util.types.toString(params.awsRegion),
     });
+    const publishParams = {
+      Message: util.types.toString(params.message),
+      PhoneNumber: util.types.toString(params.phoneNumber),
+    };
+    const command = new PublishCommand(publishParams);
+    const response = await sns.send(command);
     return {
-      data: await sns
-        .publish({
-          Message: util.types.toString(params.message),
-          PhoneNumber: util.types.toString(params.phoneNumber),
-        })
-        .promise(),
+      data: response,
     };
   },
   inputs: { awsRegion, message, phoneNumber, awsConnection: connectionInput },

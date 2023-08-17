@@ -34,17 +34,17 @@ export const listUsersInTeam = action({
   examplePayload: {
     data: [
       {
-        guid: "54630745323",
+        gid: "54630745323",
         name: "Example User",
         resource_type: "user",
       },
       {
-        guid: "54630745323",
+        gid: "54630745323",
         name: "Example User",
         resource_type: "user",
       },
       {
-        guid: "54630745323",
+        gid: "54630745323",
         name: "Example User",
         resource_type: "user",
       },

@@ -1,10 +1,13 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createSNSClient } from "../client";
 import { awsRegion, topicArn, connectionInput } from "../inputs";
-import { SNS } from "aws-sdk";
+import {
+  GetTopicAttributesCommand,
+  GetTopicAttributesResponse,
+} from "@aws-sdk/client-sns";
 
 interface Response {
-  data: SNS.Types.GetTopicAttributesResponse;
+  data: GetTopicAttributesResponse;
 }
 
 const examplePayload: Response = {
@@ -28,15 +31,18 @@ export const getTopicAttributes = action({
     description: "Retrieves the attributes of an Amazon SNS Topic.",
   },
   perform: async (context, params) => {
-    const sns = await createSNSClient({
+    const sns = createSNSClient({
       awsConnection: params.awsConnection,
       awsRegion: util.types.toString(params.awsRegion),
     });
+    const getTopicAttributesParams = {
+      TopicArn: util.types.toString(params.topicArn),
+    };
+    const command = new GetTopicAttributesCommand(getTopicAttributesParams);
+    const response = await sns.send(command);
 
     return {
-      data: await sns
-        .getTopicAttributes({ TopicArn: util.types.toString(params.topicArn) })
-        .promise(),
+      data: response,
     };
   },
   inputs: { awsRegion, topicArn, awsConnection: connectionInput },

@@ -67,8 +67,9 @@ import webhookActions from "./actions/webhooks";
 import dataSources from "./dataSources";
 import triggers from "./triggers";
 
-import { asanaApiKeyConnection, asanaOAuthConnection } from "./connections";
+import connections from "./connections";
 import { handleErrors } from "@prismatic-io/spectral/dist/clients/http";
+import rawRequest from "./actions/rawRequest";
 
 export default component({
   key: "asana",
@@ -146,10 +147,11 @@ export default component({
     deleteStatus,
     getStatusesForObject,
     getStatusUpdate,
+    rawRequest,
     ...webhookActions,
   },
   triggers,
   dataSources,
   hooks: { error: handleErrors },
-  connections: [asanaApiKeyConnection, asanaOAuthConnection],
+  connections,
 });

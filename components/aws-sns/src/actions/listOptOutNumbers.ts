@@ -1,10 +1,13 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createSNSClient } from "../client";
 import { awsRegion, nextToken, connectionInput } from "../inputs";
-import { SNS } from "aws-sdk";
+import {
+  ListPhoneNumbersOptedOutCommand,
+  ListPhoneNumbersOptedOutResponse,
+} from "@aws-sdk/client-sns";
 
 interface Response {
-  data: SNS.Types.ListPhoneNumbersOptedOutResponse;
+  data: ListPhoneNumbersOptedOutResponse;
 }
 
 const examplePayload: Response = {
@@ -17,17 +20,20 @@ export const listOptOutNumbers = action({
     description: "Create an Amazon SNS Topic",
   },
   perform: async (context, params) => {
-    const sns = await createSNSClient({
+    const sns = createSNSClient({
       awsConnection: params.awsConnection,
       awsRegion: util.types.toString(params.awsRegion),
     });
+    const listPhoneNumbersOptedOutParams = {
+      nextToken: util.types.toString(params.nextToken),
+    };
+    const command = new ListPhoneNumbersOptedOutCommand(
+      listPhoneNumbersOptedOutParams
+    );
+    const response = await sns.send(command);
 
     return {
-      data: await sns
-        .listPhoneNumbersOptedOut({
-          nextToken: util.types.toString(params.nextToken),
-        })
-        .promise(),
+      data: response,
     };
   },
   inputs: { awsRegion, nextToken, awsConnection: connectionInput },

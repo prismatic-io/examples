@@ -2,6 +2,7 @@ import { dataSource } from "@prismatic-io/spectral";
 import { createS3Client } from "./auth";
 import { accessKeyInput, awsRegion } from "./inputs";
 import awsRegions from "./aws-regions.json";
+import { ListBucketsCommand } from "@aws-sdk/client-s3"; // ES Modules import
 
 const selectRegion = dataSource({
   display: {
@@ -24,8 +25,9 @@ const selectBucket = dataSource({
   },
   dataSourceType: "picklist",
   perform: async (context, params) => {
-    const s3 = await createS3Client(params.accessKey, params.awsRegion);
-    const response = await s3.listBuckets().promise();
+    const s3 = createS3Client(params.accessKey, params.awsRegion);
+    const command = new ListBucketsCommand({});
+    const response = await s3.send(command);
     return {
       result: response.Buckets.map((bucket) => ({
         label: bucket.Name,

@@ -10,28 +10,32 @@
     "format": "npm run lint-fix && prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "generate-regions-json": "aws ec2 describe-regions | jq '.Regions | map(.RegionName) | sort' > src/aws-regions.json",
     "check-format": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
-    "build": "npm run format && npm run lint && webpack",
+    "build": "webpack",
     "test": "jest --maxWorkers=4"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "7.3.7",
-    "aws-sdk": "2.1436.0"
+    "@aws-sdk/client-s3": "3.345.0",
+    "@aws-sdk/client-sns": "^3.332.0",
+    "@aws-sdk/s3-request-presigner": "3.345.0",
+    "@prismatic-io/spectral": "7.6.3",
+    "axios": "^0.27.2",
+    "@aws-sdk/signature-v4-crt": "^3.378.0"
   },
   "author": "Prismatic",
   "license": "MIT",
   "devDependencies": {
     "@prismatic-io/eslint-config-spectral": "1.0.0",
-    "@types/node": "14.14.35",
     "@types/jest": "25.2.3",
+    "@types/node": "14.14.35",
     "copy-webpack-plugin": "6.0.3",
     "eslint": "6.8.0",
+    "jest": "26.6.3",
+    "prettier": "2.0.5",
+    "ts-jest": "26.4.0",
     "ts-loader": "8.0.2",
     "typescript": "4.3.4",
-    "webpack": "5.88.2",
-    "webpack-cli": "5.1.4",
-    "ts-jest": "26.4.0",
-    "prettier": "2.0.5",
-    "jest": "26.6.3"
+    "webpack": "5.76.2",
+    "webpack-cli": "5.0.1"
   },
   "eslintConfig": {
     "root": true,

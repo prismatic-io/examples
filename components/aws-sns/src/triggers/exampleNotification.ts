@@ -40,8 +40,22 @@ export const snsExamplePayload: TriggerPayload = {
   customer: {
     externalId: "abc-123",
     name: "Example Corp",
+    id: "exampleId",
   },
   body: {
     data: snsExampleBody,
+  },
+  executionId: "",
+  instance: {
+    id: "example",
+    name: "exampleName",
+  },
+  pathFragment: "example",
+  invokeUrl: "Url",
+  user: {
+    email: "email@email.test",
+    externalId: "externalId",
+    id: "123",
+    name: "name",
   },
 };

@@ -7,14 +7,14 @@ import {
   messageAttributes,
   connectionInput,
 } from "../inputs";
-import { SNS } from "aws-sdk";
 import {
+  PublishCommand,
   MessageAttributeValue,
-  MessageAttributeMap,
-} from "aws-sdk/clients/sns";
+  PublishResponse,
+} from "@aws-sdk/client-sns";
 import { KeyValuePair } from "@prismatic-io/spectral";
 interface Response {
-  data: SNS.Types.PublishResponse;
+  data: PublishResponse;
 }
 
 const examplePayload: Response = {
@@ -55,9 +55,7 @@ const getAttributeType = (input: unknown): MessageAttributeValue => {
   };
 };
 
-const attributeReducer = (
-  kvpList: KeyValuePair<unknown>[] = []
-): MessageAttributeMap => {
+const attributeReducer = (kvpList: KeyValuePair<unknown>[] = []) => {
   return kvpList.reduce(
     (result, { key, value }) => ({ ...result, [key]: getAttributeType(value) }),
     {}
@@ -70,19 +68,20 @@ export const publishMessage = action({
     description: "Publish a message to an Amazon SNS Topic",
   },
   perform: async (context, params) => {
-    const sns = await createSNSClient({
+    const sns = createSNSClient({
       awsConnection: params.awsConnection,
       awsRegion: util.types.toString(params.awsRegion),
     });
+    const publishParams = {
+      Message: util.types.toString(params.message),
+      MessageAttributes: attributeReducer(params.messageAttributes),
+      TopicArn: util.types.toString(params.topicArn),
+    };
+    const command = new PublishCommand(publishParams);
+    const response = await sns.send(command);
 
     return {
-      data: await sns
-        .publish({
-          Message: util.types.toString(params.message),
-          MessageAttributes: attributeReducer(params.messageAttributes),
-          TopicArn: util.types.toString(params.topicArn),
-        })
-        .promise(),
+      data: response,
     };
   },
   inputs: {

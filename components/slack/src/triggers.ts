@@ -1,6 +1,7 @@
 import { HttpResponse, trigger, util } from "@prismatic-io/spectral";
 import { connectionInput } from "./inputs";
 import crypto from "crypto";
+import querystring from "querystring";
 
 const computeSignature = (
   requestBody: string,
@@ -118,7 +119,10 @@ export const slashCommandWebhook = trigger({
     description:
       "Trigger for handling slash command and modal webhooks from Slack",
   },
+  // eslint-disable-next-line @typescript-eslint/require-await
   perform: async (context, payload, params) => {
+    const deserializedPayload = querystring.parse(payload.rawBody.toString());
+
     const response = {
       statusCode: 200,
       contentType: util.types.toString(params.contentType),
@@ -126,10 +130,14 @@ export const slashCommandWebhook = trigger({
         ? { body: util.types.toString(params.responseBody) }
         : {}),
     };
-    return Promise.resolve({
-      payload,
+
+    return {
+      payload: {
+        ...payload,
+        deserializedBody: deserializedPayload,
+      },
       response,
-    });
+    };
   },
   inputs: {
     slackConnection: connectionInput,
@@ -153,4 +161,5 @@ export const slashCommandWebhook = trigger({
   synchronousResponseSupport: "invalid",
   scheduleSupport: "invalid",
 });
+
 export default { webhook, slashCommandWebhook };

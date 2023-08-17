@@ -21,7 +21,7 @@ export const getTask = action({
   examplePayload: {
     data: {
       data: {
-        guid: "75834703724",
+        gid: "75834703724",
         projects: "",
         resource_type: "task",
         name: "MyTask",
@@ -30,13 +30,13 @@ export const getTask = action({
         resource_subtype: "default_task",
         tags: "",
         workspace: {
-          guid: "867452364563",
+          gid: "867452364563",
           resource_type: "workspace",
           name: "Example Workspace",
         },
         custom_fields: {},
         assignee: {
-          guid: "32493284234",
+          gid: "32493284234",
           name: "Example Assignee",
           resource_type: "user",
         },
