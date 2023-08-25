@@ -1,0 +1,513 @@
+category: Communication
+configPages:
+  - elements:
+      - type: configVar
+        value: Google Cloud Pub/Sub Connection
+      - type: configVar
+        value: Google Cloud Pub/Sub - Project ID
+      - type: configVar
+        value: Gmail Connection
+    name: Configuration
+    tagline: ""
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Deploy Flow
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Integration Trigger
+      - action:
+          key: createTopic
+          component:
+            isPublic: true
+            key: google-cloud-pub-sub
+            version: LATEST
+        description: ""
+        errorConfig:
+          delaySeconds: 10
+          errorHandlerType: fail
+          ignoreFinalError: false
+          maxAttempts: 1
+          usesExponentialBackoff: false
+        inputs:
+          connectionInput:
+            type: configVar
+            value: Google Cloud Pub/Sub Connection
+          kmsKeyName:
+            type: value
+            value: ""
+          labels:
+            type: value
+            value: ""
+          messageRetentionDuration:
+            type: value
+            value: ""
+          messageStoragePolicy:
+            type: value
+            value: ""
+          projectId:
+            type: configVar
+            value: Google Cloud Pub/Sub - Project ID
+          satisfiesPzs:
+            type: value
+            value: "false"
+          schemaSettings:
+            type: value
+            value: ""
+          topic:
+            type: reference
+            value: integrationTrigger.results.instance.id
+        name: Create Topic
+      - action:
+          key: setTopicIamPolicy
+          component:
+            isPublic: true
+            key: google-cloud-pub-sub
+            version: LATEST
+        description: ""
+        inputs:
+          connectionInput:
+            type: configVar
+            value: Google Cloud Pub/Sub Connection
+          topic:
+            type: reference
+            value: createTopic.results.name
+        name: Set Gmail IAM Policy for Topic
+      - action:
+          key: createWebhookSubscription
+          component:
+            isPublic: true
+            key: google-cloud-pub-sub
+            version: LATEST
+        description: ""
+        inputs:
+          connectionInput:
+            type: configVar
+            value: Google Cloud Pub/Sub Connection
+          projectId:
+            type: configVar
+            value: Google Cloud Pub/Sub - Project ID
+          subscription:
+            type: reference
+            value: integrationTrigger.results.instance.id
+          topic:
+            type: reference
+            value: createTopic.results.name
+          topicNameOrFullFormat:
+            type: value
+            value: "true"
+          webhookUrl:
+            type: reference
+            value: integrationTrigger.results.webhookUrls.Inbox Change Receiver
+        name: Create Webhook Subscription
+      - action:
+          key: createPushNotification
+          component:
+            isPublic: true
+            key: google-gmail
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Gmail Connection
+          labelIdsInput:
+            type: complex
+            value:
+              - type: value
+                value: INBOX
+          topicNameInput:
+            type: reference
+            value: createTopic.results.name
+          userIdInput:
+            type: value
+            value: ""
+        name: Create Push Notification (Watch Request)
+      - action:
+          key: saveCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          keyInput:
+            type: value
+            value: historyId
+          valueInput:
+            type: reference
+            value: createPushNotificationWatchRequest.results.historyId
+        name: Save History ID
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Inbox Change Receiver
+    steps:
+      - action:
+          key: pushNotificationWebhook
+          component:
+            isPublic: true
+            key: google-gmail
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Inbox Change Receiver Trigger
+      - action:
+          key: getCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: "If this is the first time running, default to new history ID"
+        inputs:
+          defaultValueInput:
+            type: reference
+            value: >-
+              inboxChangeReceiverTrigger.results.body.data.message.decodedData.historyId
+          keyInput:
+            type: value
+            value: historyId
+        name: Get previous history ID
+      - action:
+          key: getEventHistory
+          component:
+            isPublic: true
+            key: google-gmail
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Gmail Connection
+          historyId:
+            type: reference
+            value: getPreviousHistoryId.results
+          userId:
+            type: value
+            value: ""
+        name: Get event history
+      - action:
+          key: branchOnExpression
+          component:
+            isPublic: true
+            key: branch
+            version: LATEST
+        branches:
+          - name: New Events Observed
+            steps:
+              - action:
+                  key: loopOverItems
+                  component:
+                    isPublic: true
+                    key: loop
+                    version: LATEST
+                description: ""
+                inputs:
+                  items:
+                    type: reference
+                    value: getEventHistory.results.history
+                name: Loop Over Items
+                steps:
+                  - action:
+                      key: getMessageById
+                      component:
+                        isPublic: true
+                        key: google-gmail
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      connection:
+                        type: configVar
+                        value: Gmail Connection
+                      messageId:
+                        type: reference
+                        value: loopOverItems.currentItem.messages.0.id
+                      userId:
+                        type: value
+                        value: ""
+                    name: Get Message
+                  - action:
+                      key: writeLog
+                      component:
+                        isPublic: true
+                        key: log
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      level:
+                        type: value
+                        value: info
+                      message:
+                        type: template
+                        value: >-
+                          Got an email from
+                          {{$getMessage.results.message.headers.from.value.0.address}}
+                          with the subject
+                          "{{$getMessage.results.message.headers.subject}}"
+                    name: Write Log Message
+          - name: Else
+            steps: []
+        description: ""
+        inputs:
+          conditions:
+            type: complex
+            value:
+              - name: New Events Observed
+                type: complex
+                value:
+                  - and
+                  - - exists
+                    - type: reference
+                      value: getEventHistory.results.history
+                  - - isNotEmpty
+                    - type: reference
+                      value: getEventHistory.results.history
+                    - type: value
+                      value: ""
+        name: Branch on Expression
+      - action:
+          key: saveCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          keyInput:
+            type: value
+            value: historyId
+          valueInput:
+            type: reference
+            value: getEventHistory.results.historyId
+        name: Flow - Save Value
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Renew Webhook
+    steps:
+      - action:
+          key: schedule
+          component:
+            isPublic: true
+            key: schedule-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Renew Webhook Trigger
+        schedule:
+          meta:
+            scheduleType: week
+            timeZone: ""
+          type: value
+          value: 00 00 * * 0
+      - action:
+          key: httpGet
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: ""
+          debugRequest:
+            type: value
+            value: "false"
+          headers:
+            type: complex
+            value: []
+          ignoreSslErrors:
+            type: value
+            value: "false"
+          includeFullResponse:
+            type: value
+            value: "false"
+          maxRetries:
+            type: value
+            value: "0"
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: "0"
+          retryOnAllErrors:
+            type: value
+            value: "false"
+          timeout:
+            type: value
+            value: ""
+          url:
+            type: reference
+            value: renewWebhookTrigger.results.webhookUrls.Deploy Flow
+          useExponentialBackoff:
+            type: value
+            value: "false"
+        name: GET Request
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Remove Flow
+    steps:
+      - action:
+          key: instanceRemove
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Remove Flow Trigger
+      - action:
+          key: deletePushNotification
+          component:
+            isPublic: true
+            key: google-gmail
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Gmail Connection
+          userIdInput:
+            type: value
+            value: ""
+        name: Delete Push Notification (Stop Mailbox Updates)
+      - action:
+          key: deleteSubscription
+          component:
+            isPublic: true
+            key: google-cloud-pub-sub
+            version: LATEST
+        description: ""
+        errorConfig:
+          delaySeconds: 10
+          errorHandlerType: ignore
+          ignoreFinalError: false
+          maxAttempts: 1
+          usesExponentialBackoff: false
+        inputs:
+          connectionInput:
+            type: configVar
+            value: Google Cloud Pub/Sub Connection
+          projectId:
+            type: configVar
+            value: Google Cloud Pub/Sub - Project ID
+          subscription:
+            type: reference
+            value: removeFlowTrigger.results.instance.id
+          subscriptionNameOrFullFormat:
+            type: value
+            value: "false"
+        name: Delete Subscription
+      - action:
+          key: deleteTopic
+          component:
+            isPublic: true
+            key: google-cloud-pub-sub
+            version: LATEST
+        description: ""
+        errorConfig:
+          delaySeconds: 10
+          errorHandlerType: ignore
+          ignoreFinalError: false
+          maxAttempts: 1
+          usesExponentialBackoff: false
+        inputs:
+          connectionInput:
+            type: configVar
+            value: Google Cloud Pub/Sub Connection
+          projectId:
+            type: configVar
+            value: Google Cloud Pub/Sub - Project ID
+          topic:
+            type: reference
+            value: removeFlowTrigger.results.instance.id
+          topicNameOrFullFormat:
+            type: value
+            value: "false"
+        name: Delete Topic
+name: Gmail with Webhooks
+requiredConfigVars:
+  - connection:
+      key: privateKey
+      component:
+        isPublic: true
+        key: google-cloud-pub-sub
+        version: LATEST
+    dataType: connection
+    inputs:
+      clientEmail:
+        type: value
+        value: ""
+      privateKey:
+        type: value
+        value: ""
+      projectId:
+        type: value
+        value: ""
+      scopes:
+        type: value
+        value: >-
+          https://www.googleapis.com/auth/cloud-platform
+          https://www.googleapis.com/auth/pubsub
+    key: Google Cloud Pub/Sub Connection
+    meta:
+      visibleToCustomerDeployer: false
+      visibleToOrgDeployer: true
+    orgOnly: true
+  - dataType: string
+    defaultValue: ""
+    key: Google Cloud Pub/Sub - Project ID
+    meta:
+      visibleToCustomerDeployer: false
+      visibleToOrgDeployer: true
+    orgOnly: true
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: google-gmail
+        version: LATEST
+    dataType: connection
+    inputs:
+      clientId:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      scopes:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://mail.google.com/"
+    key: Gmail Connection
+    orgOnly: false
