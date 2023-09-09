@@ -1,0 +1,426 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: Amazon SQS Connection
+    name: Configuration
+definitionVersion: 7
+description: >-
+  This example integration shows how you can leverage an Amazon SQS FIFO queue
+  to ensure processing of requests in order.
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: Create an SQS queue for this instance when the instance is created
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create SQS Queue
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Create SQS Queue Trigger
+      - action:
+          key: createQueue
+          component:
+            isPublic: true
+            key: aws-sqs
+            version: LATEST
+        description: ""
+        inputs:
+          awsConnection:
+            type: configVar
+            value: Amazon SQS Connection
+          awsRegion:
+            type: value
+            value: us-east-1
+          contentBasedDeduplication:
+            type: value
+            value: "false"
+          dynamicAccessKeyId:
+            type: value
+            value: ""
+          dynamicSecretAccessKey:
+            type: value
+            value: ""
+          dynamicSessionToken:
+            type: value
+            value: ""
+          isFifo:
+            type: value
+            value: "true"
+          name:
+            type: template
+            value: "{{$createSqsQueueTrigger.results.instance.id}}.fifo"
+        name: Create Queue
+  - description: >-
+      This flow receives all payloads from a third-party app, and sends them an
+      an Amazon SQS FIFO queue.
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Receive Invocations
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Receive Invocations Trigger
+      - action:
+          key: getQueueUrl
+          component:
+            isPublic: true
+            key: aws-sqs
+            version: LATEST
+        description: ""
+        inputs:
+          awsConnection:
+            type: configVar
+            value: Amazon SQS Connection
+          awsRegion:
+            type: value
+            value: us-east-1
+          dynamicAccessKeyId:
+            type: value
+            value: ""
+          dynamicSecretAccessKey:
+            type: value
+            value: ""
+          dynamicSessionToken:
+            type: value
+            value: ""
+          name:
+            type: template
+            value: "{{$receiveInvocationsTrigger.results.instance.id}}.fifo"
+        name: Get a Queue's URL
+      - action:
+          key: sendMessage
+          component:
+            isPublic: true
+            key: aws-sqs
+            version: LATEST
+        description: ""
+        inputs:
+          attributes:
+            type: complex
+            value: []
+          awsConnection:
+            type: configVar
+            value: Amazon SQS Connection
+          awsRegion:
+            type: value
+            value: us-east-1
+          delaySeconds:
+            type: value
+            value: ""
+          dynamicAccessKeyId:
+            type: value
+            value: ""
+          dynamicSecretAccessKey:
+            type: value
+            value: ""
+          dynamicSessionToken:
+            type: value
+            value: ""
+          message:
+            type: reference
+            value: receiveInvocationsTrigger.results.body.data
+          messageDeduplicationId:
+            type: value
+            value: ""
+          messageGroupId:
+            type: reference
+            value: receiveInvocationsTrigger.results.instance.id
+          url:
+            type: reference
+            value: getAQueueSUrl.results.QueueUrl
+        name: Send Message
+  - description: >-
+      Process messages from the SQS queue one at a time, deleting messages after
+      they are processed.
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Process Payloads
+    steps:
+      - action:
+          key: schedule
+          component:
+            isPublic: true
+            key: schedule-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Process Payloads Trigger
+        schedule:
+          meta:
+            scheduleType: minute
+            timeZone: ""
+          type: value
+          value: "*/1 * * * *"
+      - action:
+          key: getQueueUrl
+          component:
+            isPublic: true
+            key: aws-sqs
+            version: LATEST
+        description: ""
+        inputs:
+          awsConnection:
+            type: configVar
+            value: Amazon SQS Connection
+          awsRegion:
+            type: value
+            value: us-east-1
+          dynamicAccessKeyId:
+            type: value
+            value: ""
+          dynamicSecretAccessKey:
+            type: value
+            value: ""
+          dynamicSessionToken:
+            type: value
+            value: ""
+          name:
+            type: template
+            value: "{{$processPayloadsTrigger.results.instance.id}}.fifo"
+        name: Get a Queue's URL
+      - action:
+          key: loopNTimes
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: Loop until there are no messages to process
+        inputs:
+          iterationCount:
+            type: value
+            value: "100"
+        name: Loop N Times
+        steps:
+          - action:
+              key: receiveMessages
+              component:
+                isPublic: true
+                key: aws-sqs
+                version: LATEST
+            description: Fetch a message from the queue
+            inputs:
+              awsConnection:
+                type: configVar
+                value: Amazon SQS Connection
+              awsRegion:
+                type: value
+                value: us-east-1
+              dynamicAccessKeyId:
+                type: value
+                value: ""
+              dynamicSecretAccessKey:
+                type: value
+                value: ""
+              dynamicSessionToken:
+                type: value
+                value: ""
+              maxNumber:
+                type: value
+                value: "1"
+              url:
+                type: reference
+                value: getAQueueSUrl.results.QueueUrl
+              waitTime:
+                type: value
+                value: ""
+            name: Receive Messages
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: No Messages
+                steps:
+                  - action:
+                      key: breakLoop
+                      component:
+                        isPublic: true
+                        key: loop
+                        version: LATEST
+                    description: Exit early
+                    inputs: {}
+                    name: Break Loop
+              - name: Else
+                steps:
+                  - action:
+                      key: writeLog
+                      component:
+                        isPublic: true
+                        key: log
+                        version: LATEST
+                    description: Add additional message processing steps in this branch
+                    inputs:
+                      level:
+                        type: value
+                        value: info
+                      message:
+                        type: reference
+                        value: receiveMessages.results.Messages.0.Body
+                    name: Log body of message
+            description: ""
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: No Messages
+                    type: complex
+                    value:
+                      - and
+                      - - isEmpty
+                        - type: reference
+                          value: receiveMessages.results.Messages
+                        - type: value
+                          value: ""
+            name: Check if there are messages to process
+          - action:
+              key: deleteMessage
+              component:
+                isPublic: true
+                key: aws-sqs
+                version: LATEST
+            description: Remove the message from the queue after processing it
+            inputs:
+              awsConnection:
+                type: configVar
+                value: Amazon SQS Connection
+              awsRegion:
+                type: value
+                value: us-east-1
+              dynamicAccessKeyId:
+                type: value
+                value: ""
+              dynamicSecretAccessKey:
+                type: value
+                value: ""
+              dynamicSessionToken:
+                type: value
+                value: ""
+              receiptHandle:
+                type: reference
+                value: receiveMessages.results.Messages.0.ReceiptHandle
+              url:
+                type: reference
+                value: getAQueueSUrl.results.QueueUrl
+            name: Delete Message
+  - description: Delete the SQS Queue when the instance is removed
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Delete SQS Queue
+    steps:
+      - action:
+          key: instanceRemove
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Delete SQS Queue Trigger
+      - action:
+          key: getQueueUrl
+          component:
+            isPublic: true
+            key: aws-sqs
+            version: LATEST
+        description: ""
+        inputs:
+          awsConnection:
+            type: configVar
+            value: Amazon SQS Connection
+          awsRegion:
+            type: value
+            value: us-east-1
+          dynamicAccessKeyId:
+            type: value
+            value: ""
+          dynamicSecretAccessKey:
+            type: value
+            value: ""
+          dynamicSessionToken:
+            type: value
+            value: ""
+          name:
+            type: template
+            value: "{{$deleteSqsQueueTrigger.results.instance.id}}.fifo"
+        name: Get a Queue's URL
+      - action:
+          key: deleteQueue
+          component:
+            isPublic: true
+            key: aws-sqs
+            version: LATEST
+        description: ""
+        inputs:
+          awsConnection:
+            type: configVar
+            value: Amazon SQS Connection
+          awsRegion:
+            type: value
+            value: us-east-1
+          dynamicAccessKeyId:
+            type: value
+            value: ""
+          dynamicSecretAccessKey:
+            type: value
+            value: ""
+          dynamicSessionToken:
+            type: value
+            value: ""
+          url:
+            type: reference
+            value: getAQueueSUrl.results.QueueUrl
+        name: Delete Queue
+name: Amazon SQS FIFO Queue Example
+requiredConfigVars:
+  - connection:
+      key: apiKeySecret
+      component:
+        isPublic: true
+        key: aws-sqs
+        version: LATEST
+    dataType: connection
+    description: This is org-scoped and not visible to customer users
+    inputs:
+      accessKeyId:
+        type: value
+        value: ""
+      secretAccessKey:
+        type: value
+        value: ""
+    key: Amazon SQS Connection
+    meta:
+      visibleToCustomerDeployer: false
+      visibleToOrgDeployer: true
+    orgOnly: true
