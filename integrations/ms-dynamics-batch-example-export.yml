@@ -1,0 +1,847 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: Microsoft Dynamics 365 Connection
+      - type: configVar
+        value: Event Entity Type
+      - type: configVar
+        value: Acme Events URL
+    name: Configuration
+    tagline: ""
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create Records - One at a time
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Create Records - One at a time Trigger
+      - action:
+          key: httpGet
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: Fetch a list of events from Acme
+        inputs:
+          connection:
+            type: configVar
+            value: ""
+          debugRequest:
+            type: value
+            value: "false"
+          headers:
+            type: complex
+            value: []
+          ignoreSslErrors:
+            type: value
+            value: "false"
+          includeFullResponse:
+            type: value
+            value: "false"
+          maxRetries:
+            type: value
+            value: "0"
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: "0"
+          retryOnAllErrors:
+            type: value
+            value: "false"
+          timeout:
+            type: value
+            value: ""
+          url:
+            type: configVar
+            value: Acme Events URL
+          useExponentialBackoff:
+            type: value
+            value: "false"
+        name: Get Request
+      - action:
+          key: queryEntities
+          component:
+            isPublic: true
+            key: ms-dynamics
+            version: LATEST
+        description: Get a list of existing events in Dynamics
+        inputs:
+          connection:
+            type: configVar
+            value: Microsoft Dynamics 365 Connection
+          entityType:
+            type: configVar
+            value: Event Entity Type
+          expandPropertyNames:
+            type: complex
+            value: []
+          fieldNames:
+            type: complex
+            value:
+              - type: value
+                value: msevtmgt_name
+              - type: value
+                value: msevtmgt_eventid
+              - type: value
+                value: new_acmeexternalid
+          filterExpression:
+            type: value
+            value: ""
+          nextPageId:
+            type: value
+            value: ""
+          orderByFieldNames:
+            type: complex
+            value: []
+          recordsPerPage:
+            type: value
+            value: "100"
+        name: "[CRM] Query Entities"
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: Loop over all events from Acme
+        inputs:
+          items:
+            type: reference
+            value: getRequest.results
+        name: Loop Over Items
+        steps:
+          - action:
+              key: filter
+              component:
+                isPublic: true
+                key: collection-tools
+                version: LATEST
+            description: Get existing event (if exists)
+            inputs:
+              filterCodeInput:
+                type: template
+                value: >-
+                  (item) => { return item.new_acmeexternalid ===
+                  "{{$loopOverItems.currentItem.acme_id}}"}
+              listInput:
+                type: reference
+                value: crmQueryEntities.results.value
+            name: Filter
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: Event Exists in Dynamics
+                steps:
+                  - action:
+                      key: updateEntity
+                      component:
+                        isPublic: true
+                        key: ms-dynamics
+                        version: LATEST
+                    description: Create new Event
+                    inputs:
+                      connection:
+                        type: configVar
+                        value: Microsoft Dynamics 365 Connection
+                      dynamicValues:
+                        type: value
+                        value: ""
+                      entityId:
+                        type: reference
+                        value: filter.results.0.msevtmgt_eventid
+                      entityType:
+                        type: configVar
+                        value: Event Entity Type
+                      fieldValues:
+                        type: complex
+                        value:
+                          - name: msevtmgt_name
+                            type: reference
+                            value: loopOverItems.currentItem.event_name
+                          - name: new_acmeexternalid
+                            type: reference
+                            value: loopOverItems.currentItem.acme_id
+                          - name: msevtmgt_eventtype
+                            type: value
+                            value: "100000002"
+                    name: "[CRM] Update Entity"
+              - name: Else
+                steps:
+                  - action:
+                      key: createEntity
+                      component:
+                        isPublic: true
+                        key: ms-dynamics
+                        version: LATEST
+                    description: Create new Event
+                    inputs:
+                      connection:
+                        type: configVar
+                        value: Microsoft Dynamics 365 Connection
+                      dynamicValues:
+                        type: value
+                        value: ""
+                      entityType:
+                        type: configVar
+                        value: Event Entity Type
+                      fieldValues:
+                        type: complex
+                        value:
+                          - name: msevtmgt_name
+                            type: reference
+                            value: loopOverItems.currentItem.event_name
+                          - name: new_acmeexternalid
+                            type: reference
+                            value: loopOverItems.currentItem.acme_id
+                          - name: msevtmgt_eventtype
+                            type: value
+                            value: "100000002"
+                    name: "[CRM] Create Entity"
+            description: ""
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: Event Exists in Dynamics
+                    type: complex
+                    value:
+                      - and
+                      - - isNotEmpty
+                        - type: reference
+                          value: filter.results
+                        - type: value
+                          value: ""
+            name: Branch on Expression
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create Records - Batch
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Create Records - One at a time Trigger
+      - action:
+          key: httpGet
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: Fetch a list of events from Acme
+        inputs:
+          connection:
+            type: configVar
+            value: ""
+          debugRequest:
+            type: value
+            value: "false"
+          headers:
+            type: complex
+            value: []
+          ignoreSslErrors:
+            type: value
+            value: "false"
+          includeFullResponse:
+            type: value
+            value: "false"
+          maxRetries:
+            type: value
+            value: "0"
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: "0"
+          retryOnAllErrors:
+            type: value
+            value: "false"
+          timeout:
+            type: value
+            value: ""
+          url:
+            type: configVar
+            value: Acme Events URL
+          useExponentialBackoff:
+            type: value
+            value: "false"
+        name: Get Request
+      - action:
+          key: queryEntities
+          component:
+            isPublic: true
+            key: ms-dynamics
+            version: LATEST
+        description: Get a list of existing events in Dynamics
+        inputs:
+          connection:
+            type: configVar
+            value: Microsoft Dynamics 365 Connection
+          entityType:
+            type: configVar
+            value: Event Entity Type
+          expandPropertyNames:
+            type: complex
+            value: []
+          fieldNames:
+            type: complex
+            value:
+              - type: value
+                value: msevtmgt_name
+              - type: value
+                value: msevtmgt_eventid
+              - type: value
+                value: new_acmeexternalid
+          filterExpression:
+            type: value
+            value: ""
+          nextPageId:
+            type: value
+            value: ""
+          orderByFieldNames:
+            type: complex
+            value: []
+          recordsPerPage:
+            type: value
+            value: "100"
+        name: "[CRM] Query Entities"
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: Loop over all events from Acme
+        inputs:
+          items:
+            type: reference
+            value: getRequest.results
+        name: Loop Over Items
+        steps:
+          - action:
+              key: createObject
+              component:
+                isPublic: true
+                key: collection-tools
+                version: LATEST
+            description: ""
+            inputs:
+              keyValueInput:
+                type: complex
+                value:
+                  - name: msevtmgt_name
+                    type: reference
+                    value: loopOverItems.currentItem.event_name
+                  - name: new_acmeexternalid
+                    type: reference
+                    value: loopOverItems.currentItem.acme_id
+                  - name: msevtmgt_eventtype
+                    type: value
+                    value: "100000002"
+            name: Create Record Data Payload
+          - action:
+              key: filter
+              component:
+                isPublic: true
+                key: collection-tools
+                version: LATEST
+            description: Get existing event (if exists)
+            inputs:
+              filterCodeInput:
+                type: template
+                value: >-
+                  (item) => { return item.new_acmeexternalid ===
+                  "{{$loopOverItems.currentItem.acme_id}}"}
+              listInput:
+                type: reference
+                value: crmQueryEntities.results.value
+            name: Filter
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: Event Exists in Dynamics
+                steps:
+                  - action:
+                      key: createObject
+                      component:
+                        isPublic: true
+                        key: collection-tools
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      keyValueInput:
+                        type: complex
+                        value:
+                          - name: collection
+                            type: configVar
+                            value: Event Entity Type
+                          - name: action
+                            type: value
+                            value: update
+                          - name: key
+                            type: reference
+                            value: filter.results.0.msevtmgt_eventid
+                          - name: data
+                            type: reference
+                            value: createRecordDataPayload.results
+                    name: Create Entity Update Action
+                  - action:
+                      key: appendExecutionValueToList
+                      component:
+                        isPublic: true
+                        key: persist-data
+                        version: LATEST
+                    description: Append update action to batch list
+                    inputs:
+                      keyInput:
+                        type: value
+                        value: batch
+                      valueInput:
+                        type: reference
+                        value: createEntityUpdateAction.results
+                    name: Execution - Append Value To List 2
+              - name: Else
+                steps:
+                  - action:
+                      key: createObject
+                      component:
+                        isPublic: true
+                        key: collection-tools
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      keyValueInput:
+                        type: complex
+                        value:
+                          - name: collection
+                            type: configVar
+                            value: Event Entity Type
+                          - name: action
+                            type: value
+                            value: create
+                          - name: data
+                            type: reference
+                            value: createRecordDataPayload.results
+                    name: Create Entity Create Action
+                  - action:
+                      key: appendExecutionValueToList
+                      component:
+                        isPublic: true
+                        key: persist-data
+                        version: LATEST
+                    description: Append create action to batch list
+                    inputs:
+                      keyInput:
+                        type: value
+                        value: batch
+                      valueInput:
+                        type: reference
+                        value: createEntityCreateAction.results
+                    name: Execution - Append Value To List
+            description: ""
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: Event Exists in Dynamics
+                    type: complex
+                    value:
+                      - and
+                      - - isNotEmpty
+                        - type: reference
+                          value: filter.results
+                        - type: value
+                          value: ""
+            name: Branch on Expression
+      - action:
+          key: getExecutionValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: Get batch actions
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ""
+          keyInput:
+            type: value
+            value: batch
+        name: Execution - Get Value
+      - action:
+          key: batchEntityActions
+          component:
+            isPublic: true
+            key: ms-dynamics
+            version: LATEST
+        description: ""
+        inputs:
+          actions:
+            type: reference
+            value: executionGetValue.results
+          connection:
+            type: configVar
+            value: Microsoft Dynamics 365 Connection
+        name: "[CRM] Batch Entity Actions"
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Clear out existing events
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Clear out existing events Trigger
+      - action:
+          key: stopExecution
+          component:
+            isPublic: true
+            key: stop-execution
+            version: LATEST
+        description: ""
+        inputs:
+          contentType:
+            type: value
+            value: application/json
+          jsonBody:
+            type: value
+            value: ""
+          statusCode:
+            type: value
+            value: "200"
+        name: WARNING - this will remove all event entities
+      - action:
+          key: queryEntities
+          component:
+            isPublic: true
+            key: ms-dynamics
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Microsoft Dynamics 365 Connection
+          entityType:
+            type: configVar
+            value: Event Entity Type
+          expandPropertyNames:
+            type: complex
+            value: []
+          fieldNames:
+            type: complex
+            value:
+              - type: value
+                value: msevtmgt_eventid
+          filterExpression:
+            type: value
+            value: ""
+          nextPageId:
+            type: value
+            value: ""
+          orderByFieldNames:
+            type: complex
+            value: []
+          recordsPerPage:
+            type: value
+            value: "100"
+        name: "[CRM] Query Entities"
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ""
+        inputs:
+          items:
+            type: reference
+            value: crmQueryEntities.results.value
+        name: Loop Over Items
+        steps:
+          - action:
+              key: createObject
+              component:
+                isPublic: true
+                key: collection-tools
+                version: LATEST
+            description: ""
+            inputs:
+              keyValueInput:
+                type: complex
+                value:
+                  - name: collection
+                    type: configVar
+                    value: Event Entity Type
+                  - name: action
+                    type: value
+                    value: delete
+                  - name: key
+                    type: reference
+                    value: loopOverItems.currentItem.msevtmgt_eventid
+            name: Create Delete Object
+          - action:
+              key: appendExecutionValueToList
+              component:
+                isPublic: true
+                key: persist-data
+                version: LATEST
+            description: ""
+            inputs:
+              keyInput:
+                type: value
+                value: batch
+              valueInput:
+                type: reference
+                value: createDeleteObject.results
+            name: Execution - Append Value To List
+      - action:
+          key: getExecutionValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          defaultValueInput:
+            type: value
+            value: "[]"
+          keyInput:
+            type: value
+            value: batch
+        name: Execution - Get Value
+      - action:
+          key: batchEntityActions
+          component:
+            isPublic: true
+            key: ms-dynamics
+            version: LATEST
+        description: ""
+        inputs:
+          actions:
+            type: reference
+            value: executionGetValue.results
+          connection:
+            type: configVar
+            value: Microsoft Dynamics 365 Connection
+        name: "[CRM] Batch Entity Actions"
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Add additional attribute
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Add additional field Trigger
+      - action:
+          key: join
+          component:
+            isPublic: true
+            key: text-manipulation
+            version: LATEST
+        description: ""
+        inputs:
+          separator:
+            type: value
+            value: ""
+          strings:
+            type: complex
+            value:
+              - type: configVar
+                value: Event Entity Type
+              - type: value
+                value: s
+        name: Join
+      - action:
+          key: createAttribute
+          component:
+            isPublic: true
+            key: ms-dynamics
+            version: LATEST
+        description: ""
+        inputs:
+          attributeBody:
+            type: value
+            value: |-
+              {
+                "AttributeType": "String",
+                "AttributeTypeName": {
+                  "Value": "AcmeExternalId"
+                },
+                "Description": {
+                  "@odata.type": "Microsoft.Dynamics.CRM.Label",
+                  "LocalizedLabels": [
+                    {
+                      "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                      "Label": "The external ID from Acme",
+                      "LanguageCode": 1033
+                    }
+                  ]
+                },
+                "DisplayName": {
+                  "@odata.type": "Microsoft.Dynamics.CRM.Label",
+                  "LocalizedLabels": [
+                    {
+                      "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
+                      "Label": "Acme External ID",
+                      "LanguageCode": 1033
+                    }
+                  ]
+                },
+                "RequiredLevel": {
+                  "Value": "None",
+                  "CanBeChanged": true,
+                  "ManagedPropertyLogicalName": "canmodifyrequirementlevelsettings"
+                },
+                "SchemaName": "new_acmeExternalId",
+                "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+                "MaxLength": "100"
+              }
+          connection:
+            type: configVar
+            value: Microsoft Dynamics 365 Connection
+          entityId:
+            type: value
+            value: 0a685b1e-afbe-46e0-a7a8-8f4e3a17bf4f
+        name: "[CRM] Create Attribute"
+name: MS Dynamics - Batch Example
+requiredConfigVars:
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: ms-dynamics
+        version: LATEST
+    dataType: connection
+    inputs:
+      clientId:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      scopes:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://orgab571b52.crm.dynamics.com/user_impersonation offline_access"
+      webApiUrl:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://orgab571b52.crm.dynamics.com/"
+    key: Microsoft Dynamics 365 Connection
+    orgOnly: false
+  - dataType: string
+    defaultValue: msevtmgt_events
+    key: Event Entity Type
+    orgOnly: false
+  - dataType: string
+    defaultValue: >-
+      https://gist.githubusercontent.com/taylorreece/7ce72dc8def10b0da70be2707d1fd3ef/raw/a6425ffd39e9a072702255fed12f9a02de6c54aa/example-events.json
+    key: Acme Events URL
+    orgOnly: false
