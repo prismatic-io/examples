@@ -13,7 +13,8 @@ import { generateChannelTypesString } from "./utils";
 const selectChannels = dataSource({
   display: {
     label: "Select Channel",
-    description: "Select a Slack channel from a dropdown menu",
+    description:
+      "Select a Slack channel from a dropdown menu (up to 10,000 channels)",
   },
   inputs: {
     connection: connectionInput,
@@ -33,8 +34,11 @@ const selectChannels = dataSource({
     const client = createOauthClient({ slackConnection: params.connection });
     let channels: Channel[] = [];
     let cursor = null;
+    let counter = 1;
 
-    // Loop over pages of conversations
+    // Loop over pages of conversations, fetching up to 10,000 channels
+    // If we loop more than 10 times, we risk hitting Slack API limits,
+    // and returning over 10,000 channels can cause the UI to hang
     do {
       const data = await client.conversations.list({
         exclude_archived: true,
@@ -44,7 +48,8 @@ const selectChannels = dataSource({
       });
       channels = [...channels, ...data.channels];
       cursor = data.response_metadata?.next_cursor;
-    } while (cursor);
+      counter += 1;
+    } while (cursor && counter < 10);
 
     // Map conversations to key/label objects, sorted by name
     const objects = channels

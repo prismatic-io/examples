@@ -10,6 +10,8 @@ import { listBuckets } from "./actions/listBuckets";
 import { createBucket } from "./actions/createBucket";
 import { deleteBucket } from "./actions/deleteBucket";
 import { getBucket } from "./actions/getBucket";
+import rawRequest from "./actions/rawRequest";
+
 import connections from "./connections";
 
 export default component({
@@ -36,6 +38,7 @@ export default component({
     createBucket,
     getBucket,
     deleteBucket,
+    rawRequest,
   },
   connections,
 });
