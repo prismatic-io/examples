@@ -1,0 +1,815 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: Salesforce Connection
+      - type: configVar
+        value: Persist Data Outbound Message Key Name
+      - type: configVar
+        value: Persist Data Workflow Rule Key Name
+    name: Configuration
+    tagline: ""
+definitionVersion: 7
+description: ""
+documentation: >-
+  # Salesforce Example
+
+
+  This example integration is broken into four flows.
+
+
+  ## Create Salesforce Outbound Message
+
+
+  This flow creates a salesforce outbound message and workflow rule. In
+  instructs Salesforce to notify its sibling flow, **Process Salesforce Outbound
+  Messages**, when an **Account** is created, updated, or deleted. It is
+  triggered by an "instance create" event, which executes when an instance is
+  deployed.
+
+
+  ## Process Salesforce Outbound Messages
+
+
+  This flow receives notifications when an **Account** is changed. It fetches
+  the modified account, maps data from SFDC to a format that "Acme Corp"
+  understands, and sends the request to Acme.
+
+
+  ## Delete Salesforce Outbound Message
+
+
+  This flow removes the workflow rule and outbound message from SFDC. It is
+  triggered by an "instance remove" event, which executes when an instance is
+  deleted.
+
+
+  ## Create Account from Acme
+
+
+  This flow provides bi-directional data flow from SFDC and Acme. Acme can send
+  a webhook request to this flow via its webhook URL, and a corresponding
+  **Account** will be created in SFDC. A payload should look like this:
+
+
+  ```json
+
+  {
+    "name": "My New Account",
+    "industry": "Education",
+    "monthlyRevenue": 12345
+  }
+
+  ```
+endpointType: flow_specific
+flows:
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create Salesforce Outbound Messages
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: Set up with an instance is created
+        inputs: {}
+        isTrigger: true
+        name: Create Salesforce Outbound Messages Trigger
+      - action:
+          key: getCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: "Get outbound message full name, if set"
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ""
+          keyInput:
+            type: configVar
+            value: Persist Data Outbound Message Key Name
+        name: Cross Flow - Get Value
+      - action:
+          key: slice
+          component:
+            isPublic: true
+            key: text-manipulation
+            version: LATEST
+        description: Generate unique name for outbound message and workflow rule
+        inputs:
+          sliceStart:
+            type: value
+            value: "0"
+          sliceStop:
+            type: value
+            value: "40"
+          text:
+            type: template
+            value: >-
+              instance_{{$createSalesforceOutboundMessagesTrigger.results.instance.id}}
+        name: Extract Substring
+      - action:
+          key: listWorkflowOutboundMessages
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Salesforce Connection
+          version:
+            type: value
+            value: "51.0"
+        name: List Workflow Outbound Messages
+      - action:
+          key: filter
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: Filter outbound messages for one with our persisted full name
+        inputs:
+          filterCodeInput:
+            type: template
+            value: '(item) => item.fullName == "{{$crossFlowGetValue.results}}"'
+          listInput:
+            type: reference
+            value: listWorkflowOutboundMessages.results
+        name: Filter
+      - action:
+          key: branchOnExpression
+          component:
+            isPublic: true
+            key: branch
+            version: LATEST
+        branches:
+          - name: Outbound Message Exists
+            steps:
+              - action:
+                  key: writeLog
+                  component:
+                    isPublic: true
+                    key: log
+                    version: LATEST
+                description: ""
+                inputs:
+                  level:
+                    type: value
+                    value: info
+                  message:
+                    type: value
+                    value: Outbound message already exists. Skipping creation.
+                name: Write Log Message
+          - name: Else
+            steps:
+              - action:
+                  key: getCurrentUser
+                  component:
+                    isPublic: true
+                    key: salesforce
+                    version: LATEST
+                description: ""
+                inputs:
+                  connection:
+                    type: configVar
+                    value: Salesforce Connection
+                  version:
+                    type: value
+                    value: "51.0"
+                name: Get Current User
+              - action:
+                  key: createWorkflowOutboundMessage
+                  component:
+                    isPublic: true
+                    key: salesforce
+                    version: LATEST
+                description: ""
+                inputs:
+                  connection:
+                    type: configVar
+                    value: Salesforce Connection
+                  description:
+                    type: value
+                    value: ""
+                  dynamicFields:
+                    type: value
+                    value: ""
+                  endpointUrl:
+                    type: reference
+                    value: >-
+                      createSalesforceOutboundMessagesTrigger.results.webhookUrls.Process
+                      Salesforce Outbound Messages
+                  fields:
+                    type: complex
+                    value:
+                      - type: value
+                        value: Id
+                      - type: value
+                        value: Name
+                  integrationUserEmail:
+                    type: reference
+                    value: getCurrentUser.results.username
+                  name:
+                    type: reference
+                    value: extractSubstring.results
+                  recordType:
+                    type: value
+                    value: Account
+                  version:
+                    type: value
+                    value: "51.0"
+                name: Create Workflow Outbound Message
+              - action:
+                  key: saveCrossFlowValue
+                  component:
+                    isPublic: true
+                    key: persist-data
+                    version: LATEST
+                description: ""
+                inputs:
+                  keyInput:
+                    type: configVar
+                    value: Persist Data Outbound Message Key Name
+                  valueInput:
+                    type: reference
+                    value: createWorkflowOutboundMessage.results.fullName
+                name: Cross Flow - Save Value
+        description: Branch depending on if our outbound message exists or not
+        inputs:
+          conditions:
+            type: complex
+            value:
+              - name: Outbound Message Exists
+                type: complex
+                value:
+                  - and
+                  - - isNotEmpty
+                    - type: reference
+                      value: filter.results
+                    - type: value
+                      value: ""
+        name: Branch on Expression
+      - action:
+          key: getCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: Get Workflow Rule full name
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ""
+          keyInput:
+            type: configVar
+            value: Persist Data Workflow Rule Key Name
+        name: Cross Flow - Get Value 2
+      - action:
+          key: listWorkflowRules
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Salesforce Connection
+          version:
+            type: value
+            value: "51.0"
+        name: List Workflow Rules
+      - action:
+          key: filter
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: Filter workflow rules for one with our persisted full name
+        inputs:
+          filterCodeInput:
+            type: template
+            value: '(item) => item.fullName == "{{$crossFlowGetValue2.results}}"'
+          listInput:
+            type: reference
+            value: listWorkflowRules.results
+        name: Filter 2
+      - action:
+          key: branchOnExpression
+          component:
+            isPublic: true
+            key: branch
+            version: LATEST
+        branches:
+          - name: Workflow rule already exists
+            steps:
+              - action:
+                  key: writeLog
+                  component:
+                    isPublic: true
+                    key: log
+                    version: LATEST
+                description: ""
+                inputs:
+                  level:
+                    type: value
+                    value: info
+                  message:
+                    type: value
+                    value: Workflow rule already exists. Skipping creation.
+                name: Write Log Message 2
+          - name: Else
+            steps:
+              - action:
+                  key: selectExecutedStepResult
+                  component:
+                    isPublic: true
+                    key: branch
+                    version: LATEST
+                description: Get outbound message full name
+                inputs:
+                  stepResults:
+                    type: complex
+                    value:
+                      - type: reference
+                        value: crossFlowSaveValue.results
+                      - type: reference
+                        value: crossFlowGetValue.results
+                name: Select Executed Step Result
+              - action:
+                  key: createWorkflowRule
+                  component:
+                    isPublic: true
+                    key: salesforce
+                    version: LATEST
+                description: ""
+                inputs:
+                  active:
+                    type: value
+                    value: "true"
+                  connection:
+                    type: configVar
+                    value: Salesforce Connection
+                  description:
+                    type: value
+                    value: Alert integration on Account update
+                  filterCriteria:
+                    type: value
+                    value: >-
+                      [{"field":"Account.CreatedDate","operation":"notEqual","value":"01/01/0002"}]
+                  outboundMessageActions:
+                    type: complex
+                    value:
+                      - type: reference
+                        value: selectExecutedStepResult.results
+                  recordType:
+                    type: value
+                    value: Account
+                  ruleName:
+                    type: reference
+                    value: extractSubstring.results
+                  triggerType:
+                    type: value
+                    value: onAllChanges
+                  version:
+                    type: value
+                    value: "51.0"
+                name: Create Workflow Rule
+              - action:
+                  key: saveCrossFlowValue
+                  component:
+                    isPublic: true
+                    key: persist-data
+                    version: LATEST
+                description: ""
+                inputs:
+                  keyInput:
+                    type: configVar
+                    value: Persist Data Workflow Rule Key Name
+                  valueInput:
+                    type: reference
+                    value: createWorkflowRule.results.fullName
+                name: Cross Flow - Save Value 2
+        description: ""
+        inputs:
+          conditions:
+            type: complex
+            value:
+              - name: Workflow rule already exists
+                type: complex
+                value:
+                  - and
+                  - - isNotEmpty
+                    - type: reference
+                      value: filter2.results
+                    - type: value
+                      value: ""
+        name: Branch on Expression 2
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Process Salesforce Outbound Messages
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Process Salesforce Outbound Messages Trigger
+      - action:
+          key: getRecord
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Salesforce Connection
+          recordId:
+            type: reference
+            value: >-
+              processSalesforceOutboundMessagesTrigger.results.body.data.soapenv:Envelope.soapenv:Body.notifications.Notification.sObject.sf:Id
+          recordType:
+            type: value
+            value: Account
+          version:
+            type: value
+            value: "51.0"
+        name: Get Record
+      - action:
+          key: convertToNumber
+          component:
+            isPublic: true
+            key: change-data-format
+            version: LATEST
+        description: Convert annual revenue to a number
+        inputs:
+          value:
+            type: reference
+            value: getRecord.results.AnnualRevenue
+        name: Convert To Number
+      - action:
+          key: divide
+          component:
+            isPublic: true
+            key: math
+            version: LATEST
+        description: Compute monthly revenue
+        inputs:
+          numbers:
+            type: complex
+            value:
+              - type: reference
+                value: convertToNumber.results
+              - type: value
+                value: "12"
+        name: Divide Numbers
+      - action:
+          key: createObject
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: Create payload for Acme Corp
+        inputs:
+          keyValueInput:
+            type: complex
+            value:
+              - name: sfdcAccountName
+                type: reference
+                value: getRecord.results.Name
+              - name: monthlyRevenue
+                type: reference
+                value: divideNumbers.results
+        name: Create Object
+      - action:
+          key: httpPost
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: Send account update to Acme
+        inputs:
+          connection:
+            type: configVar
+            value: ""
+          data:
+            type: reference
+            value: createObject.results
+          debugRequest:
+            type: value
+            value: "false"
+          headers:
+            type: complex
+            value:
+              - name: Content-Type
+                type: value
+                value: application/json
+              - name: x-api-key
+                type: value
+                value: abc-123
+          ignoreSslErrors:
+            type: value
+            value: "false"
+          includeFullResponse:
+            type: value
+            value: "false"
+          maxRetries:
+            type: value
+            value: "0"
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: "0"
+          retryOnAllErrors:
+            type: value
+            value: "false"
+          timeout:
+            type: value
+            value: ""
+          url:
+            type: value
+            value: "https://postman-echo.com/post"
+          useExponentialBackoff:
+            type: value
+            value: "false"
+        name: POST Request
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Delete Salesforce Outbound Message
+    steps:
+      - action:
+          key: instanceRemove
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: Clean up when an instance is deleted
+        inputs: {}
+        isTrigger: true
+        name: Delete Salesforce Outbound Message Trigger
+      - action:
+          key: getCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: Get workflow full name
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ""
+          keyInput:
+            type: configVar
+            value: Persist Data Workflow Rule Key Name
+        name: Cross Flow - Get Value
+      - action:
+          key: deleteWorkflowRule
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Salesforce Connection
+          fullName:
+            type: reference
+            value: crossFlowGetValue.results
+          version:
+            type: value
+            value: "51.0"
+        name: Delete Workflow Rule
+      - action:
+          key: getCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: Get outbound message full name
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ""
+          keyInput:
+            type: configVar
+            value: Persist Data Outbound Message Key Name
+        name: Cross Flow - Get Value 2
+      - action:
+          key: deleteWorkflowOutboundMessage
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Salesforce Connection
+          fullName:
+            type: reference
+            value: crossFlowGetValue2.results
+          version:
+            type: value
+            value: "51.0"
+        name: Delete Workflow Outbound Message
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create Account from Acme
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Create Account from Acme Trigger
+      - action:
+          key: multiply
+          component:
+            isPublic: true
+            key: math
+            version: LATEST
+        description: ""
+        inputs:
+          numbers:
+            type: complex
+            value:
+              - type: reference
+                value: createAccountFromAcmeTrigger.results.body.data.monthlyRevenue
+              - type: value
+                value: "12"
+        name: Multiply Numbers
+      - action:
+          key: createAccount
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs:
+          billingCity:
+            type: value
+            value: ""
+          billingCountry:
+            type: value
+            value: ""
+          billingPostalCode:
+            type: value
+            value: ""
+          billingState:
+            type: value
+            value: ""
+          billingStreet:
+            type: value
+            value: ""
+          city:
+            type: value
+            value: ""
+          connection:
+            type: configVar
+            value: Salesforce Connection
+          country:
+            type: value
+            value: ""
+          description:
+            type: value
+            value: ""
+          dynamicValues:
+            type: value
+            value: ""
+          employeeCount:
+            type: value
+            value: ""
+          fieldValues:
+            type: complex
+            value: []
+          industry:
+            type: reference
+            value: createAccountFromAcmeTrigger.results.body.data.industry
+          name:
+            type: reference
+            value: createAccountFromAcmeTrigger.results.body.data.name
+          phone:
+            type: value
+            value: ""
+          postalCode:
+            type: value
+            value: ""
+          revenue:
+            type: reference
+            value: multiplyNumbers.results
+          state:
+            type: value
+            value: ""
+          street:
+            type: value
+            value: ""
+          type:
+            type: value
+            value: Customer
+          version:
+            type: value
+            value: "51.0"
+          website:
+            type: value
+            value: ""
+        name: Create Account
+name: Salesforce Example
+requiredConfigVars:
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: salesforce
+        version: LATEST
+    dataType: connection
+    inputs:
+      authorizeUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://login.salesforce.com/services/oauth2/authorize"
+      clientId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      revokeUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://login.salesforce.com/services/oauth2/revoke"
+      tokenUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://login.salesforce.com/services/oauth2/token"
+    key: Salesforce Connection
+    orgOnly: false
+  - dataType: string
+    defaultValue: Outbound Message Key
+    description: This config variable is hidden from customers
+    key: Persist Data Outbound Message Key Name
+    meta:
+      visibleToCustomerDeployer: false
+      visibleToOrgDeployer: true
+    orgOnly: true
+  - dataType: string
+    defaultValue: Workflow Rule Key
+    description: This config variable is hidden from customers
+    key: Persist Data Workflow Rule Key Name
+    meta:
+      visibleToCustomerDeployer: false
+      visibleToOrgDeployer: true
+    orgOnly: true
