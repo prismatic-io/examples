@@ -1,0 +1,312 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: Amazon S3 Connection
+    name: Configuration
+    tagline: ""
+  - elements:
+      - type: configVar
+        value: Amazon S3 Bucket Name
+    name: S3 Bucket
+    tagline: ""
+    userLevelConfigured: false
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: >-
+      This flow creates an SNS topic named after the instance's ID, configures
+      the topic to accept requests from an S3 bucket, and configures the bucket
+      to send requests to the topic. Then, it subscribes a sibling flow to the
+      topic, so the sibling flow receives notifications when an event occurs.
+
+
+      All actions in this flow are idempotent and can be run multiple times.
+    endpointSecurityType: unsecured
+    isSynchronous: false
+    name: Create and configure SNS topic
+    steps:
+      - action:
+          key: webhook
+          component:
+            key: webhook-triggers
+            isPublic: true
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Integration Trigger
+      - action:
+          key: getBucketLocation
+          component:
+            key: aws-s3
+            isPublic: true
+            version: LATEST
+        description: ""
+        inputs:
+          accessKey:
+            type: configVar
+            value: Amazon S3 Connection
+          bucket:
+            type: configVar
+            value: Amazon S3 Bucket Name
+        name: Get Bucket Location
+      - action:
+          key: createTopic
+          component:
+            key: aws-s3
+            isPublic: true
+            version: LATEST
+        description: ""
+        inputs:
+          awsConnection:
+            type: configVar
+            value: Amazon S3 Connection
+          awsRegion:
+            type: reference
+            value: getBucketLocation.results
+          name:
+            type: reference
+            value: integrationTrigger.results.instance.id
+        name: Create SNS Topic For S3 Event Notification
+      - action:
+          key: getCurrentAccount
+          component:
+            key: aws-s3
+            isPublic: true
+            version: LATEST
+        description: ""
+        inputs:
+          accessKey:
+            type: configVar
+            value: Amazon S3 Connection
+        name: Get Current Account
+      - action:
+          key: updateTopicPolicy
+          component:
+            key: aws-s3
+            isPublic: true
+            version: LATEST
+        description: ""
+        inputs:
+          awsConnection:
+            type: configVar
+            value: Amazon S3 Connection
+          awsRegion:
+            type: reference
+            value: getBucketLocation.results
+          bucket:
+            type: configVar
+            value: Amazon S3 Bucket Name
+          bucketOwnerAccountid:
+            type: reference
+            value: getCurrentAccount.results.Account
+          snsTopicArn:
+            type: reference
+            value: createSnsTopicForS3EventNotification.results.TopicArn
+        name: Update SNS Topic Policy For S3 Event Notification
+      - action:
+          key: bucketEventTriggerConfiguration
+          component:
+            key: aws-s3
+            isPublic: true
+            version: LATEST
+        description: ""
+        inputs:
+          awsConnection:
+            type: configVar
+            value: Amazon S3 Connection
+          awsRegion:
+            type: reference
+            value: getBucketLocation.results
+          bucket:
+            type: configVar
+            value: Amazon S3 Bucket Name
+          eventNotificationName:
+            type: value
+            value: MyObjectCreatedEvent
+          eventsList:
+            type: complex
+            value:
+              - type: value
+                value: "s3:ObjectCreated:*"
+          snsTopicArn:
+            type: reference
+            value: createSnsTopicForS3EventNotification.results.TopicArn
+        name: Bucket SNS Event Trigger Configuration
+      - action:
+          key: subscribeToTopic
+          component:
+            key: aws-s3
+            isPublic: true
+            version: LATEST
+        description: ""
+        inputs:
+          awsConnection:
+            type: configVar
+            value: Amazon S3 Connection
+          awsRegion:
+            type: reference
+            value: getBucketLocation.results
+          endpoint:
+            type: reference
+            value: integrationTrigger.results.webhookUrls.Receive SNS Notification
+          snsTopicArn:
+            type: reference
+            value: createSnsTopicForS3EventNotification.results.TopicArn
+        name: Subscribe to SNS Topic
+  - description: >-
+      This flow receives and processes notifications from SNS, and is triggered
+      when files are created in the S3 bucket.
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Receive SNS Notification
+    steps:
+      - action:
+          key: snsS3NotificationWebhook
+          component:
+            key: aws-s3
+            isPublic: true
+            version: LATEST
+        branches:
+          - name: Notification
+            steps: []
+          - name: Subscribe
+            steps:
+              - action:
+                  key: stopExecution
+                  component:
+                    key: stop-execution
+                    isPublic: true
+                    version: LATEST
+                description: ""
+                inputs:
+                  contentType:
+                    type: value
+                    value: application/json
+                  jsonBody:
+                    type: value
+                    value: ""
+                  statusCode:
+                    type: value
+                    value: "200"
+                name: Stop Execution
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Receive SNS Notification Trigger
+      - action:
+          key: deserializeFromJson
+          component:
+            key: change-data-format
+            isPublic: true
+            version: LATEST
+        description: ""
+        inputs:
+          data:
+            type: reference
+            value: receiveSnsNotificationTrigger.results.body.data.Message
+        name: Deserialize JSON
+      - action:
+          key: loopOverItems
+          component:
+            key: loop
+            isPublic: true
+            version: LATEST
+        description: ""
+        inputs:
+          items:
+            type: reference
+            value: deserializeJson.results.Records
+        name: Loop Over Items
+        steps:
+          - action:
+              key: getObject
+              component:
+                key: aws-s3
+                isPublic: true
+                version: LATEST
+            description: ""
+            inputs:
+              accessKey:
+                type: configVar
+                value: Amazon S3 Connection
+              awsRegion:
+                type: reference
+                value: loopOverItems.currentItem.awsRegion
+              bucket:
+                type: reference
+                value: loopOverItems.currentItem.s3.bucket.name
+              objectKey:
+                type: reference
+                value: loopOverItems.currentItem.s3.object.key
+            name: Get Object
+          - action:
+              key: writeLog
+              component:
+                key: log
+                isPublic: true
+                version: LATEST
+            description: ""
+            inputs:
+              level:
+                type: value
+                value: info
+              message:
+                type: template
+                value: >-
+                  Got an "{{$loopOverItems.currentItem.eventName}}" event for
+                  object "{{$loopOverItems.currentItem.s3.object.key}}" in
+                  bucket "{{$loopOverItems.currentItem.s3.bucket.name}}"
+            name: Write Log Message
+name: Amazon S3 Events Example
+requiredConfigVars:
+  - connection:
+      key: apiKeySecret
+      component:
+        key: aws-s3
+        isPublic: true
+        version: LATEST
+    dataType: connection
+    inputs:
+      accessKeyId:
+        type: value
+        value: ""
+      secretAccessKey:
+        type: value
+        value: ""
+    key: Amazon S3 Connection
+    orgOnly: false
+  - dataType: picklist
+    defaultValue: ""
+    description: Please choose an S3 bucket from this region
+    key: Amazon S3 Bucket Name
+    orgOnly: false
+    dataSource:
+      key: selectBucket
+      component:
+        key: aws-s3
+        isPublic: true
+        version: LATEST
+    inputs:
+      accessKey:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Amazon S3 Connection
