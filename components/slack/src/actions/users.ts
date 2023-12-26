@@ -15,7 +15,7 @@ export const getUser = action({
     description: "Get a user's information by email",
   },
   perform: async (context, { connection, email }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await client.users.lookupByEmail({
       email: util.types.toString(email),
     });
@@ -54,7 +54,7 @@ export const getUserById = action({
     description: "Get a user's information by ID",
   },
   perform: async (context, { connection, user }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await client.users.info({ user: util.types.toString(user) });
     return { data };
   },
@@ -100,7 +100,7 @@ export const listUsers = action({
     description: "List Users",
   },
   perform: async (context, { connection, cursor, limit, teamId }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await client.users.list({
       cursor: util.types.toString(cursor) || undefined,
       limit: util.types.toNumber(limit) || undefined,
@@ -152,7 +152,7 @@ export const listUsersConversations = action({
     description: "List Users Conversations",
   },
   perform: async (context, { connection, cursor, limit, teamId, userId }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await client.users.conversations({
       user: util.types.toString(userId) || undefined,
       cursor: util.types.toString(cursor) || undefined,

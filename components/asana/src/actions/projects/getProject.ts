@@ -1,6 +1,7 @@
 import { action } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../../client";
 import { connectionInput, projectId } from "../../inputs";
+import { PROJECT_OPT_FIELDS } from "../../util";
 
 export const getProject = action({
   display: {
@@ -11,8 +12,7 @@ export const getProject = action({
     const client = await createAsanaClient(params.asanaConnection);
     const { data } = await client.get(`/projects/${params.projectId}`, {
       params: {
-        opt_fields:
-          "layout,team,workspace,html_notes,notes,color,custom_field_settings,custom_fields,followers,members,public,archived,modified_at,created_at,start_on,due_on,current_status,owner,name,resource_type,gid",
+        opt_fields: PROJECT_OPT_FIELDS,
       },
     });
     return { data };

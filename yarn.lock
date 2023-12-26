@@ -2144,6 +2144,24 @@
     uuid "8.3.2"
     valid-url "1.0.9"
 
+"@prismatic-io/spectral@7.8.2":
+  version "7.8.2"
+  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-7.8.2.tgz#776323f6fb2d6c65e6c2a682965c82d6ca4a75bc"
+  integrity sha512-Gj4R+bNMLzjwB+VHpiXR8qz/QA8NBvDEdnH8eTEdMjpRkSBJq9Ar72pWCLeICRR5NtUDPY9Kn8zrehFtEm520w==
+  dependencies:
+    "@jsonforms/core" "3.0.0"
+    axios "0.27.2"
+    axios-retry "3.2.5"
+    date-fns "2.30.0"
+    form-data "4.0.0"
+    jest-mock "27.0.3"
+    safe-stable-stringify "2.3.1"
+    serialize-error "8.1.0"
+    soap "1.0.0"
+    url-join "5.0.0"
+    uuid "8.3.2"
+    valid-url "1.0.9"
+
 "@prismatic-io/spectral@^1.0.3":
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-1.0.7.tgz#e5dfc720bd24437cac47ecd5f706906c91ad8459"
@@ -3789,6 +3807,13 @@ axios-retry@3.2.5:
     "@babel/runtime" "^7.15.4"
     is-retry-allowed "^2.2.0"
 
+axios@0.21.4, axios@^0.21.1, axios@^0.21.4:
+  version "0.21.4"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
+  integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
+  dependencies:
+    follow-redirects "^1.14.0"
+
 axios@0.24.0, axios@^0.24.0:
   version "0.24.0"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.24.0.tgz#804e6fa1e4b9c5288501dd9dff56a7a0940d20d6"
@@ -3819,13 +3844,6 @@ axios@1.6.0:
     follow-redirects "^1.15.0"
     form-data "^4.0.0"
     proxy-from-env "^1.1.0"
-
-axios@^0.21.1, axios@^0.21.4:
-  version "0.21.4"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
-  integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
-  dependencies:
-    follow-redirects "^1.14.0"
 
 axios@^1.3.2, axios@^1.6.0:
   version "1.6.1"

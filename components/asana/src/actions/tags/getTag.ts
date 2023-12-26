@@ -1,6 +1,7 @@
 import { action } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../../client";
 import { connectionInput, tagId } from "../../inputs";
+import { TAG_OPT_FIELDS } from "../../util";
 
 export const getTag = action({
   display: {
@@ -11,8 +12,7 @@ export const getTag = action({
     const client = await createAsanaClient(params.asanaConnection);
     const { data } = await client.get(`/tags/${params.tagId}`, {
       params: {
-        opt_fields:
-          "resource_type,gid,created_at,followers,name,color,workspace,notes",
+        opt_fields: TAG_OPT_FIELDS,
       },
     });
     return { data };

@@ -21,7 +21,7 @@ export const postMessage = action({
     context,
     { connection, message, channelName, username, messageId }
   ) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.chat.postMessage({
         username: util.types.toString(username) || undefined,
@@ -71,7 +71,7 @@ export const updateMessage = action({
     description: "Update the contents of an existing message",
   },
   perform: async (context, { connection, message, channelId, messageId }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.chat.update({
         channel: util.types.toString(channelId),
@@ -96,7 +96,7 @@ export const deletePendingMessage = action({
       "Delete the content and metadata of a pending scheduled message from a queue",
   },
   perform: async (context, { connection, messageId, channelId }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.chat.deleteScheduledMessage({
         channel: util.types.toString(channelId),
@@ -118,7 +118,7 @@ export const deleteMessage = action({
     description: "Delete the content and metadata of an existing message",
   },
   perform: async (context, { connection, messageId, channelId }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.chat.delete({
         channel: util.types.toString(channelId),
@@ -143,7 +143,7 @@ export const postEphemeralMessage = action({
     context,
     { connection, channelName, userId, username, message }
   ) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.chat.postEphemeral({
         channel: util.types.toString(channelName),
@@ -240,7 +240,7 @@ export const postBlockMessage = action({
     context,
     { connection, blocks, message, channelName, username, messageId }
   ) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.chat.postMessage({
         ...blocks,
@@ -296,7 +296,7 @@ export const listScheduledMessages = action({
     description: "List all scheduled messages",
   },
   perform: async (context, { connection }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(client.chat.scheduledMessages.list());
     return { data };
   },

@@ -8,6 +8,7 @@ import {
   notes,
   tagId,
 } from "../../inputs";
+import { TAG_OPT_FIELDS } from "../../util";
 
 export const updateTag = action({
   display: {
@@ -27,8 +28,7 @@ export const updateTag = action({
       },
       {
         params: {
-          opt_fields:
-            "resource_type,gid,created_at,followers,name,color,workspace,notes",
+          opt_fields: TAG_OPT_FIELDS,
         },
       }
     );

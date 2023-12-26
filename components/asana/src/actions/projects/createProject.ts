@@ -14,7 +14,9 @@ import {
   team,
   workspaceId,
   connectionInput,
+  htmlNotes,
 } from "../../inputs";
+import { PROJECT_OPT_FIELDS } from "../../util";
 
 export const createProjects = action({
   display: {
@@ -37,6 +39,7 @@ export const createProjects = action({
         public: params.isPublic,
         start_on: params.startOn,
         team: params.team,
+        html_notes: params.htmlNotes || undefined,
       },
     };
 
@@ -46,8 +49,7 @@ export const createProjects = action({
 
     const { data } = await client.post(endpoint, projectData, {
       params: {
-        opt_fields:
-          "layout,team,workspace,html_notes,notes,color,custom_field_settings,custom_fields,followers,members,public,archived,modified_at,created_at,start_on,due_on,current_status,owner,name,resource_type,gid",
+        opt_fields: PROJECT_OPT_FIELDS,
       },
     });
     return { data };
@@ -61,6 +63,7 @@ export const createProjects = action({
     archived,
     followers,
     name,
+    htmlNotes,
     notes,
     startOn,
     isPublic,

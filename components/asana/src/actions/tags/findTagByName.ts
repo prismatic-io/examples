@@ -1,6 +1,7 @@
 import { action, input } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../../client";
 import { connectionInput, workspaceId } from "../../inputs";
+import { TAG_OPT_FIELDS } from "../../util";
 
 interface Tag {
   gid: string;
@@ -36,7 +37,7 @@ export const findTagByName = action({
         {
           params: {
             offset,
-            opt_fields: "resource_type,gid,created_at,name,color",
+            opt_fields: TAG_OPT_FIELDS,
           },
         }
       );

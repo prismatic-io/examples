@@ -3,8 +3,9 @@ import crypto from "crypto";
 
 const dropboxWebhook = trigger({
   display: {
-    label: "Dropbox Webhook Trigger",
-    description: "Trigger for handling webhooks from Dropbox's change API",
+    label: "Webhook",
+    description:
+      "Receive and validate webhook requests from Dropbox for webhooks you configure.",
   },
   allowsBranching: true,
   staticBranchNames: ["Notification", "Verification Request"],

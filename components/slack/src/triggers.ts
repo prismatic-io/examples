@@ -1,7 +1,7 @@
 import { HttpResponse, trigger, util } from "@prismatic-io/spectral";
 import { connectionInput } from "./inputs";
 import crypto from "crypto";
-import querystring from "querystring";
+import { URLSearchParams } from "url";
 
 const computeSignature = (
   requestBody: string,
@@ -22,8 +22,9 @@ interface Request {
 
 export const webhook = trigger({
   display: {
-    label: "Slack Events API Webhook",
-    description: "Trigger for handling webhooks from Slack's events API",
+    label: "Events API Webhook",
+    description:
+      "Receive and validate webhook requests from Slack's Events API for webhooks you configure.",
   },
   allowsBranching: true,
   staticBranchNames: ["Notification", "URL Verify", "Management"],
@@ -115,13 +116,14 @@ export const webhook = trigger({
 
 export const slashCommandWebhook = trigger({
   display: {
-    label: "Slack App Webhook",
+    label: "App Webhook",
     description:
       "Trigger for handling slash command and modal webhooks from Slack",
   },
-  // eslint-disable-next-line @typescript-eslint/require-await
   perform: async (context, payload, params) => {
-    const deserializedPayload = querystring.parse(payload.rawBody.toString());
+    const deserializedPayload = Object.fromEntries(
+      new URLSearchParams(payload.rawBody.data.toString())
+    );
 
     const response = {
       statusCode: 200,
@@ -131,16 +133,15 @@ export const slashCommandWebhook = trigger({
         : {}),
     };
 
-    return {
+    return Promise.resolve({
       payload: {
         ...payload,
         deserializedBody: deserializedPayload,
       },
       response,
-    };
+    });
   },
   inputs: {
-    slackConnection: connectionInput,
     responseBody: {
       label: "Response Body",
       type: "code",

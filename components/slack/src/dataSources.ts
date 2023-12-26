@@ -31,7 +31,9 @@ const selectChannels = dataSource({
     includeImChannels,
   },
   perform: async (context, params) => {
-    const client = createOauthClient({ slackConnection: params.connection });
+    const client = await createOauthClient({
+      slackConnection: params.connection,
+    });
     let channels: Channel[] = [];
     let cursor = null;
     let counter = 1;

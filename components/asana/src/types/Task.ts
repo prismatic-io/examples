@@ -1,0 +1,32 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type Task = {
+  gid: string;
+  assignee: null | any;
+  assignee_status: string;
+  completed: boolean;
+  completed_at: null | string;
+  created_at: string;
+  custom_fields: any[];
+  dependencies: any[];
+  dependents: any[];
+  due_at: null | string;
+  due_on: null | string;
+  followers: any[];
+  html_notes: string;
+  is_rendered_as_separator: boolean;
+  liked: boolean;
+  likes: any[];
+  memberships: any[];
+  modified_at: string;
+  name: string;
+  notes: string;
+  num_likes: number;
+  num_subtasks: number;
+  parent: any;
+  projects: any[];
+  resource_type: string;
+  start_on: null | string;
+  tags: any[];
+  resource_subtype: string;
+  workspace: any;
+};

@@ -5,7 +5,7 @@ import { connectionInput } from "../inputs";
 const selectWorkspace = dataSource({
   display: {
     label: "Select Workspace",
-    description: "Select one or many Workspaces",
+    description: "Select a workspace from a dropdown menu",
   },
   inputs: {
     connection: connectionInput,

@@ -1,9 +1,9 @@
 import { Connection, ConnectionError } from "@prismatic-io/spectral";
-import Axios from "axios";
+import { createClient } from "@prismatic-io/spectral/dist/clients/http";
 
 export const createAsanaClient = async (asanaConnection: Connection) => {
-  const asanaClient = Axios.create({
-    baseURL: "https://app.asana.com/api/1.0",
+  const asanaClient = createClient({
+    baseUrl: "https://app.asana.com/api/1.0",
     headers: {
       authorization: `Bearer ${
         asanaConnection?.token?.access_token || asanaConnection?.fields?.apiKey

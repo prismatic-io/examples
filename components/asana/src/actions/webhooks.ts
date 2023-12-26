@@ -7,6 +7,7 @@ import {
   offset,
   validateId,
   workspaceId,
+  filter,
 } from "../inputs";
 
 interface AsanaWebhook {
@@ -108,15 +109,18 @@ const createWebhook = action({
       required: true,
       clean: validateId,
     }),
+    filter,
     asanaConnection: connectionInput,
   },
   perform: async (context, params) => {
     const client = await createAsanaClient(params.asanaConnection);
+
     try {
       const { data } = await client.post("/webhooks", {
         data: {
           resource: params.resourceId,
           target: params.endpoint,
+          filters: params.filter || undefined,
         },
       });
       return { data };

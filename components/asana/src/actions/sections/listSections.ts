@@ -1,6 +1,7 @@
 import { action } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../../client";
 import { connectionInput, projectId, offset, limit } from "../../inputs";
+import { SECTION_OPT_FIELDS } from "../../util";
 
 export const listSections = action({
   display: {
@@ -15,7 +16,7 @@ export const listSections = action({
         params: {
           offset: params.offset,
           limit: params.limit,
-          opt_fields: "created_at,project,name,resource_type,gid",
+          opt_fields: SECTION_OPT_FIELDS,
         },
       }
     );

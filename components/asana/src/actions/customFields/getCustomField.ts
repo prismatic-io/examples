@@ -1,6 +1,7 @@
 import { action } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../../client";
 import { connectionInput, workspaceId, fieldId } from "../../inputs";
+import { CUSTOM_FIELD_OPT_FIELDS } from "../../util";
 
 export const getCustomField = action({
   display: {
@@ -11,8 +12,7 @@ export const getCustomField = action({
     const client = await createAsanaClient(params.asanaConnection);
     const { data } = await client.get(`/custom_fields/${params.fieldId}`, {
       params: {
-        opt_fields:
-          "precision,enum_options,description,name,resource_subtype,resource_type,gid,text_value",
+        opt_fields: CUSTOM_FIELD_OPT_FIELDS,
         opt_pretty: true,
       },
     });

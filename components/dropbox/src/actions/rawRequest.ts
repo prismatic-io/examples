@@ -10,7 +10,7 @@ import { getHeadersRawRequest, getUserTypeHeader } from "../util";
 export const rawRequest = action({
   display: {
     label: "Raw Request",
-    description: "Send a raw HTTP request to Dropbox's API",
+    description: "Send raw HTTP request to Dropbox",
   },
   inputs: {
     connection: connectionInput,

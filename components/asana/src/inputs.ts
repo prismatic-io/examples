@@ -158,6 +158,26 @@ export const startOn = input({
   clean: (value) => (value ? util.types.toDate(value) : undefined),
 });
 
+export const startAt = input({
+  label: "Start At",
+  type: "string",
+  comments: `Date and time on which work begins for the task, or null if the task has no start time. This takes an ISO 8601 date string in UTC and should not be used together with start_on.
+    Note: due_at must be present in the request when setting or unsetting the start_at parameter.`,
+  example: "2019-09-14T02:06:58.147Z",
+  required: false,
+  clean: util.types.toString,
+});
+
+export const htmlNotes = input({
+  label: "HTML Notes",
+  type: "code",
+  language: "html",
+  comments: "The notes of the text with formatting as HTML.",
+  example: "<body>Mittens is a <em>really</em> good cat.</body>",
+  required: false,
+  clean: util.types.toString,
+});
+
 export const author = input({
   label: "Author",
   type: "string",
@@ -610,4 +630,92 @@ export const fileData = input({
   comments: "Provide the data to upload to the given task.",
   required: true,
   example: "These are my file contents.",
+});
+
+export const filter = input({
+  label: "Filter",
+  type: "code",
+  language: "json",
+  default: JSON.stringify(
+    [
+      {
+        action: "changed",
+        fields: ["due_at", "due_on", "dependencies"],
+        resource_subtype: "milestone",
+        resource_type: "task",
+      },
+    ],
+    null,
+    2
+  ),
+  required: false,
+  comments: "Specify the filter parameters for the webhook in JSON format",
+  clean: (filterInput: unknown) => {
+    if (filterInput !== "") {
+      const value = util.types.toString(filterInput);
+      if (!util.types.isJSON(value)) {
+        throw new Error("Invalid JSON provided for Filter.");
+      }
+      return JSON.parse(value);
+    }
+    return undefined;
+  },
+});
+
+export const triggerWhenAdded = input({
+  label: "Trigger When Added",
+  type: "boolean",
+  default: "true",
+  comments:
+    "Determines if the webhook will trigger when a new resource is added.",
+  required: true,
+  clean: util.types.toBool,
+});
+
+export const triggerWhenRemoved = input({
+  label: "Trigger When Removed",
+  type: "boolean",
+  default: "true",
+  comments:
+    "Determines if the webhook will trigger when a resource is removed.",
+  required: true,
+  clean: util.types.toBool,
+});
+
+export const triggerWhenChanged = input({
+  label: "Trigger When Changed",
+  type: "boolean",
+  default: "true",
+  comments:
+    "Determines if the webhook will trigger when a resource is changed.",
+  required: true,
+  clean: util.types.toBool,
+});
+
+export const triggerWhenDeleted = input({
+  label: "Trigger When Deleted",
+  type: "boolean",
+  default: "true",
+  comments:
+    "Determines if the webhook will trigger when a resource is deleted.",
+  required: true,
+  clean: util.types.toBool,
+});
+
+export const triggerWhenUndeleted = input({
+  label: "Trigger When Undeleted",
+  type: "boolean",
+  default: "true",
+  comments:
+    "Determines if the webhook will trigger when a resource is undeleted.",
+  required: true,
+  clean: util.types.toBool,
+});
+
+export const listAllNestedSubtasks = input({
+  label: "List All Nested Subtasks?",
+  type: "boolean",
+  required: false,
+  default: "false",
+  clean: util.types.toBool,
 });

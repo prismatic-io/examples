@@ -10,7 +10,7 @@ import {
 const rawRequest = action({
   display: {
     label: "Raw Request",
-    description: "Send a raw HTTP request to Google Cloud Storage API",
+    description: "Send raw HTTP request to Google Cloud Storage",
   },
   inputs: {
     connection: connectionInput,

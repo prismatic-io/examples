@@ -14,6 +14,7 @@ import {
   startOn,
   team,
   connectionInput,
+  htmlNotes,
 } from "../../inputs";
 
 export const updateProject = action({
@@ -36,6 +37,7 @@ export const updateProject = action({
         public: params.isPublic,
         start_on: params.startOn,
         team: params.team || undefined,
+        html_notes: params.htmlNotes || undefined,
       },
     };
     const { data } = await client.put(
@@ -54,6 +56,7 @@ export const updateProject = action({
     followers,
     name,
     notes,
+    htmlNotes,
     owner: { ...owner, required: false },
     isPublic,
     startOn,

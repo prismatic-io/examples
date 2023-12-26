@@ -8,7 +8,7 @@ import { connectionInput } from "../inputs";
 const rawRequest = action({
   display: {
     label: "Raw Request",
-    description: "Send a raw HTTP request to Asana API",
+    description: "Send raw HTTP request to Asana",
   },
   inputs: {
     connection: connectionInput,

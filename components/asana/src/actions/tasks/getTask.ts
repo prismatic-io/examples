@@ -1,6 +1,7 @@
 import { action } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../../client";
 import { taskId, connectionInput } from "../../inputs";
+import { TASK_OPT_FIELDS } from "../../util";
 
 export const getTask = action({
   display: {
@@ -11,8 +12,7 @@ export const getTask = action({
     const client = await createAsanaClient(params.asanaConnection);
     const { data } = await client.get(`/tasks/${params.taskId}`, {
       params: {
-        opt_fields:
-          "projects,resource_subtype,assignee,assignee_status,created_at,completed,gid,resource_type,completed_at,dependencies,custom_fields,dependents,due_on,due_at,followers,external,is_rendered_as_separator,liked,likes,memberships,modified_at,name,notes,html_notes,num_likes,num_subtasks,parent,start_on,workspace,tags",
+        opt_fields: TASK_OPT_FIELDS,
       },
     });
     return { data };

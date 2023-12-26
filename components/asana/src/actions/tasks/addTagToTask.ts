@@ -1,6 +1,7 @@
 import { action } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../../client";
 import { connectionInput, taskId, tagId } from "../../inputs";
+import { TAG_OPT_FIELDS } from "../../util";
 
 export const addTagToTask = action({
   display: {
@@ -18,8 +19,7 @@ export const addTagToTask = action({
       },
       {
         params: {
-          opt_fields:
-            "resource_type,gid,created_at,followers,name,color,workspace",
+          opt_fields: TAG_OPT_FIELDS,
         },
       }
     );

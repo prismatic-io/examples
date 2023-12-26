@@ -18,7 +18,10 @@ import {
   dueOn,
   taskId,
   connectionInput,
+  htmlNotes,
+  startAt,
 } from "../../inputs";
+import { TASK_OPT_FIELDS } from "../../util";
 
 export const updateTask = action({
   display: {
@@ -45,15 +48,16 @@ export const updateTask = action({
         notes: params.notes,
         parent: params.parentId,
         resource_subtype: params.resourceSubtype,
+        start_at: params.startAt || undefined,
         start_on: params.startOn,
         workspace: params.workspaceId || undefined,
+        html_notes: params.htmlNotes || undefined,
       },
     };
 
     const { data } = await client.put(`/tasks/${params.taskId}`, taskData, {
       params: {
-        opt_fields:
-          "projects,resource_subtype,assignee,assignee_status,created_at,completed,gid,resource_type,completed_at,dependencies,custom_fields,dependents,due_on,due_at,followers,external,is_rendered_as_separator,liked,likes,memberships,modified_at,name,notes,html_notes,num_likes,num_subtasks,parent,start_on,workspace,tags",
+        opt_fields: TASK_OPT_FIELDS,
       },
     });
     return { data };
@@ -68,9 +72,11 @@ export const updateTask = action({
     assigneeSectionId,
     assigneeStatus,
     workspaceId: { ...workspaceId, required: false },
+    startAt,
     startOn,
     resourceSubtype,
     parentId,
+    htmlNotes,
     notes,
     name,
     isLiked,

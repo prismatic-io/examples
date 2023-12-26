@@ -7,6 +7,7 @@ import {
   sectionName,
   projectId,
 } from "../../inputs";
+import { SECTION_OPT_FIELDS } from "../../util";
 
 export const createSection = action({
   display: {
@@ -24,7 +25,7 @@ export const createSection = action({
           name: params.sectionName,
         },
       },
-      { params: { opt_fields: "created_at,project,name,resource_type,gid" } }
+      { params: { opt_fields: SECTION_OPT_FIELDS } }
     );
     return { data };
   },

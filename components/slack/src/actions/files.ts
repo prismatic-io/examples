@@ -10,7 +10,9 @@ export const listFiles = action({
     description: "List all available files",
   },
   perform: async (context, params) => {
-    const client = createOauthClient({ slackConnection: params.connection });
+    const client = await createOauthClient({
+      slackConnection: params.connection,
+    });
     const data = await handleErrors(
       client.files.list({
         page: util.types.toInt(params.cursor),
@@ -27,7 +29,9 @@ export const uploadFile = action({
     description: "Upload a new file to a slack conversation",
   },
   perform: async (context, params) => {
-    const client = createOauthClient({ slackConnection: params.connection });
+    const client = await createOauthClient({
+      slackConnection: params.connection,
+    });
     const { data: fileData } = util.types.toData(params.fileContent);
     const data = await handleErrors(
       client.files.upload({
@@ -60,7 +64,7 @@ export const uploadFile = action({
       example: "reports.csv",
     },
     fileType: {
-      label: "File Name",
+      label: "File Type",
       type: "string",
       required: true,
       example: "csv",

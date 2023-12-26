@@ -1,11 +1,13 @@
 import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
+import { createClient } from "@prismatic-io/spectral/dist/clients/http";
 import { App } from "@slack/bolt";
 import { IncomingWebhook } from "@slack/webhook";
 import { slackOAuth, webhookUrlConnection } from "./connections";
-
-interface CreateClientProps {
-  slackConnection?: Connection;
-}
+import { API_URL } from "./constants";
+import { AuthTestResponse } from "./interfaces/AuthTestResponse";
+import { AxiosResponse } from "axios";
+import { getErrorDescription } from "./helpers";
+import { CreateClientProps } from "./interfaces/CreateClientProps";
 
 export const getUserToken = ({ slackConnection }: CreateClientProps) => {
   const user = slackConnection?.token.authed_user as any;
@@ -19,7 +21,29 @@ export const getUserToken = ({ slackConnection }: CreateClientProps) => {
   }
 };
 
-export const createOauthClient = ({ slackConnection }: CreateClientProps) => {
+export const accountIsActiveFn = async (
+  token: string
+): Promise<boolean | Error> => {
+  const client = createClient({ baseUrl: API_URL });
+  const response: AxiosResponse<AuthTestResponse> = await client.get(
+    "/auth.test",
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+
+  const data: AuthTestResponse = response.data;
+
+  if (data.ok) {
+    return true;
+  } else {
+    throw new Error(`${data.error}: ${getErrorDescription(data.error)}`);
+  }
+};
+
+export const createOauthClient = async ({
+  slackConnection,
+}: CreateClientProps) => {
   if (slackConnection.key !== slackOAuth.key) {
     throw new ConnectionError(
       slackConnection,
@@ -27,22 +51,24 @@ export const createOauthClient = ({ slackConnection }: CreateClientProps) => {
     );
   }
   const token = getUserToken({ slackConnection });
+  const accountIsActive = await accountIsActiveFn(token);
+  if (accountIsActive) {
+    const app = new App({
+      token,
+      clientOptions: {
+        // Generally use https://slack.com/api/, but use https://slack-gov.com/api/ when the access token uses Slack Gov
+        slackApiUrl: util.types
+          .toString(slackConnection.fields.tokenUrl)
+          .replace("oauth.v2.access", ""),
+      },
+      signingSecret: util.types.toString(slackConnection.fields.signingSecret),
+      scopes: util.types.toString(slackConnection.fields.scopes),
+      clientId: util.types.toString(slackConnection.fields.clientId),
+      clientSecret: util.types.toString(slackConnection.fields.clientSecret),
+    });
 
-  const app = new App({
-    token,
-    clientOptions: {
-      // Generally use https://slack.com/api/, but use https://slack-gov.com/api/ when the access token uses Slack Gov
-      slackApiUrl: util.types
-        .toString(slackConnection.fields.tokenUrl)
-        .replace("oauth.v2.access", ""),
-    },
-    signingSecret: util.types.toString(slackConnection.fields.signingSecret),
-    scopes: util.types.toString(slackConnection.fields.scopes),
-    clientId: util.types.toString(slackConnection.fields.clientId),
-    clientSecret: util.types.toString(slackConnection.fields.clientSecret),
-  });
-
-  return app.client;
+    return app.client;
+  }
 };
 
 export const createWebhookClient = (

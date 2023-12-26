@@ -9,11 +9,12 @@
     "format": "npm run lint-fix && prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "check-format": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "build": "webpack",
+    "jest": "jest",
     "test": "echo 'no tests'"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "7.6.3",
-    "axios": "1.6.0",
+    "@prismatic-io/spectral": "7.8.2",
+    "axios": "0.21.4",
     "form-data": "3.0.0"
   },
   "devDependencies": {

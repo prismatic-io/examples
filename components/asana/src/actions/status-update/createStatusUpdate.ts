@@ -62,6 +62,7 @@ export const createStatusUpdate = action({
         { label: "Off Track", value: "off_track" },
         { label: "At Risk", value: "at_risk" },
         { label: "On Hold", value: "on_hold" },
+        { label: "Complete", value: "complete" },
       ],
       clean: util.types.toString,
     }),

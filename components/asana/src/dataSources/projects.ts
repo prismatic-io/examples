@@ -5,7 +5,7 @@ import { connectionInput } from "../inputs";
 const selectProject = dataSource({
   display: {
     label: "Select Projects",
-    description: "Select one or more Projects",
+    description: "Select a project from a dropdown menu",
   },
   inputs: {
     connection: connectionInput,

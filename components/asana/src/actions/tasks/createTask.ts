@@ -9,6 +9,8 @@ import {
   assigneeStatus,
   workspaceId,
   startOn,
+  startAt,
+  htmlNotes,
   resourceSubtype,
   projectList,
   parentId,
@@ -20,6 +22,7 @@ import {
   dueOn,
   connectionInput,
 } from "../../inputs";
+import { TASK_OPT_FIELDS } from "../../util";
 
 export const createTask = action({
   display: {
@@ -45,14 +48,15 @@ export const createTask = action({
         parent: params.parentId || undefined,
         projects: params.projectList || undefined,
         resource_subtype: params.resourceSubtype || undefined,
+        start_at: params.startAt || undefined,
         start_on: params.startOn || undefined,
         workspace: params.workspaceId || undefined,
+        html_notes: params.htmlNotes || undefined,
       },
     };
     const { data } = await client.post(`/tasks`, taskData, {
       params: {
-        opt_fields:
-          "projects,resource_subtype,assignee,assignee_status,created_at,completed,gid,resource_type,completed_at,dependencies,custom_fields,dependents,due_on,due_at,followers,external,is_rendered_as_separator,liked,likes,memberships,modified_at,name,notes,html_notes,num_likes,num_subtasks,parent,start_on,workspace,tags",
+        opt_fields: TASK_OPT_FIELDS,
       },
     });
     return { data };
@@ -67,6 +71,8 @@ export const createTask = action({
     assigneeStatus,
     workspaceId,
     startOn,
+    startAt,
+    htmlNotes,
     resourceSubtype,
     projectList,
     parentId,

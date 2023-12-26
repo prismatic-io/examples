@@ -10,7 +10,7 @@ import {
 const rawRequest = action({
   display: {
     label: "Raw Request",
-    description: "Send a raw HTTP request to Slack API",
+    description: "Send raw HTTP request to Slack",
   },
   inputs: {
     connection: connectionInput,
@@ -23,7 +23,7 @@ const rawRequest = action({
     },
   },
   perform: async (context, { connection, ...httpClientInputs }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const token = client.token;
     const { data } = await sendRawRequest(
       "https://slack.com/api",

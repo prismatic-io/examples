@@ -24,8 +24,9 @@ const validateHmac = (
 
 const bamboohrTrigger = trigger({
   display: {
-    label: "BambooHR Webhook",
-    description: "Handle and validate webhook requests from BambooHR",
+    label: "Webhook",
+    description:
+      "Receive and validate webhook requests from BambooHR for webhooks you configure.",
   },
   perform: async (context, payload, params) => {
     const headers = util.types.lowerCaseHeaders(payload.headers);

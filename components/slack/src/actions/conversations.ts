@@ -24,7 +24,7 @@ export const createConversation = action({
     description: "Create a new conversation",
   },
   perform: async (context, { connection, isPrivate, conversationName }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.create({
         name: util.types.toString(conversationName),
@@ -67,7 +67,7 @@ export const closeConversation = action({
     description: "Close an existing conversation",
   },
   perform: async (context, { connection, conversationName }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.close({
         channel: util.types.toString(conversationName),
@@ -87,7 +87,7 @@ export const renameConversation = action({
     context,
     { connection, newConversationName, conversationName }
   ) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.rename({
         channel: util.types.toString(conversationName),
@@ -124,7 +124,7 @@ export const getConversationsHistory = action({
       latest,
     }
   ) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.history({
         channel: util.types.toString(channelName),
@@ -194,7 +194,9 @@ export const listConversations = action({
     description: "List all conversations",
   },
   perform: async (context, params) => {
-    const client = createOauthClient({ slackConnection: params.connection });
+    const client = await createOauthClient({
+      slackConnection: params.connection,
+    });
 
     const data = await handleErrors(
       client.conversations.list({
@@ -251,7 +253,7 @@ export const leaveConversation = action({
     description: "Leave an existing conversation",
   },
   perform: async (context, { connection, channelName }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.leave({
         channel: util.types.toString(channelName),
@@ -271,7 +273,7 @@ export const listConversationMembers = action({
     description: "List all members of a conversation",
   },
   perform: async (context, { connection, channelName, cursor, limit }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.members({
         cursor: util.types.toString(cursor) || undefined,
@@ -295,7 +297,7 @@ export const archiveConversation = action({
     description: "Archive an existing conversation",
   },
   perform: async (context, { connection, channelName }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.archive({
         channel: util.types.toString(channelName),
@@ -315,7 +317,7 @@ export const conversationExists = action({
     description: "Returns true if the conversation already exists",
   },
   perform: async (context, { connection, channelName }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await client.conversations.list();
 
     const channels = data.channels.filter((channel) => {
@@ -340,7 +342,7 @@ export const inviteUserToConversation = action({
     description: "Invite a user to an existing conversation",
   },
   perform: async (context, { connection, channelName, userId }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.invite({
         channel: util.types.toString(channelName),
@@ -363,7 +365,7 @@ export const setConversationPurpose = action({
     description: "Set the purpose of an existing conversation",
   },
   perform: async (context, { connection, channelName, purpose }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.setPurpose({
         channel: util.types.toString(channelName),
@@ -393,7 +395,7 @@ export const setConversationTopic = action({
     description: "Set the purpose of an existing conversation",
   },
   perform: async (context, { connection, channelName, topic }) => {
-    const client = createOauthClient({ slackConnection: connection });
+    const client = await createOauthClient({ slackConnection: connection });
     const data = await handleErrors(
       client.conversations.setTopic({
         channel: util.types.toString(channelName),
