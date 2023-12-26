@@ -1,0 +1,23 @@
+{
+  "name": "create-alert-monitors",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fetch-retry": "^5.0.6",
+    "graphql": "^16.8.1",
+    "graphql-request": "^6.1.0",
+    "isomorphic-fetch": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@types/isomorphic-fetch": "^0.0.39",
+    "@types/node": "^20.10.5"
+  }
+}
