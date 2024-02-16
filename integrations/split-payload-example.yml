@@ -1,18 +1,18 @@
-category: ''
+category: ""
 configPages:
   - elements:
       - type: configVar
         value: Prismatic Connection
     name: Configuration
-    tagline: ''
+    tagline: ""
 definitionVersion: 7
-description: ''
+description: ""
 documentation: >-
   ## Split Payload Example
 
 
-  This example integration pulls down 100 records from an API, splits them into
-  20-record "chunks", and then dispatches the 20-record chunks to a sibling flow
+  This example integration pulls down 500 records from an API, splits them into
+  50-record "chunks", and then dispatches the 50-record chunks to a sibling flow
   for processing in parallel.
 
 
@@ -25,9 +25,10 @@ documentation: >-
   parallel.
 endpointType: flow_specific
 flows:
-  - description: ''
+  - description: ""
+    endpointSecurityType: customer_optional
     isSynchronous: false
-    name: Flow 1
+    name: Main Flow
     steps:
       - action:
           key: webhook
@@ -35,20 +36,20 @@ flows:
             isPublic: true
             key: webhook-triggers
             version: LATEST
-        description: ''
+        description: ""
         inputs:
           body:
             type: value
-            value: ''
+            value: ""
           contentType:
             type: value
-            value: ''
+            value: ""
           headers:
             type: complex
             value: []
           statusCode:
             type: value
-            value: ''
+            value: ""
         isTrigger: true
         name: Integration Trigger
       - action:
@@ -57,26 +58,26 @@ flows:
             isPublic: true
             key: http
             version: LATEST
-        description: ''
+        description: ""
         inputs:
           connection:
             type: configVar
-            value: ''
+            value: ""
           debugRequest:
             type: value
-            value: 'false'
+            value: "false"
           headers:
             type: complex
             value: []
           ignoreSslErrors:
             type: value
-            value: 'false'
+            value: "false"
           includeFullResponse:
             type: value
-            value: 'false'
+            value: "false"
           maxRetries:
             type: value
-            value: '0'
+            value: "0"
           queryParams:
             type: complex
             value: []
@@ -85,19 +86,19 @@ flows:
             value: json
           retryDelayMS:
             type: value
-            value: '0'
+            value: "0"
           retryOnAllErrors:
             type: value
-            value: 'false'
+            value: "false"
           timeout:
             type: value
-            value: ''
+            value: ""
           url:
             type: value
-            value: 'https://jsonplaceholder.typicode.com/posts'
+            value: "https://jsonplaceholder.typicode.com/comments"
           useExponentialBackoff:
             type: value
-            value: 'false'
+            value: "false"
         name: GET Request
       - action:
           key: chunks
@@ -105,14 +106,14 @@ flows:
             isPublic: true
             key: collection-tools
             version: LATEST
-        description: ''
+        description: ""
         inputs:
           listInput:
             type: reference
             value: getRequest.results
           numberInput:
             type: value
-            value: '20'
+            value: "50"
         name: Chunks
       - action:
           key: loopOverItems
@@ -120,12 +121,12 @@ flows:
             isPublic: true
             key: loop
             version: LATEST
-        description: ''
+        description: ""
         inputs:
           items:
             type: reference
             value: chunks.results
-        name: Parallelize the Data
+        name: Loop Over Items
         steps:
           - action:
               key: httpPost
@@ -133,29 +134,29 @@ flows:
                 isPublic: true
                 key: http
                 version: LATEST
-            description: ''
+            description: ""
             inputs:
               connection:
                 type: configVar
-                value: ''
+                value: ""
               data:
                 type: reference
-                value: parallelizeTheData.currentItem
+                value: loopOverItems.currentItem
               debugRequest:
                 type: value
-                value: 'false'
+                value: "false"
               headers:
                 type: complex
                 value: []
               ignoreSslErrors:
                 type: value
-                value: 'false'
+                value: "false"
               includeFullResponse:
                 type: value
-                value: 'false'
+                value: "false"
               maxRetries:
                 type: value
-                value: '0'
+                value: "0"
               queryParams:
                 type: complex
                 value: []
@@ -164,19 +165,19 @@ flows:
                 value: json
               retryDelayMS:
                 type: value
-                value: '0'
+                value: "0"
               retryOnAllErrors:
                 type: value
-                value: 'false'
+                value: "false"
               timeout:
                 type: value
-                value: ''
+                value: ""
               url:
                 type: reference
-                value: integrationTrigger.results.webhookUrls.Capitalize Titles
+                value: integrationTrigger.results.webhookUrls.Process Records
               useExponentialBackoff:
                 type: value
-                value: 'false'
+                value: "false"
             name: POST Request
       - action:
           key: loopOverItems
@@ -184,12 +185,12 @@ flows:
             isPublic: true
             key: loop
             version: LATEST
-        description: ''
+        description: ""
         inputs:
           items:
             type: reference
-            value: parallelizeTheData.results
-        name: Fetch the Results
+            value: loopOverItems.results
+        name: Loop Over Executions
         steps:
           - action:
               key: loopNTimes
@@ -197,12 +198,12 @@ flows:
                 isPublic: true
                 key: loop
                 version: LATEST
-            description: ''
+            description: ""
             inputs:
               iterationCount:
                 type: value
-                value: '10'
-            name: Wait until complete
+                value: "5"
+            name: Loop N Times
             steps:
               - action:
                   key: rawRequest
@@ -210,17 +211,17 @@ flows:
                     isPublic: true
                     key: prismatic
                     version: LATEST
-                description: ''
+                description: ""
                 inputs:
                   connection:
                     type: configVar
                     value: Prismatic Connection
                   query:
                     type: value
-                    value: >
-                      query myGetExecutionResults($id: ID!, $stepName: String!)
-                      {
-                        executionResult(id: $id) {
+                    value: >-
+                      query myGetExecutionResults($executionId: ID!, $stepName:
+                      String!) {
+                        executionResult(id: $executionId) {
                           id
                           endedAt
                           stepResults(displayStepName: $stepName) {
@@ -233,13 +234,13 @@ flows:
                   variables:
                     type: complex
                     value:
-                      - name: id
-                        type: reference
-                        value: fetchTheResults.currentItem.executionId
                       - name: stepName
                         type: value
                         value: Loop Over Items
-                name: Get Execution Results
+                      - name: executionId
+                        type: reference
+                        value: loopOverExecutions.currentItem.executionId
+                name: Raw GraphQL Request
               - action:
                   key: branchOnExpression
                   component:
@@ -247,7 +248,7 @@ flows:
                     key: branch
                     version: LATEST
                 branches:
-                  - name: Execution Complete
+                  - name: Execution Finished?
                     steps:
                       - action:
                           key: httpGet
@@ -255,26 +256,26 @@ flows:
                             isPublic: true
                             key: http
                             version: LATEST
-                        description: ''
+                        description: ""
                         inputs:
                           connection:
                             type: configVar
-                            value: ''
+                            value: ""
                           debugRequest:
                             type: value
-                            value: 'false'
+                            value: "false"
                           headers:
                             type: complex
                             value: []
                           ignoreSslErrors:
                             type: value
-                            value: 'false'
+                            value: "false"
                           includeFullResponse:
                             type: value
-                            value: 'false'
+                            value: "false"
                           maxRetries:
                             type: value
-                            value: '0'
+                            value: "0"
                           queryParams:
                             type: complex
                             value: []
@@ -283,32 +284,32 @@ flows:
                             value: binary
                           retryDelayMS:
                             type: value
-                            value: '0'
+                            value: "0"
                           retryOnAllErrors:
                             type: value
-                            value: 'false'
+                            value: "false"
                           timeout:
                             type: value
-                            value: ''
+                            value: ""
                           url:
                             type: reference
                             value: >-
-                              getExecutionResults.results.data.data.executionResult.stepResults.nodes.0.resultsUrl
+                              rawGraphqlRequest.results.data.data.executionResult.stepResults.nodes.0.resultsUrl
                           useExponentialBackoff:
                             type: value
-                            value: 'false'
-                        name: Get Step Results
+                            value: "false"
+                        name: GET Request 2
                       - action:
                           key: decodeMessage
                           component:
                             isPublic: true
                             key: messagepack
                             version: LATEST
-                        description: ''
+                        description: ""
                         inputs:
                           message:
                             type: reference
-                            value: getStepResults.results
+                            value: getRequest2.results
                         name: Decode
                       - action:
                           key: appendExecutionValueToList
@@ -316,11 +317,11 @@ flows:
                             isPublic: true
                             key: persist-data
                             version: LATEST
-                        description: ''
+                        description: ""
                         inputs:
                           keyInput:
                             type: value
-                            value: results
+                            value: myResults
                           valueInput:
                             type: reference
                             value: decode.results.data
@@ -331,7 +332,7 @@ flows:
                             isPublic: true
                             key: loop
                             version: LATEST
-                        description: ''
+                        description: ""
                         inputs: {}
                         name: Break Loop
                   - name: Else
@@ -342,25 +343,25 @@ flows:
                             isPublic: true
                             key: sleep
                             version: LATEST
-                        description: ''
+                        description: ""
                         inputs:
                           ms:
                             type: value
-                            value: '2000'
+                            value: "1000"
                         name: Sleep
-                description: ''
+                description: ""
                 inputs:
                   conditions:
                     type: complex
                     value:
-                      - name: Execution Complete
+                      - name: Execution Finished?
                         type: complex
                         value:
                           - and
                           - - exists
                             - type: reference
                               value: >-
-                                getExecutionResults.results.data.data.executionResult.endedAt
+                                rawGraphqlRequest.results.data.data.executionResult.endedAt
                 name: Branch on Expression
       - action:
           key: getExecutionValue
@@ -368,14 +369,14 @@ flows:
             isPublic: true
             key: persist-data
             version: LATEST
-        description: ''
+        description: ""
         inputs:
           defaultValueInput:
             type: value
-            value: ''
+            value: ""
           keyInput:
             type: value
-            value: results
+            value: myResults
         name: Execution - Get Value
       - action:
           key: flatten
@@ -383,15 +384,16 @@ flows:
             isPublic: true
             key: collection-tools
             version: LATEST
-        description: ''
+        description: ""
         inputs:
           listInput:
             type: reference
             value: executionGetValue.results
         name: Flatten
-  - description: ''
+  - description: ""
+    endpointSecurityType: customer_optional
     isSynchronous: false
-    name: Capitalize Titles
+    name: Process Records
     steps:
       - action:
           key: webhook
@@ -399,20 +401,20 @@ flows:
             isPublic: true
             key: webhook-triggers
             version: LATEST
-        description: ''
+        description: ""
         inputs:
           body:
             type: value
-            value: ''
+            value: ""
           contentType:
             type: value
-            value: ''
+            value: ""
           headers:
             type: complex
             value: []
           statusCode:
             type: value
-            value: ''
+            value: ""
         isTrigger: true
         name: Flow 2 Trigger
       - action:
@@ -421,7 +423,7 @@ flows:
             isPublic: true
             key: loop
             version: LATEST
-        description: ''
+        description: ""
         inputs:
           items:
             type: reference
@@ -434,33 +436,12 @@ flows:
                 isPublic: true
                 key: text-manipulation
                 version: LATEST
-            description: ''
+            description: Capitalize comment bodies
             inputs:
               text:
                 type: reference
-                value: loopOverItems.currentItem.title
+                value: loopOverItems.currentItem.body
             name: Upper Case
-          - action:
-              key: addKey
-              component:
-                isPublic: true
-                key: collection-tools
-                version: LATEST
-            description: ''
-            inputs:
-              key:
-                type: value
-                value: title
-              object:
-                type: reference
-                value: loopOverItems.currentItem
-              objectPath:
-                type: value
-                value: ''
-              value:
-                type: reference
-                value: upperCase.results
-            name: Add Key/Value to Object
 name: Split payload example
 requiredConfigVars:
   - connection:
@@ -473,6 +454,7 @@ requiredConfigVars:
     inputs:
       apiKey:
         type: value
-        value: ''
+        value: ""
     key: Prismatic Connection
+    onPremiseConnectionConfig: disallowed
     orgOnly: false
