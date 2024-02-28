@@ -3,16 +3,31 @@ configPages:
   - elements:
       - type: configVar
         value: Google Cloud Storage Connection
-      - type: configVar
-        value: Google Cloud Storage - Bucket Name Variable
     name: Configuration
     tagline: ""
+  - elements:
+      - type: configVar
+        value: Google Cloud Bucket
+      - type: configVar
+        value: Unprocessed Directory
+      - type: configVar
+        value: Processed Directory
+    name: Bucket Configuration
+    tagline: ""
+    userLevelConfigured: false
 definitionVersion: 7
 description: ""
-documentation: ""
+documentation: >-
+  # Loop Over Files
+
+
+  This sample integration demonstrates how an integration can periodically look
+  for new files in a file storage system, process each file it finds, and move
+  processed files to a different directory.
 endpointType: flow_specific
 flows:
   - description: ""
+    endpointSecurityType: customer_optional
     isSynchronous: false
     name: Flow 1
     steps:
@@ -30,13 +45,16 @@ flows:
           contentType:
             type: value
             value: ""
+          headers:
+            type: complex
+            value: []
           statusCode:
             type: value
             value: ""
         isTrigger: true
         name: Integration Trigger
       - action:
-          key: listFiles
+          key: listFilesV2
           component:
             isPublic: true
             key: google-cloud-storage
@@ -45,7 +63,7 @@ flows:
         inputs:
           bucketName:
             type: configVar
-            value: Google Cloud Storage - Bucket Name Variable
+            value: Google Cloud Bucket
           connection:
             type: configVar
             value: Google Cloud Storage Connection
@@ -56,8 +74,8 @@ flows:
             type: value
             value: ""
           prefix:
-            type: value
-            value: unprocessed/
+            type: configVar
+            value: Unprocessed Directory
         name: List Files
       - action:
           key: loopOverItems
@@ -69,7 +87,7 @@ flows:
         inputs:
           items:
             type: reference
-            value: listFiles.results
+            value: listFiles.results.files
         name: Loop Over Items
         steps:
           - action:
@@ -82,7 +100,7 @@ flows:
             inputs:
               bucketName:
                 type: configVar
-                value: Google Cloud Storage - Bucket Name Variable
+                value: Google Cloud Bucket
               connection:
                 type: configVar
                 value: Google Cloud Storage Connection
@@ -90,6 +108,21 @@ flows:
                 type: reference
                 value: loopOverItems.currentItem
             name: Download File
+          - action:
+              key: deserializeFromXml
+              component:
+                isPublic: true
+                key: change-data-format
+                version: LATEST
+            description: ""
+            inputs:
+              data:
+                type: reference
+                value: downloadFile.results
+              numbersAsStrings:
+                type: value
+                value: "false"
+            name: Deserialize XML
           - action:
               key: createObject
               component:
@@ -103,13 +136,13 @@ flows:
                 value:
                   - name: item_name
                     type: reference
-                    value: downloadFile.results.item
+                    value: deserializeXml.results.order.item.name
                   - name: quantity
                     type: reference
-                    value: downloadFile.results.qty
+                    value: deserializeXml.results.order.qty
                   - name: cost
                     type: reference
-                    value: downloadFile.results.price
+                    value: deserializeXml.results.order.price
             name: Create Object
           - action:
               key: httpPost
@@ -128,12 +161,21 @@ flows:
               debugRequest:
                 type: value
                 value: "false"
+              headers:
+                type: complex
+                value: []
+              ignoreSslErrors:
+                type: value
+                value: "false"
               includeFullResponse:
                 type: value
                 value: "false"
               maxRetries:
                 type: value
                 value: "0"
+              queryParams:
+                type: complex
+                value: []
               responseType:
                 type: value
                 value: json
@@ -162,11 +204,11 @@ flows:
             description: ""
             inputs:
               find:
-                type: value
-                value: unprocessed
+                type: configVar
+                value: Unprocessed Directory
               replace:
-                type: value
-                value: processed
+                type: configVar
+                value: Processed Directory
               text:
                 type: reference
                 value: loopOverItems.currentItem
@@ -184,13 +226,13 @@ flows:
                 value: Google Cloud Storage Connection
               destinationBucketName:
                 type: configVar
-                value: Google Cloud Storage - Bucket Name Variable
+                value: Google Cloud Bucket
               destinationFileName:
                 type: reference
                 value: findReplace.results
               sourceBucketName:
                 type: configVar
-                value: Google Cloud Storage - Bucket Name Variable
+                value: Google Cloud Bucket
               sourceFileName:
                 type: reference
                 value: loopOverItems.currentItem
@@ -215,8 +257,34 @@ requiredConfigVars:
         type: value
         value: ""
     key: Google Cloud Storage Connection
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataSource:
+      key: selectBucket
+      component:
+        isPublic: true
+        key: google-cloud-storage
+        version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    description: The name of the bucket that stores files to process
+    inputs:
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Google Cloud Storage Connection
+    key: Google Cloud Bucket
     orgOnly: false
   - dataType: string
-    defaultValue: ""
-    key: Google Cloud Storage - Bucket Name Variable
+    defaultValue: unprocessed/
+    description: The name of the directory that stores unprocessed files
+    key: Unprocessed Directory
+    orgOnly: false
+  - dataType: string
+    defaultValue: processed/
+    description: The name of the directory that stores processed files
+    key: Processed Directory
     orgOnly: false
