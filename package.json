@@ -4,7 +4,8 @@
   "workspaces": {
     "packages": [
       "components/*",
-      "components/packages/*"
+      "components/packages/*",
+      "integrations/code-native-integrations/*"
     ]
   },
   "devDependencies": {

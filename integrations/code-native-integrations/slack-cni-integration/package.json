@@ -1,0 +1,35 @@
+{
+  "name": "first-integration",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "webpack",
+    "import": "npm run build && prism integrations:import",
+    "test": "jest",
+    "lint": "eslint --ext .ts ."
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@prismatic-io/eslint-config-spectral"
+    ]
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "8.0.6",
+    "axios": "1.6.7",
+    "fast-xml-parser": "^4.3.4"
+  },
+  "devDependencies": {
+    "@prismatic-io/eslint-config-spectral": "2.0.2",
+    "@types/jest": "26.0.24",
+    "copy-webpack-plugin": "11.0.0",
+    "eslint": "8.56.0",
+    "jest": "27.0.6",
+    "ts-jest": "27.0.3",
+    "ts-loader": "9.2.3",
+    "typescript": "4.3.5",
+    "webpack": "5.76.3",
+    "webpack-cli": "5.0.1"
+  }
+}

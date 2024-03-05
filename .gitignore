@@ -4,9 +4,14 @@
 # Components
 components/**/dist
 
-# Yarn stuff
+# Yarn
 **/yarn-error.log
+
+# Node
 node_modules
+
+# Components
+dist
 
 # MacOS
 .DS_Store
