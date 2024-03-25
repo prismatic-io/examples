@@ -511,6 +511,69 @@ flows:
             type: configVar
             value: Shopify Connection
         name: List Inventory Levels At Location
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create New Product
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Create New Product Trigger
+      - action:
+          key: createProduct
+          component:
+            isPublic: true
+            key: shopify
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: reference
+            value: createNewProductTrigger.results.body.data.description
+          debugRequest:
+            type: value
+            value: "false"
+          fieldValues:
+            type: complex
+            value: []
+          imageUrl:
+            type: value
+            value: ""
+          productType:
+            type: reference
+            value: createNewProductTrigger.results.body.data.product_type
+          shopifyConnection:
+            type: configVar
+            value: Shopify Connection
+          tags:
+            type: complex
+            value: []
+          title:
+            type: reference
+            value: createNewProductTrigger.results.body.data.name
+          vendor:
+            type: reference
+            value: createNewProductTrigger.results.body.data.vendor
+        name: Create Product
 name: Shopify Example Integration
 requiredConfigVars:
   - key: Shopify Connection
