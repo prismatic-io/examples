@@ -1,22 +1,25 @@
-category: ""
+category: File Storage
 configPages:
   - elements:
       - type: configVar
         value: Dropbox Connection
       - type: configVar
-        value: Router Integration Endpoint
+        value: Dropbox Router Instance Endpoint
     name: Configuration
     tagline: ""
 definitionVersion: 7
-description: ""
+description: >-
+  Example integration that leverages a router instance to route update requests
+  to instances.
 documentation: ""
 endpointType: flow_specific
 flows:
   - description: >-
-      Register a mapping of Dropbox Account ID <> Instance URL with the router
-      integration
+      When the instance is deployed, link the dropbox ID (like dbid:abc123) to
+      the instance's webhook URL.
+    endpointSecurityType: customer_optional
     isSynchronous: false
-    name: Register account ID
+    name: Register Instance
     steps:
       - action:
           key: instanceDeploy
@@ -27,23 +30,19 @@ flows:
         description: ""
         inputs: {}
         isTrigger: true
-        name: Integration Trigger
+        name: Register Instance Trigger
       - action:
-          key: runCode
+          key: getCurrentAccount
           component:
             isPublic: true
-            key: code
+            key: dropbox
             version: LATEST
         description: ""
         inputs:
-          code:
-            type: value
-            value: |
-              module.exports = async ({ configVars }, stepResults) => {
-                const dropboxAccount = configVars['Dropbox Connection']['token']['account_id'];
-                return { data: dropboxAccount };
-              };
-        name: Get Dropbox Account ID
+          dropboxConnection:
+            type: configVar
+            value: Dropbox Connection
+        name: Get Current Account
       - action:
           key: createObject
           component:
@@ -55,12 +54,17 @@ flows:
           keyValueInput:
             type: complex
             value:
+              - name: event
+                type: value
+                value: register
               - name: dropboxAccountId
                 type: reference
-                value: getDropboxAccountId.results
+                value: getCurrentAccount.results.account_id
               - name: instanceChangesWebhookUrl
                 type: reference
-                value: integrationTrigger.results.webhookUrls.Process Dropbox Changes
+                value: >-
+                  registerInstanceTrigger.results.webhookUrls.Handle Change
+                  Notifications
         name: Create Object
       - action:
           key: httpPost
@@ -108,14 +112,216 @@ flows:
             value: ""
           url:
             type: configVar
-            value: Router Integration Endpoint
+            value: Dropbox Router Instance Endpoint
           useExponentialBackoff:
             type: value
             value: "false"
         name: POST Request
-  - description: ""
+      - action:
+          key: getInstanceValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          defaultValueInput:
+            type: value
+            value: "yes"
+          keyInput:
+            type: value
+            value: first_time
+        name: Flow - Get Value
+      - action:
+          key: branchOnValue
+          component:
+            isPublic: true
+            key: branch
+            version: LATEST
+        branches:
+          - name: "Yes"
+            steps:
+              - action:
+                  key: httpGet
+                  component:
+                    isPublic: true
+                    key: http
+                    version: LATEST
+                description: ""
+                inputs:
+                  connection:
+                    type: configVar
+                    value: ""
+                  debugRequest:
+                    type: value
+                    value: "false"
+                  headers:
+                    type: complex
+                    value: []
+                  ignoreSslErrors:
+                    type: value
+                    value: "false"
+                  includeFullResponse:
+                    type: value
+                    value: "false"
+                  maxRetries:
+                    type: value
+                    value: "0"
+                  queryParams:
+                    type: complex
+                    value: []
+                  responseType:
+                    type: value
+                    value: json
+                  retryDelayMS:
+                    type: value
+                    value: "0"
+                  retryOnAllErrors:
+                    type: value
+                    value: "false"
+                  timeout:
+                    type: value
+                    value: ""
+                  url:
+                    type: reference
+                    value: >-
+                      registerInstanceTrigger.results.webhookUrls.Handle Change
+                      Notifications
+                  useExponentialBackoff:
+                    type: value
+                    value: "false"
+                name: Run change handler once
+              - action:
+                  key: saveInstanceValue
+                  component:
+                    isPublic: true
+                    key: persist-data
+                    version: LATEST
+                description: ""
+                inputs:
+                  keyInput:
+                    type: value
+                    value: first_time
+                  valueInput:
+                    type: value
+                    value: "no"
+                name: Flow - Save Value
+          - name: Else
+            steps: []
+        description: ""
+        inputs:
+          branchValueMappings:
+            type: complex
+            value:
+              - name: "Yes"
+                type: value
+                value: "yes"
+          inputValue:
+            type: reference
+            value: flowGetValue.results
+        name: First Execution?
+  - description: >-
+      When the instance is removed, deregister the instance from the router
+      instance
+    endpointSecurityType: customer_optional
     isSynchronous: false
-    name: Process Dropbox Changes
+    name: Deregister Instance
+    steps:
+      - action:
+          key: instanceRemove
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Deregister Instance Trigger
+      - action:
+          key: getCurrentAccount
+          component:
+            isPublic: true
+            key: dropbox
+            version: LATEST
+        description: ""
+        inputs:
+          dropboxConnection:
+            type: configVar
+            value: Dropbox Connection
+        name: Get Current Account
+      - action:
+          key: createObject
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: ""
+        inputs:
+          keyValueInput:
+            type: complex
+            value:
+              - name: event
+                type: value
+                value: deregister
+              - name: dropboxAccountId
+                type: reference
+                value: getCurrentAccount.results.account_id
+        name: Create Object
+      - action:
+          key: httpPost
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: ""
+          data:
+            type: reference
+            value: createObject.results
+          debugRequest:
+            type: value
+            value: "false"
+          headers:
+            type: complex
+            value: []
+          ignoreSslErrors:
+            type: value
+            value: "false"
+          includeFullResponse:
+            type: value
+            value: "false"
+          maxRetries:
+            type: value
+            value: "0"
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: "0"
+          retryOnAllErrors:
+            type: value
+            value: "false"
+          timeout:
+            type: value
+            value: ""
+          url:
+            type: configVar
+            value: Dropbox Router Instance Endpoint
+          useExponentialBackoff:
+            type: value
+            value: "false"
+        name: POST Request
+  - description: Check for new changes in Dropbox
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Handle Change Notifications
     steps:
       - action:
           key: webhook
@@ -138,7 +344,7 @@ flows:
             type: value
             value: ""
         isTrigger: true
-        name: Process Dropbox Changes Trigger
+        name: Handle Change Notifications Trigger
       - action:
           key: listChanges
           component:
@@ -147,6 +353,9 @@ flows:
             version: LATEST
         description: ""
         inputs:
+          debug:
+            type: value
+            value: "false"
           directoryPath:
             type: value
             value: ""
@@ -159,8 +368,298 @@ flows:
           recursive:
             type: value
             value: "false"
+          teamMemberId:
+            type: value
+            value: ""
+          userType:
+            type: value
+            value: ""
         name: List Changes
-name: Example Dropbox Integration
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ""
+        inputs:
+          items:
+            type: reference
+            value: listChanges.results.entries
+        name: Loop Over Changes
+        steps:
+          - action:
+              key: branchOnValue
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: File Create or Update
+                steps:
+                  - action:
+                      key: downloadFile
+                      component:
+                        isPublic: true
+                        key: dropbox
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      debug:
+                        type: value
+                        value: "false"
+                      download_as_zip:
+                        type: value
+                        value: "false"
+                      dropboxConnection:
+                        type: configVar
+                        value: Dropbox Connection
+                      path:
+                        type: reference
+                        value: loopOverChanges.currentItem.path_display
+                    name: Download File
+                  - action:
+                      key: httpPost
+                      component:
+                        isPublic: true
+                        key: http
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      connection:
+                        type: configVar
+                        value: ""
+                      data:
+                        type: reference
+                        value: downloadFile.results
+                      debugRequest:
+                        type: value
+                        value: "false"
+                      headers:
+                        type: complex
+                        value: []
+                      ignoreSslErrors:
+                        type: value
+                        value: "false"
+                      includeFullResponse:
+                        type: value
+                        value: "false"
+                      maxRetries:
+                        type: value
+                        value: "0"
+                      queryParams:
+                        type: complex
+                        value: []
+                      responseType:
+                        type: value
+                        value: json
+                      retryDelayMS:
+                        type: value
+                        value: "0"
+                      retryOnAllErrors:
+                        type: value
+                        value: "false"
+                      timeout:
+                        type: value
+                        value: ""
+                      url:
+                        type: value
+                        value: "https://postman-echo.com/post"
+                      useExponentialBackoff:
+                        type: value
+                        value: "false"
+                    name: POST Request
+              - name: File Deleted
+                steps:
+                  - action:
+                      key: stopExecution
+                      component:
+                        isPublic: true
+                        key: stop-execution
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      contentType:
+                        type: value
+                        value: application/json
+                      jsonBody:
+                        type: value
+                        value: ""
+                      statusCode:
+                        type: value
+                        value: "200"
+                    name: Stop if file deleted
+              - name: Folder Create or Update
+                steps:
+                  - action:
+                      key: stopExecution
+                      component:
+                        isPublic: true
+                        key: stop-execution
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      contentType:
+                        type: value
+                        value: application/json
+                      jsonBody:
+                        type: value
+                        value: ""
+                      statusCode:
+                        type: value
+                        value: "200"
+                    name: Stop if folder-related
+              - name: Else
+                steps:
+                  - action:
+                      key: stopExecution
+                      component:
+                        isPublic: true
+                        key: stop-execution
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      contentType:
+                        type: value
+                        value: application/json
+                      jsonBody:
+                        type: value
+                        value: ""
+                      statusCode:
+                        type: value
+                        value: "200"
+                    name: Stop on other events
+            description: ""
+            inputs:
+              branchValueMappings:
+                type: complex
+                value:
+                  - name: File Create or Update
+                    type: value
+                    value: file
+                  - name: File Deleted
+                    type: value
+                    value: deleted
+                  - name: Folder Create or Update
+                    type: value
+                    value: folder
+              inputValue:
+                type: reference
+                value: 'loopOverChanges.currentItem.[".tag"]'
+            name: Determine what changed
+  - description: >-
+      A synchronous flow which will return a list of all files and folders in a
+      folder specified by a { folder: "/my-folder" } request body.
+    endpointSecurityType: customer_optional
+    isSynchronous: true
+    name: List Files
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: List Files Trigger
+      - action:
+          key: listFolder
+          component:
+            isPublic: true
+            key: dropbox
+            version: LATEST
+        description: ""
+        inputs:
+          cursor:
+            type: value
+            value: ""
+          debug:
+            type: value
+            value: "false"
+          dropboxConnection:
+            type: configVar
+            value: Dropbox Connection
+          limit:
+            type: value
+            value: ""
+          path:
+            type: reference
+            value: listFilesTrigger.results.body.data.folder
+          recursive:
+            type: value
+            value: "false"
+          teamMemberId:
+            type: value
+            value: ""
+          userType:
+            type: value
+            value: ""
+        name: List Folder
+  - description: >-
+      A synchronous flow that allows a caller to download a specified file from
+      Dropbox given the file's path.
+    endpointSecurityType: customer_optional
+    isSynchronous: true
+    name: Get File
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Get File Trigger
+      - action:
+          key: downloadFile
+          component:
+            isPublic: true
+            key: dropbox
+            version: LATEST
+        description: ""
+        inputs:
+          debug:
+            type: value
+            value: "false"
+          download_as_zip:
+            type: value
+            value: "false"
+          dropboxConnection:
+            type: configVar
+            value: Dropbox Connection
+          path:
+            type: reference
+            value: getFileTrigger.results.body.data.file
+        name: Download File
+name: Dropbox Example
 requiredConfigVars:
   - connection:
       key: oauth
@@ -183,8 +682,12 @@ requiredConfigVars:
         type: value
         value: ""
     key: Dropbox Connection
+    onPremiseConnectionConfig: disallowed
     orgOnly: false
   - dataType: string
     defaultValue: ""
-    key: Router Integration Endpoint
+    key: Dropbox Router Instance Endpoint
+    meta:
+      visibleToCustomerDeployer: false
+      visibleToOrgDeployer: true
     orgOnly: true
