@@ -2,7 +2,7 @@ category: ""
 configPages:
   - elements:
       - type: configVar
-        value: Amazon S3 Connection
+        value: Amazon AWS Connection
     name: Configuration
     tagline: ""
   - elements:
@@ -13,7 +13,9 @@ configPages:
     userLevelConfigured: false
 definitionVersion: 7
 description: ""
-documentation: ""
+documentation: >-
+  An example that demonstrates how to subscribe to events in an Amazon S3
+  bucket.
 endpointType: flow_specific
 flows:
   - description: >-
@@ -29,38 +31,26 @@ flows:
     name: Create and configure SNS topic
     steps:
       - action:
-          key: webhook
+          key: instanceDeploy
           component:
-            key: webhook-triggers
             isPublic: true
+            key: management-triggers
             version: LATEST
         description: ""
-        inputs:
-          body:
-            type: value
-            value: ""
-          contentType:
-            type: value
-            value: ""
-          headers:
-            type: complex
-            value: []
-          statusCode:
-            type: value
-            value: ""
+        inputs: {}
         isTrigger: true
         name: Integration Trigger
       - action:
           key: getBucketLocation
           component:
-            key: aws-s3
             isPublic: true
+            key: aws-s3
             version: LATEST
         description: ""
         inputs:
           accessKey:
             type: configVar
-            value: Amazon S3 Connection
+            value: Amazon AWS Connection
           bucket:
             type: configVar
             value: Amazon S3 Bucket Name
@@ -68,14 +58,14 @@ flows:
       - action:
           key: createTopic
           component:
-            key: aws-s3
             isPublic: true
+            key: aws-s3
             version: LATEST
         description: ""
         inputs:
           awsConnection:
             type: configVar
-            value: Amazon S3 Connection
+            value: Amazon AWS Connection
           awsRegion:
             type: reference
             value: getBucketLocation.results
@@ -86,26 +76,26 @@ flows:
       - action:
           key: getCurrentAccount
           component:
-            key: aws-s3
             isPublic: true
+            key: aws-s3
             version: LATEST
         description: ""
         inputs:
           accessKey:
             type: configVar
-            value: Amazon S3 Connection
+            value: Amazon AWS Connection
         name: Get Current Account
       - action:
           key: updateTopicPolicy
           component:
-            key: aws-s3
             isPublic: true
+            key: aws-s3
             version: LATEST
         description: ""
         inputs:
           awsConnection:
             type: configVar
-            value: Amazon S3 Connection
+            value: Amazon AWS Connection
           awsRegion:
             type: reference
             value: getBucketLocation.results
@@ -122,20 +112,23 @@ flows:
       - action:
           key: bucketEventTriggerConfiguration
           component:
-            key: aws-s3
             isPublic: true
+            key: aws-s3
             version: LATEST
         description: ""
         inputs:
           awsConnection:
             type: configVar
-            value: Amazon S3 Connection
+            value: Amazon AWS Connection
           awsRegion:
             type: reference
             value: getBucketLocation.results
           bucket:
             type: configVar
             value: Amazon S3 Bucket Name
+          bucketOwnerAccountid:
+            type: reference
+            value: getCurrentAccount.results.Account
           eventNotificationName:
             type: value
             value: MyObjectCreatedEvent
@@ -151,14 +144,14 @@ flows:
       - action:
           key: subscribeToTopic
           component:
-            key: aws-s3
             isPublic: true
+            key: aws-s3
             version: LATEST
         description: ""
         inputs:
           awsConnection:
             type: configVar
-            value: Amazon S3 Connection
+            value: Amazon AWS Connection
           awsRegion:
             type: reference
             value: getBucketLocation.results
@@ -169,6 +162,21 @@ flows:
             type: reference
             value: createSnsTopicForS3EventNotification.results.TopicArn
         name: Subscribe to SNS Topic
+      - action:
+          key: saveCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          keyInput:
+            type: value
+            value: sns-topic-arn
+          valueInput:
+            type: reference
+            value: createSnsTopicForS3EventNotification.results.TopicArn
+        name: Cross Flow - Save Value
   - description: >-
       This flow receives and processes notifications from SNS, and is triggered
       when files are created in the S3 bucket.
@@ -179,8 +187,8 @@ flows:
       - action:
           key: snsS3NotificationWebhook
           component:
-            key: aws-s3
             isPublic: true
+            key: aws-s3
             version: LATEST
         branches:
           - name: Notification
@@ -190,8 +198,8 @@ flows:
               - action:
                   key: stopExecution
                   component:
-                    key: stop-execution
                     isPublic: true
+                    key: stop-execution
                     version: LATEST
                 description: ""
                 inputs:
@@ -212,8 +220,8 @@ flows:
       - action:
           key: deserializeFromJson
           component:
-            key: change-data-format
             isPublic: true
+            key: change-data-format
             version: LATEST
         description: ""
         inputs:
@@ -224,8 +232,8 @@ flows:
       - action:
           key: loopOverItems
           component:
-            key: loop
             isPublic: true
+            key: loop
             version: LATEST
         description: ""
         inputs:
@@ -237,14 +245,14 @@ flows:
           - action:
               key: getObject
               component:
-                key: aws-s3
                 isPublic: true
+                key: aws-s3
                 version: LATEST
             description: ""
             inputs:
               accessKey:
                 type: configVar
-                value: Amazon S3 Connection
+                value: Amazon AWS Connection
               awsRegion:
                 type: reference
                 value: loopOverItems.currentItem.awsRegion
@@ -258,8 +266,8 @@ flows:
           - action:
               key: writeLog
               component:
-                key: log
                 isPublic: true
+                key: log
                 version: LATEST
             description: ""
             inputs:
@@ -273,13 +281,114 @@ flows:
                   object "{{$loopOverItems.currentItem.s3.object.key}}" in
                   bucket "{{$loopOverItems.currentItem.s3.bucket.name}}"
             name: Write Log Message
+  - description: >-
+      Remove the SNS topic that was created on instance deploy when an instance
+      is deleted.
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Remove SNS Topic
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Clean Up Trigger
+      - action:
+          key: getBucketLocation
+          component:
+            isPublic: true
+            key: aws-s3
+            version: LATEST
+        description: ""
+        inputs:
+          accessKey:
+            type: configVar
+            value: Amazon AWS Connection
+          bucket:
+            type: configVar
+            value: Amazon S3 Bucket Name
+        name: Get Bucket Location
+      - action:
+          key: getCrossFlowValue
+          component:
+            isPublic: true
+            key: persist-data
+            version: LATEST
+        description: ""
+        inputs:
+          defaultValueInput:
+            type: value
+            value: ""
+          keyInput:
+            type: value
+            value: sns-topic-arn
+        name: Cross Flow - Get Value
+      - action:
+          key: branchOnExpression
+          component:
+            isPublic: true
+            key: branch
+            version: LATEST
+        branches:
+          - name: SNS Topic Set
+            steps:
+              - action:
+                  key: deleteTopic
+                  component:
+                    isPublic: true
+                    key: aws-sns
+                    version: LATEST
+                description: ""
+                inputs:
+                  awsConnection:
+                    type: configVar
+                    value: Amazon AWS Connection
+                  awsRegion:
+                    type: reference
+                    value: getBucketLocation.results
+                  topicArn:
+                    type: reference
+                    value: crossFlowGetValue.results
+                name: Delete Topic
+              - action:
+                  key: removeCrossFlowValue
+                  component:
+                    isPublic: true
+                    key: persist-data
+                    version: LATEST
+                description: ""
+                inputs:
+                  keyInput:
+                    type: value
+                    value: sns-topic-arn
+                name: Cross Flow - Remove Value
+          - name: Else
+            steps: []
+        description: ""
+        inputs:
+          conditions:
+            type: complex
+            value:
+              - name: SNS Topic Set
+                type: complex
+                value:
+                  - and
+                  - - exists
+                    - type: reference
+                      value: crossFlowGetValue.results
+        name: Branch on Expression
 name: Amazon S3 Events Example
 requiredConfigVars:
   - connection:
       key: apiKeySecret
       component:
-        key: aws-s3
         isPublic: true
+        key: aws-s3
         version: LATEST
     dataType: connection
     inputs:
@@ -289,19 +398,18 @@ requiredConfigVars:
       secretAccessKey:
         type: value
         value: ""
-    key: Amazon S3 Connection
+    key: Amazon AWS Connection
+    onPremiseConnectionConfig: disallowed
     orgOnly: false
-  - dataType: picklist
-    defaultValue: ""
-    description: Please choose an S3 bucket from this region
-    key: Amazon S3 Bucket Name
-    orgOnly: false
-    dataSource:
+  - dataSource:
       key: selectBucket
       component:
-        key: aws-s3
         isPublic: true
+        key: aws-s3
         version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    description: Please choose an S3 bucket from this region
     inputs:
       accessKey:
         meta:
@@ -309,4 +417,6 @@ requiredConfigVars:
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: configVar
-        value: Amazon S3 Connection
+        value: Amazon AWS Connection
+    key: Amazon S3 Bucket Name
+    orgOnly: false
