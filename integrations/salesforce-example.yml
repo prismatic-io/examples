@@ -4,28 +4,36 @@ configPages:
       - type: configVar
         value: Salesforce Connection
       - type: configVar
-        value: Persist Data Outbound Message Key Name
+        value: Truncated Instance ID
       - type: configVar
-        value: Persist Data Workflow Rule Key Name
+        value: Acme API Endpoint
     name: Configuration
     tagline: ""
+  - elements:
+      - type: configVar
+        value: Salesforce Account Field Mapping
+    name: Map Fields
+    tagline: Map Fields from Salesforce to Acme
+    userLevelConfigured: false
 definitionVersion: 7
 description: ""
 documentation: >-
   # Salesforce Example
 
 
-  This example integration is broken into four flows.
+  This example integration is broken into three flows.
 
 
-  ## Create Salesforce Outbound Message
+  ## Initial Account Import
 
 
-  This flow creates a salesforce outbound message and workflow rule. In
-  instructs Salesforce to notify its sibling flow, **Process Salesforce Outbound
-  Messages**, when an **Account** is created, updated, or deleted. It is
-  triggered by an "instance create" event, which executes when an instance is
-  deployed.
+  This flow runs when an instance is first deployed. It uses SOQL to query pages
+  of **Account** records, and for each page it loops over results and posts
+  those results to "Acme".
+
+
+  Account records are translated using the field mapping values the customer
+  selected with a code step.
 
 
   ## Process Salesforce Outbound Messages
@@ -36,12 +44,9 @@ documentation: >-
   understands, and sends the request to Acme.
 
 
-  ## Delete Salesforce Outbound Message
-
-
-  This flow removes the workflow rule and outbound message from SFDC. It is
-  triggered by an "instance remove" event, which executes when an instance is
-  deleted.
+  The subscription to a Salesforce Outbound Message and Workflow Rule are
+  performed on instance deploy automatically. Those resource are deleted on
+  instance removal.
 
 
   ## Create Account from Acme
@@ -52,21 +57,22 @@ documentation: >-
   **Account** will be created in SFDC. A payload should look like this:
 
 
-  ```json
+  ```javascript
 
   {
-    "name": "My New Account",
-    "industry": "Education",
-    "monthlyRevenue": 12345
+    "acct_name": "My New Account",
+    "revenue": 12345
   }
 
   ```
 endpointType: flow_specific
 flows:
-  - description: ""
+  - description: >-
+      Loop over a paginated set of Account records in Salesforce, sending each
+      to Acme
     endpointSecurityType: customer_optional
     isSynchronous: false
-    name: Create Salesforce Outbound Messages
+    name: Initial Account Import
     steps:
       - action:
           key: instanceDeploy
@@ -74,356 +80,242 @@ flows:
             isPublic: true
             key: management-triggers
             version: LATEST
-        description: Set up with an instance is created
+        description: ""
         inputs: {}
         isTrigger: true
-        name: Create Salesforce Outbound Messages Trigger
+        name: Initial Account Import Trigger
       - action:
-          key: getCrossFlowValue
+          key: loopNTimes
           component:
             isPublic: true
-            key: persist-data
-            version: LATEST
-        description: "Get outbound message full name, if set"
-        inputs:
-          defaultValueInput:
-            type: value
-            value: ""
-          keyInput:
-            type: configVar
-            value: Persist Data Outbound Message Key Name
-        name: Cross Flow - Get Value
-      - action:
-          key: slice
-          component:
-            isPublic: true
-            key: text-manipulation
-            version: LATEST
-        description: Generate unique name for outbound message and workflow rule
-        inputs:
-          sliceStart:
-            type: value
-            value: "0"
-          sliceStop:
-            type: value
-            value: "40"
-          text:
-            type: template
-            value: >-
-              instance_{{$createSalesforceOutboundMessagesTrigger.results.instance.id}}
-        name: Extract Substring
-      - action:
-          key: listWorkflowOutboundMessages
-          component:
-            isPublic: true
-            key: salesforce
+            key: loop
             version: LATEST
         description: ""
         inputs:
-          connection:
-            type: configVar
-            value: Salesforce Connection
-          version:
+          iterationCount:
             type: value
-            value: "51.0"
-        name: List Workflow Outbound Messages
-      - action:
-          key: filter
-          component:
-            isPublic: true
-            key: collection-tools
-            version: LATEST
-        description: Filter outbound messages for one with our persisted full name
-        inputs:
-          filterCodeInput:
-            type: template
-            value: '(item) => item.fullName == "{{$crossFlowGetValue.results}}"'
-          listInput:
-            type: reference
-            value: listWorkflowOutboundMessages.results
-        name: Filter
-      - action:
-          key: branchOnExpression
-          component:
-            isPublic: true
-            key: branch
-            version: LATEST
-        branches:
-          - name: Outbound Message Exists
-            steps:
-              - action:
-                  key: writeLog
-                  component:
-                    isPublic: true
-                    key: log
-                    version: LATEST
-                description: ""
-                inputs:
-                  level:
-                    type: value
-                    value: info
-                  message:
-                    type: value
-                    value: Outbound message already exists. Skipping creation.
-                name: Write Log Message
-          - name: Else
-            steps:
-              - action:
-                  key: getCurrentUser
-                  component:
-                    isPublic: true
-                    key: salesforce
-                    version: LATEST
-                description: ""
-                inputs:
-                  connection:
-                    type: configVar
-                    value: Salesforce Connection
-                  version:
-                    type: value
-                    value: "51.0"
-                name: Get Current User
-              - action:
-                  key: createWorkflowOutboundMessage
-                  component:
-                    isPublic: true
-                    key: salesforce
-                    version: LATEST
-                description: ""
-                inputs:
-                  connection:
-                    type: configVar
-                    value: Salesforce Connection
-                  description:
-                    type: value
-                    value: ""
-                  dynamicFields:
-                    type: value
-                    value: ""
-                  endpointUrl:
-                    type: reference
-                    value: >-
-                      createSalesforceOutboundMessagesTrigger.results.webhookUrls.Process
-                      Salesforce Outbound Messages
-                  fields:
-                    type: complex
-                    value:
-                      - type: value
-                        value: Id
-                      - type: value
-                        value: Name
-                  integrationUserEmail:
-                    type: reference
-                    value: getCurrentUser.results.username
-                  name:
-                    type: reference
-                    value: extractSubstring.results
-                  recordType:
-                    type: value
-                    value: Account
-                  version:
-                    type: value
-                    value: "51.0"
-                name: Create Workflow Outbound Message
-              - action:
-                  key: saveCrossFlowValue
-                  component:
-                    isPublic: true
-                    key: persist-data
-                    version: LATEST
-                description: ""
-                inputs:
-                  keyInput:
-                    type: configVar
-                    value: Persist Data Outbound Message Key Name
-                  valueInput:
-                    type: reference
-                    value: createWorkflowOutboundMessage.results.fullName
-                name: Cross Flow - Save Value
-        description: Branch depending on if our outbound message exists or not
-        inputs:
-          conditions:
-            type: complex
-            value:
-              - name: Outbound Message Exists
+            value: "20"
+        name: Loop N Times
+        steps:
+          - action:
+              key: getExecutionValue
+              component:
+                isPublic: true
+                key: persist-data
+                version: LATEST
+            description: ""
+            inputs:
+              defaultValueInput:
+                type: value
+                value: "0"
+              keyInput:
+                type: value
+                value: SOQL_OFFSET
+            name: Execution - Get Value
+          - action:
+              key: query
+              component:
+                isPublic: true
+                key: salesforce
+                version: LATEST
+            description: ""
+            inputs:
+              connection:
+                type: configVar
+                value: Salesforce Connection
+              debug:
+                type: value
+                value: "false"
+              queryString:
+                type: template
+                value: >-
+                  SELECT Id, Name, AnnualRevenue FROM Account LIMIT 50 OFFSET
+                  {{$executionGetValue.results}}
+              version:
+                type: value
+                value: "51.0"
+            name: Salesforce Query
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: No records returned
+                steps:
+                  - action:
+                      key: breakLoop
+                      component:
+                        isPublic: true
+                        key: loop
+                        version: LATEST
+                    description: ""
+                    inputs: {}
+                    name: Break Loop
+              - name: Else
+                steps: []
+            description: ""
+            inputs:
+              conditions:
                 type: complex
                 value:
-                  - and
-                  - - isNotEmpty
-                    - type: reference
-                      value: filter.results
-                    - type: value
-                      value: ""
-        name: Branch on Expression
-      - action:
-          key: getCrossFlowValue
-          component:
-            isPublic: true
-            key: persist-data
-            version: LATEST
-        description: Get Workflow Rule full name
-        inputs:
-          defaultValueInput:
-            type: value
-            value: ""
-          keyInput:
-            type: configVar
-            value: Persist Data Workflow Rule Key Name
-        name: Cross Flow - Get Value 2
-      - action:
-          key: listWorkflowRules
-          component:
-            isPublic: true
-            key: salesforce
-            version: LATEST
-        description: ""
-        inputs:
-          connection:
-            type: configVar
-            value: Salesforce Connection
-          version:
-            type: value
-            value: "51.0"
-        name: List Workflow Rules
-      - action:
-          key: filter
-          component:
-            isPublic: true
-            key: collection-tools
-            version: LATEST
-        description: Filter workflow rules for one with our persisted full name
-        inputs:
-          filterCodeInput:
-            type: template
-            value: '(item) => item.fullName == "{{$crossFlowGetValue2.results}}"'
-          listInput:
-            type: reference
-            value: listWorkflowRules.results
-        name: Filter 2
-      - action:
-          key: branchOnExpression
-          component:
-            isPublic: true
-            key: branch
-            version: LATEST
-        branches:
-          - name: Workflow rule already exists
-            steps:
-              - action:
-                  key: writeLog
-                  component:
-                    isPublic: true
-                    key: log
-                    version: LATEST
-                description: ""
-                inputs:
-                  level:
-                    type: value
-                    value: info
-                  message:
-                    type: value
-                    value: Workflow rule already exists. Skipping creation.
-                name: Write Log Message 2
-          - name: Else
-            steps:
-              - action:
-                  key: selectExecutedStepResult
-                  component:
-                    isPublic: true
-                    key: branch
-                    version: LATEST
-                description: Get outbound message full name
-                inputs:
-                  stepResults:
+                  - name: No records returned
                     type: complex
                     value:
-                      - type: reference
-                        value: crossFlowSaveValue.results
-                      - type: reference
-                        value: crossFlowGetValue.results
-                name: Select Executed Step Result
+                      - and
+                      - - isEmpty
+                        - type: reference
+                          value: salesforceQuery.results.records
+                        - type: value
+                          value: ""
+            name: Branch on Expression
+          - action:
+              key: loopOverItems
+              component:
+                isPublic: true
+                key: loop
+                version: LATEST
+            description: ""
+            inputs:
+              items:
+                type: reference
+                value: salesforceQuery.results.records
+            name: Loop Over Accounts
+            steps:
               - action:
-                  key: createWorkflowRule
+                  key: runCode
                   component:
                     isPublic: true
-                    key: salesforce
+                    key: code
                     version: LATEST
                 description: ""
                 inputs:
-                  active:
+                  code:
                     type: value
-                    value: "true"
+                    value: >
+                      module.exports = async ({ logger, configVars },
+                      stepResults) => {
+                        const sfdcAccount = stepResults.loopOverAccounts.currentItem;
+                        const mapping = configVars["Salesforce Account Field Mapping"];
+                        const mappedFields = mapping.reduce(
+                          (acc, { source, destination }) => ({
+                            [destination]: sfdcAccount[source],
+                            ...acc,
+                          }),
+                          {},
+                        );
+                        return { data: mappedFields };
+                      };
+                name: Map Fields to Acme Format
+              - action:
+                  key: httpPost
+                  component:
+                    isPublic: true
+                    key: http
+                    version: LATEST
+                description: ""
+                inputs:
                   connection:
                     type: configVar
-                    value: Salesforce Connection
-                  description:
+                    value: ""
+                  data:
+                    type: reference
+                    value: mapFieldsToAcmeFormat.results
+                  debugRequest:
                     type: value
-                    value: Alert integration on Account update
-                  filterCriteria:
-                    type: value
-                    value: >-
-                      [{"field":"Account.CreatedDate","operation":"notEqual","value":"01/01/0002"}]
-                  outboundMessageActions:
+                    value: "false"
+                  headers:
                     type: complex
                     value:
-                      - type: reference
-                        value: selectExecutedStepResult.results
-                  recordType:
+                      - name: Content-Type
+                        type: value
+                        value: application/json
+                  ignoreSslErrors:
                     type: value
-                    value: Account
-                  ruleName:
-                    type: reference
-                    value: extractSubstring.results
-                  triggerType:
+                    value: "false"
+                  includeFullResponse:
                     type: value
-                    value: onAllChanges
-                  version:
+                    value: "false"
+                  maxRetries:
                     type: value
-                    value: "51.0"
-                name: Create Workflow Rule
-              - action:
-                  key: saveCrossFlowValue
-                  component:
-                    isPublic: true
-                    key: persist-data
-                    version: LATEST
-                description: ""
-                inputs:
-                  keyInput:
+                    value: "0"
+                  queryParams:
+                    type: complex
+                    value: []
+                  responseType:
+                    type: value
+                    value: json
+                  retryDelayMS:
+                    type: value
+                    value: "0"
+                  retryOnAllErrors:
+                    type: value
+                    value: "false"
+                  timeout:
+                    type: value
+                    value: ""
+                  url:
                     type: configVar
-                    value: Persist Data Workflow Rule Key Name
-                  valueInput:
-                    type: reference
-                    value: createWorkflowRule.results.fullName
-                name: Cross Flow - Save Value 2
-        description: ""
-        inputs:
-          conditions:
-            type: complex
-            value:
-              - name: Workflow rule already exists
-                type: complex
-                value:
-                  - and
-                  - - isNotEmpty
-                    - type: reference
-                      value: filter2.results
-                    - type: value
-                      value: ""
-        name: Branch on Expression 2
-  - description: ""
+                    value: Acme API Endpoint
+                  useExponentialBackoff:
+                    type: value
+                    value: "false"
+                name: Post Account to Acme
+          - action:
+              key: incrementExecutionValue
+              component:
+                isPublic: true
+                key: persist-data
+                version: LATEST
+            description: ""
+            inputs:
+              amountInput:
+                type: value
+                value: "50"
+              keyInput:
+                type: value
+                value: SOQL_OFFSET
+            name: Execution - Increment Value
+  - description: >-
+      Receive a notification whenever an Account is created or updated in
+      Salesforce, and send a corresponding request to Acme.
     endpointSecurityType: customer_optional
     isSynchronous: false
     name: Process Salesforce Outbound Messages
     steps:
       - action:
-          key: webhook
+          key: workflowTrigger
           component:
             isPublic: true
             key: salesforce
             version: LATEST
         description: ""
-        inputs: {}
+        inputs:
+          connection:
+            type: configVar
+            value: Salesforce Connection
+          description:
+            type: value
+            value: Sync Account data to Acme
+          fields:
+            type: complex
+            value: []
+          outboundMessageName:
+            type: template
+            value: "acme_{{#Truncated Instance ID}}"
+          recordType:
+            type: value
+            value: Account
+          triggerType:
+            type: value
+            value: onAllChanges
+          version:
+            type: value
+            value: "59.0"
+          workflowRuleName:
+            type: template
+            value: "acme_{{#Truncated Instance ID}}"
         isTrigger: true
         name: Process Salesforce Outbound Messages Trigger
       - action:
@@ -449,65 +341,43 @@ flows:
             value: "51.0"
         name: Get Record
       - action:
-          key: convertToNumber
+          key: runCode
           component:
             isPublic: true
-            key: change-data-format
+            key: code
             version: LATEST
-        description: Convert annual revenue to a number
+        description: ""
         inputs:
-          value:
-            type: reference
-            value: getRecord.results.AnnualRevenue
-        name: Convert To Number
-      - action:
-          key: divide
-          component:
-            isPublic: true
-            key: math
-            version: LATEST
-        description: Compute monthly revenue
-        inputs:
-          numbers:
-            type: complex
-            value:
-              - type: reference
-                value: convertToNumber.results
-              - type: value
-                value: "12"
-        name: Divide Numbers
-      - action:
-          key: createObject
-          component:
-            isPublic: true
-            key: collection-tools
-            version: LATEST
-        description: Create payload for Acme Corp
-        inputs:
-          keyValueInput:
-            type: complex
-            value:
-              - name: sfdcAccountName
-                type: reference
-                value: getRecord.results.Name
-              - name: monthlyRevenue
-                type: reference
-                value: divideNumbers.results
-        name: Create Object
+          code:
+            type: value
+            value: |
+              module.exports = async ({ logger, configVars }, stepResults) => {
+                const sfdcAccount = stepResults.getRecord.results;
+                const mapping = configVars["Salesforce Account Field Mapping"];
+                const mappedFields = mapping.reduce(
+                  (acc, { source, destination }) => ({
+                    [destination]: sfdcAccount[source],
+                    ...acc,
+                  }),
+                  {},
+                );
+                return { data: mappedFields };
+              };
+        name: Map Fields to Acme Format
       - action:
           key: httpPost
           component:
             isPublic: true
             key: http
             version: LATEST
-        description: Send account update to Acme
+        description: ""
         inputs:
           connection:
             type: configVar
             value: ""
           data:
             type: reference
-            value: createObject.results
+            value: mapFieldsToAcmeFormat.results
           debugRequest:
             type: value
             value: "false"
@@ -517,9 +387,6 @@ flows:
               - name: Content-Type
                 type: value
                 value: application/json
-              - name: x-api-key
-                type: value
-                value: abc-123
           ignoreSslErrors:
             type: value
             value: "false"
@@ -545,94 +412,15 @@ flows:
             type: value
             value: ""
           url:
-            type: value
-            value: "https://postman-echo.com/post"
+            type: configVar
+            value: Acme API Endpoint
           useExponentialBackoff:
             type: value
             value: "false"
-        name: POST Request
-  - description: ""
-    endpointSecurityType: customer_optional
-    isSynchronous: false
-    name: Delete Salesforce Outbound Message
-    steps:
-      - action:
-          key: instanceRemove
-          component:
-            isPublic: true
-            key: management-triggers
-            version: LATEST
-        description: Clean up when an instance is deleted
-        inputs: {}
-        isTrigger: true
-        name: Delete Salesforce Outbound Message Trigger
-      - action:
-          key: getCrossFlowValue
-          component:
-            isPublic: true
-            key: persist-data
-            version: LATEST
-        description: Get workflow full name
-        inputs:
-          defaultValueInput:
-            type: value
-            value: ""
-          keyInput:
-            type: configVar
-            value: Persist Data Workflow Rule Key Name
-        name: Cross Flow - Get Value
-      - action:
-          key: deleteWorkflowRule
-          component:
-            isPublic: true
-            key: salesforce
-            version: LATEST
-        description: ""
-        inputs:
-          connection:
-            type: configVar
-            value: Salesforce Connection
-          fullName:
-            type: reference
-            value: crossFlowGetValue.results
-          version:
-            type: value
-            value: "51.0"
-        name: Delete Workflow Rule
-      - action:
-          key: getCrossFlowValue
-          component:
-            isPublic: true
-            key: persist-data
-            version: LATEST
-        description: Get outbound message full name
-        inputs:
-          defaultValueInput:
-            type: value
-            value: ""
-          keyInput:
-            type: configVar
-            value: Persist Data Outbound Message Key Name
-        name: Cross Flow - Get Value 2
-      - action:
-          key: deleteWorkflowOutboundMessage
-          component:
-            isPublic: true
-            key: salesforce
-            version: LATEST
-        description: ""
-        inputs:
-          connection:
-            type: configVar
-            value: Salesforce Connection
-          fullName:
-            type: reference
-            value: crossFlowGetValue2.results
-          version:
-            type: value
-            value: "51.0"
-        name: Delete Workflow Outbound Message
-  - description: ""
+        name: Send account to Acme
+  - description: >-
+      Send a JSON payload to this webhook URL with format {"acct_name": "My Test
+      Account", "revenue": 50000} to create a new record in Salesforce.
     endpointSecurityType: customer_optional
     isSynchronous: false
     name: Create Account from Acme
@@ -660,96 +448,82 @@ flows:
         isTrigger: true
         name: Create Account from Acme Trigger
       - action:
-          key: multiply
+          key: validateJsonSchema
           component:
             isPublic: true
-            key: math
+            key: collection-tools
             version: LATEST
         description: ""
         inputs:
-          numbers:
-            type: complex
-            value:
-              - type: reference
-                value: createAccountFromAcmeTrigger.results.body.data.monthlyRevenue
-              - type: value
-                value: "12"
-        name: Multiply Numbers
+          jsonInput:
+            type: reference
+            value: createAccountFromAcmeTrigger.results.body.data
+          jsonSchema:
+            type: value
+            value: |
+              {
+                "type": "object",
+                "properties": {
+                  "acct_name": { "type": "string" },
+                  "revenue": { "type": "string" }
+                },
+                "required": ["external_id", "acct_name", "revenue"]
+              }
+        name: Validate JSON Schema
       - action:
-          key: createAccount
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: ""
+        inputs:
+          code:
+            type: value
+            value: |
+              module.exports = async ({ configVars }, stepResults) => {
+                const acmeAccount =
+                  stepResults.createAccountFromAcmeTrigger.results.body.data;
+                const mapping = configVars["Salesforce Account Field Mapping"];
+                const result = [];
+                for (const { source, destination } of mapping) {
+                  if (acmeAccount[destination]) {
+                    result.push({
+                      key: source,
+                      value: acmeAccount[destination],
+                    });
+                  }
+                }
+                return { data: result };
+              };
+        name: Create Salesforce Payload
+      - action:
+          key: createRecord
           component:
             isPublic: true
             key: salesforce
             version: LATEST
         description: ""
         inputs:
-          billingCity:
-            type: value
-            value: ""
-          billingCountry:
-            type: value
-            value: ""
-          billingPostalCode:
-            type: value
-            value: ""
-          billingState:
-            type: value
-            value: ""
-          billingStreet:
-            type: value
-            value: ""
-          city:
-            type: value
-            value: ""
           connection:
             type: configVar
             value: Salesforce Connection
-          country:
+          debug:
             type: value
-            value: ""
-          description:
-            type: value
-            value: ""
+            value: "false"
           dynamicValues:
-            type: value
-            value: ""
-          employeeCount:
-            type: value
-            value: ""
+            type: reference
+            value: createSalesforcePayload.results
           fieldValues:
             type: complex
             value: []
-          industry:
-            type: reference
-            value: createAccountFromAcmeTrigger.results.body.data.industry
-          name:
-            type: reference
-            value: createAccountFromAcmeTrigger.results.body.data.name
-          phone:
+          recordType:
             type: value
-            value: ""
-          postalCode:
-            type: value
-            value: ""
-          revenue:
-            type: reference
-            value: multiplyNumbers.results
-          state:
-            type: value
-            value: ""
-          street:
-            type: value
-            value: ""
-          type:
-            type: value
-            value: Customer
+            value: Account
           version:
             type: value
             value: "51.0"
-          website:
-            type: value
-            value: ""
-        name: Create Account
+        name: Create Record
 name: Salesforce Example
 requiredConfigVars:
   - connection:
@@ -796,20 +570,197 @@ requiredConfigVars:
         type: value
         value: "https://login.salesforce.com/services/oauth2/token"
     key: Salesforce Connection
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataSource:
+      key: runCodeString
+      component:
+        isPublic: true
+        key: code
+        version: LATEST
+    dataType: string
+    defaultValue: ""
+    description: Used to name workflow rule and outbound message; hidden from customers
+    inputs:
+      code:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: |-
+          // The instance ID will be used to name the outbound message
+          // and workflow rule, which each have a maximum length of 40
+          // characters for their names.
+
+          module.exports = async (context) => {
+            // Get the first 20 characters of the instance ID
+            const truncated = context.instance.id.substring(0,20)
+            return { result: truncated };
+          };
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: ""
+      contextValue:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+    key: Truncated Instance ID
+    meta:
+      visibleToCustomerDeployer: false
+      visibleToOrgDeployer: true
+    orgOnly: false
+  - dataSource:
+      key: runCodeJsonForm
+      component:
+        isPublic: true
+        key: code
+        version: LATEST
+    dataType: jsonForm
+    defaultValue: ""
+    inputs:
+      code:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: >
+          // This example field mapper is written using the code component for
+          demonstration.
+
+          // We recommend that you build a field mapper in a custom component so
+          that you can
+
+          // also fetch data from your API. See
+
+          //
+          https://prismatic.io/docs/quickstarts/field-mapping-json-forms-datasource/
+
+
+          module.exports = async (context, { connection, contextValue }) => {
+            const {
+              token: { access_token, instance_url },
+            } = connection;
+
+            const response = await fetch(
+              `${instance_url}/services/data/v60.0/sobjects/Account/describe`,
+              { headers: { Authorization: `Bearer ${access_token}` } },
+            );
+            const { fields } = await response.json();
+
+            // Sort fields and map to { title: string, const: string } format
+            const salesforceAccountFields = fields
+              .map((field) => ({ title: field.label, const: field.name }))
+              .sort((a, b) => (a.title < b.title ? -1 : 1));
+
+            const schema = {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  source: {
+                    type: "string",
+                    oneOf: salesforceAccountFields,
+                  },
+                  destination: {
+                    type: "string",
+                    oneOf: [
+                      {
+                        title: "Acme Account Name",
+                        const: "acct_name",
+                      },
+                      {
+                        title: "Acme Account External ID",
+                        const: "external_id",
+                      },
+                      {
+                        title: "Acme Account Annual Revenue",
+                        const: "revenue",
+                      },
+                    ],
+                  },
+                },
+                required: ["source", "destination"],
+              },
+            };
+
+            const uiSchema = {
+              type: "Control",
+              label: "Salesforce / Acme Account Field Mapper",
+              scope: "#",
+              options: {
+                layout: "Accordion",
+                detail: {
+                  type: "HorizontalLayout",
+                  elements: [
+                    {
+                      type: "Control",
+                      scope: "#/properties/source",
+                      options: {
+                        autocomplete: true,
+                      },
+                      label: "Salesforce Field",
+                    },
+                    {
+                      type: "Control",
+                      scope: "#/properties/destination",
+                      options: {
+                        autocomplete: true,
+                      },
+                      label: "Acme Field",
+                    },
+                  ],
+                },
+              },
+            };
+
+            // A default mapping
+            const data = [
+              {
+                source: "Id",
+                destination: "external_id",
+              },
+              {
+                source: "Name",
+                destination: "acct_name",
+              },
+              {
+                source: "AnnualRevenue",
+                destination: "revenue",
+              },
+            ];
+
+            return Promise.resolve({
+              schema,
+              uiSchema,
+              data,
+            });
+          };
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Salesforce Connection
+      contextValue:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+    key: Salesforce Account Field Mapping
     orgOnly: false
   - dataType: string
-    defaultValue: Outbound Message Key
-    description: This config variable is hidden from customers
-    key: Persist Data Outbound Message Key Name
-    meta:
-      visibleToCustomerDeployer: false
-      visibleToOrgDeployer: true
-    orgOnly: true
-  - dataType: string
-    defaultValue: Workflow Rule Key
-    description: This config variable is hidden from customers
-    key: Persist Data Workflow Rule Key Name
-    meta:
-      visibleToCustomerDeployer: false
-      visibleToOrgDeployer: true
-    orgOnly: true
+    defaultValue: "https://postman-echo.com/post"
+    key: Acme API Endpoint
+    orgOnly: false
