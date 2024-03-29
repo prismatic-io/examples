@@ -1,0 +1,831 @@
+category: File Storage
+configPages:
+  - elements:
+      - type: configVar
+        value: Microsoft Sharepoint Connection
+      - type: configVar
+        value: Acme API Endpoint
+    name: Connections
+    tagline: ""
+  - elements:
+      - type: configVar
+        value: Sharepoint Drive
+      - type: configVar
+        value: Select Site
+    name: Configure Sharepoint
+    tagline: ""
+    userLevelConfigured: false
+definitionVersion: 7
+description: "Automatically sync files from your Sharepoint drive, plus other actions."
+documentation: >-
+  ## SharePoint Example Integration
+
+
+  This integration contains five flows:
+
+
+  ## Import SharePoint File on Event
+
+
+  Whenever a file is created/updated/deleted in your customer's selected
+  Sharepoint drive, that file is fetched and uploaded to an "Acme" endpoint that
+  your customer enters.
+
+
+  ## Subscribe to SharePoint File Events
+
+
+  This flow runs every week and creates a subscription to a Sharepoint drive,
+  instructing Sharepoint to send notifications to the **Import SharePoint File
+  on Event** flow whenever files are updated.
+
+
+  ## Run Subscription Flow on Deploy
+
+
+  This flow calls the **Subscribe to SharePoint File Events** once on instance
+  deploy to ensure the subscription is configured immediately.
+
+
+  ## Get Files from SharePoint
+
+
+  This is a synchronous flow that can be called from an external system to list
+  files in a SharePoint drive.
+
+
+  ## Fetch Events and Documents from Site Lists
+
+
+  This flow demonstrates how to fetch "lists" in a SharePoint site,. A "list"
+  can represent a calendar of events or a directory with files in it.
+endpointType: flow_specific
+flows:
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Import Sharepoint File on Event
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: ms-sharepoint
+            version: LATEST
+        branches:
+          - name: Notification
+            steps:
+              - action:
+                  key: getInstanceValue
+                  component:
+                    isPublic: true
+                    key: persist-data
+                    version: LATEST
+                description: ""
+                inputs:
+                  defaultValueInput:
+                    type: value
+                    value: latest
+                  keyInput:
+                    type: value
+                    value: onedrive_delta_token
+                name: Get Delta Token
+              - action:
+                  key: listChanges
+                  component:
+                    isPublic: true
+                    key: ms-onedrive
+                    version: LATEST
+                description: ""
+                inputs:
+                  $expand:
+                    type: value
+                    value: ""
+                  $select:
+                    type: value
+                    value: ""
+                  $top:
+                    type: value
+                    value: ""
+                  deltaURL:
+                    type: template
+                    value: >-
+                      /drives/{{#Sharepoint
+                      Drive}}/root/delta?token={{$getDeltaToken.results}}
+                  oneDriveConnection:
+                    type: configVar
+                    value: Microsoft Sharepoint Connection
+                name: List Changes
+              - action:
+                  key: runCode
+                  component:
+                    isPublic: true
+                    key: code
+                    version: LATEST
+                description: ""
+                inputs:
+                  code:
+                    type: value
+                    value: >
+                      module.exports = async ({ logger, configVars },
+                      stepResults) => {
+                        const url = new URL(stepResults.listChanges.results["@odata.deltaLink"]);
+                        const token = url.searchParams.get('token');
+                        return { data: token };
+                      };
+                name: Get New Delta Token
+              - action:
+                  key: loopOverItems
+                  component:
+                    isPublic: true
+                    key: loop
+                    version: LATEST
+                description: ""
+                inputs:
+                  items:
+                    type: reference
+                    value: listChanges.results.value
+                name: Loop Over Items
+                steps:
+                  - action:
+                      key: branchOnExpression
+                      component:
+                        isPublic: true
+                        key: branch
+                        version: LATEST
+                    branches:
+                      - name: A file was deleted
+                        steps:
+                          - action:
+                              key: writeLog
+                              component:
+                                isPublic: true
+                                key: log
+                                version: LATEST
+                            description: ""
+                            inputs:
+                              level:
+                                type: value
+                                value: info
+                              message:
+                                type: template
+                                value: >-
+                                  The file with ID
+                                  "{{$loopOverItems.currentItem.id}}" was
+                                  deleted.
+                            name: Log deleted file's ID
+                      - name: A file was created or updated
+                        steps:
+                          - action:
+                              key: getFile
+                              component:
+                                isPublic: true
+                                key: ms-sharepoint
+                                version: LATEST
+                            description: ""
+                            inputs:
+                              connection:
+                                type: configVar
+                                value: Microsoft Sharepoint Connection
+                              driveId:
+                                type: configVar
+                                value: Sharepoint Drive
+                              itemId:
+                                type: reference
+                                value: loopOverItems.currentItem.id
+                            name: Get File
+                          - action:
+                              key: httpPostFormData
+                              component:
+                                isPublic: true
+                                key: http
+                                version: LATEST
+                            description: ""
+                            inputs:
+                              connection:
+                                type: configVar
+                                value: ""
+                              debugRequest:
+                                type: value
+                                value: "false"
+                              fileData:
+                                type: complex
+                                value:
+                                  - name: file
+                                    type: reference
+                                    value: getFile.results
+                              fileDataFileNames:
+                                type: complex
+                                value:
+                                  - name: file
+                                    type: reference
+                                    value: loopOverItems.currentItem.name
+                              formData:
+                                type: complex
+                                value:
+                                  - name: fileId
+                                    type: reference
+                                    value: loopOverItems.currentItem.id
+                                  - name: driveId
+                                    type: reference
+                                    value: >-
+                                      loopOverItems.currentItem.parentReference.driveId
+                              headers:
+                                type: complex
+                                value: []
+                              httpMethod:
+                                type: value
+                                value: post
+                              ignoreSslErrors:
+                                type: value
+                                value: "false"
+                              includeFullResponse:
+                                type: value
+                                value: "false"
+                              maxRetries:
+                                type: value
+                                value: "0"
+                              queryParams:
+                                type: complex
+                                value: []
+                              responseType:
+                                type: value
+                                value: json
+                              retryDelayMS:
+                                type: value
+                                value: "0"
+                              retryOnAllErrors:
+                                type: value
+                                value: "false"
+                              timeout:
+                                type: value
+                                value: ""
+                              url:
+                                type: configVar
+                                value: Acme API Endpoint
+                              useExponentialBackoff:
+                                type: value
+                                value: "false"
+                            name: Send file to Acme
+                      - name: Else
+                        steps:
+                          - action:
+                              key: writeLog
+                              component:
+                                isPublic: true
+                                key: log
+                                version: LATEST
+                            description: ""
+                            inputs:
+                              level:
+                                type: value
+                                value: info
+                              message:
+                                type: template
+                                value: >-
+                                  The folder
+                                  "{{$loopOverItems.currentItem.name}}" now has
+                                  {{$loopOverItems.currentItem.folder.childCount}}
+                                  files in it.
+                            name: Log number of folder child items
+                    description: ""
+                    inputs:
+                      conditions:
+                        type: complex
+                        value:
+                          - name: A file was deleted
+                            type: complex
+                            value:
+                              - and
+                              - - exists
+                                - type: reference
+                                  value: loopOverItems.currentItem.deleted
+                          - name: A file was created or updated
+                            type: complex
+                            value:
+                              - and
+                              - - exists
+                                - type: reference
+                                  value: loopOverItems.currentItem.file
+                    name: Check type of event
+              - action:
+                  key: saveInstanceValue
+                  component:
+                    isPublic: true
+                    key: persist-data
+                    version: LATEST
+                description: ""
+                inputs:
+                  keyInput:
+                    type: value
+                    value: onedrive_delta_token
+                  valueInput:
+                    type: reference
+                    value: getNewDeltaToken.results
+                name: Flow - Save Value
+          - name: URL Validation
+            steps:
+              - action:
+                  key: stopExecution
+                  component:
+                    isPublic: true
+                    key: stop-execution
+                    version: LATEST
+                description: ""
+                inputs:
+                  contentType:
+                    type: value
+                    value: application/json
+                  jsonBody:
+                    type: value
+                    value: ""
+                  statusCode:
+                    type: value
+                    value: "200"
+                name: Stop Execution
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Sharepoint Webhook Trigger
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Subscribe to Sharepoint File Events
+    steps:
+      - action:
+          key: schedule
+          component:
+            isPublic: true
+            key: schedule-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Webhook/Subscriptions Trigger
+        schedule:
+          meta:
+            scheduleType: week
+            timeZone: ""
+          type: value
+          value: 00 00 * * 0
+      - action:
+          key: deleteAllInstanceSubscriptions
+          component:
+            isPublic: true
+            key: ms-sharepoint
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Microsoft Sharepoint Connection
+        name: Delete All Instance Subscriptions
+      - action:
+          key: getCurrentDateTime
+          component:
+            isPublic: true
+            key: datetime
+            version: LATEST
+        description: ""
+        inputs: {}
+        name: Get Current Date/Time
+      - action:
+          key: adjustDateTime
+          component:
+            isPublic: true
+            key: datetime
+            version: LATEST
+        description: ""
+        inputs:
+          dateTimeInput:
+            type: reference
+            value: getCurrentDateTime.results
+          daysInput:
+            type: value
+            value: "7"
+          hoursInput:
+            type: value
+            value: ""
+          minutesInput:
+            type: value
+            value: "5"
+          secondsInput:
+            type: value
+            value: ""
+        name: Add 7 Days
+      - action:
+          key: createSubscription
+          component:
+            isPublic: true
+            key: ms-sharepoint
+            version: LATEST
+        description: ""
+        inputs:
+          allowDuplicates:
+            type: value
+            value: "true"
+          changeType:
+            type: value
+            value: updated
+          clientState:
+            type: value
+            value: ""
+          connection:
+            type: configVar
+            value: Microsoft Sharepoint Connection
+          expirationDateTime:
+            type: reference
+            value: add7Days.results
+          notificationUrl:
+            type: reference
+            value: >-
+              webhookSubscriptionsTrigger.results.webhookUrls.Import Sharepoint
+              File on Event
+          resource:
+            type: template
+            value: "/me/drives/{{#Sharepoint Drive}}/root"
+        name: Create File Subscription
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Run Subscription Flow on Deploy
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Run Subscription Flow on Deploy Trigger
+      - action:
+          key: httpGet
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: ""
+          debugRequest:
+            type: value
+            value: "false"
+          headers:
+            type: complex
+            value: []
+          ignoreSslErrors:
+            type: value
+            value: "false"
+          includeFullResponse:
+            type: value
+            value: "false"
+          maxRetries:
+            type: value
+            value: "0"
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: "0"
+          retryOnAllErrors:
+            type: value
+            value: "false"
+          timeout:
+            type: value
+            value: ""
+          url:
+            type: reference
+            value: >-
+              runSubscriptionFlowOnDeployTrigger.results.webhookUrls.Subscribe
+              to Sharepoint File Events
+          useExponentialBackoff:
+            type: value
+            value: "false"
+        name: GET Request
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: true
+    name: Get Files from Sharepoint
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: Example sync flow to return list of files in sharepoint drive
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Get Files from Sharepoint Trigger
+      - action:
+          key: getFilesFromDrive
+          component:
+            isPublic: true
+            key: ms-sharepoint
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Microsoft Sharepoint Connection
+          driveId:
+            type: configVar
+            value: Sharepoint Drive
+        name: List Files in Drive
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Fetch Events and Documents from Site Lists
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Fetch Events and Documents from Site Lists Trigger
+      - action:
+          key: listSiteLists
+          component:
+            isPublic: true
+            key: ms-sharepoint
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Microsoft Sharepoint Connection
+          siteId:
+            type: configVar
+            value: Select Site
+        name: List Site Lists
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ""
+        inputs:
+          items:
+            type: reference
+            value: listSiteLists.results.value
+        name: Loop Over Site Lists
+        steps:
+          - action:
+              key: getListItemsInSite
+              component:
+                isPublic: true
+                key: ms-sharepoint
+                version: LATEST
+            description: ""
+            inputs:
+              connection:
+                type: configVar
+                value: Microsoft Sharepoint Connection
+              listId:
+                type: reference
+                value: loopOverSiteLists.currentItem.id
+              optInFields:
+                type: value
+                value: ""
+              pageLimit:
+                type: value
+                value: ""
+              pageToken:
+                type: value
+                value: ""
+              siteId:
+                type: configVar
+                value: Select Site
+            name: List Items in Site List
+          - action:
+              key: loopOverItems
+              component:
+                isPublic: true
+                key: loop
+                version: LATEST
+            description: ""
+            inputs:
+              items:
+                type: reference
+                value: listItemsInSiteList.results.value
+            name: Loop over items in site list
+            steps:
+              - action:
+                  key: getItemInSite
+                  component:
+                    isPublic: true
+                    key: ms-sharepoint
+                    version: LATEST
+                description: ""
+                inputs:
+                  connection:
+                    type: configVar
+                    value: Microsoft Sharepoint Connection
+                  itemId:
+                    type: reference
+                    value: loopOverItemsInSiteList.currentItem.id
+                  listId:
+                    type: reference
+                    value: loopOverSiteLists.currentItem.id
+                  optInFields:
+                    type: value
+                    value: ""
+                  siteId:
+                    type: configVar
+                    value: Select Site
+                name: Get Item from Site List
+              - action:
+                  key: branchOnValue
+                  component:
+                    isPublic: true
+                    key: branch
+                    version: LATEST
+                branches:
+                  - name: Calendar Event
+                    steps:
+                      - action:
+                          key: writeLog
+                          component:
+                            isPublic: true
+                            key: log
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          level:
+                            type: value
+                            value: info
+                          message:
+                            type: template
+                            value: >-
+                              An event called
+                              "{{$getItemFromSiteList.results.fields.Title}}" is
+                              scheduled to happen on
+                              "{{$getItemFromSiteList.results.fields.EventDate}}"
+                        name: Write event title and date
+                  - name: File
+                    steps:
+                      - action:
+                          key: writeLog
+                          component:
+                            isPublic: true
+                            key: log
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          level:
+                            type: value
+                            value: info
+                          message:
+                            type: template
+                            value: >-
+                              The file
+                              "{{$getItemFromSiteList.results.fields.LinkFilename}}"
+                              is available at web URL
+                              {{$getItemFromSiteList.results.webUrl}}
+                        name: Write document URL
+                  - name: Else
+                    steps: []
+                description: ""
+                inputs:
+                  branchValueMappings:
+                    type: complex
+                    value:
+                      - name: Calendar Event
+                        type: value
+                        value: Event
+                      - name: File
+                        type: value
+                        value: Document
+                  inputValue:
+                    type: reference
+                    value: getItemFromSiteList.results.contentType.name
+                name: Determine Type of Item
+name: SharePoint Example
+requiredConfigVars:
+  - connection:
+      key: oauth
+      component:
+        isPublic: true
+        key: ms-sharepoint
+        version: LATEST
+    dataType: connection
+    inputs:
+      authorizeUrl:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+      clientId:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      scopes:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: Sites.ReadWrite.All Sites.Manage.All offline_access
+      tokenUrl:
+        meta:
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+    key: Microsoft Sharepoint Connection
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataSource:
+      key: listDrives
+      component:
+        isPublic: true
+        key: ms-sharepoint
+        version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    description: Select a Sharepoint Drive
+    inputs:
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Microsoft Sharepoint Connection
+      dir:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: template
+        value: /me/drives
+    key: Sharepoint Drive
+    orgOnly: false
+  - dataType: string
+    defaultValue: "https://postman-echo.com/post"
+    key: Acme API Endpoint
+    orgOnly: false
+  - dataSource:
+      key: listSites
+      component:
+        isPublic: true
+        key: ms-sharepoint
+        version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    description: Select a Sharepoint Site
+    inputs:
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Microsoft Sharepoint Connection
+    key: Select Site
+    orgOnly: false
