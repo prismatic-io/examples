@@ -15,7 +15,7 @@ endpointType: flow_specific
 flows:
   - description: >-
       Other instances call this endpoint to register or deregister a mapping of
-      Dropbox account <> customer external ID
+      Dropbox account <> customer instance URL
     endpointSecurityType: customer_optional
     isSynchronous: false
     name: Registration Endpoint
