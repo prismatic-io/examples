@@ -1,5 +1,5 @@
 {
-  "name": "slack-cni-integration",
+  "name": "slack-with-components",
   "version": "0.0.1",
   "main": "index.js",
   "private": true,
@@ -16,7 +16,7 @@
     ]
   },
   "dependencies": {
-    "@prismatic-io/spectral": "8.0.6",
+    "@prismatic-io/spectral": "8.1.0-preview1",
     "axios": "1.6.7",
     "fast-xml-parser": "^4.3.4"
   },

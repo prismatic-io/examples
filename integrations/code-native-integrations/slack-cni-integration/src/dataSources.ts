@@ -20,7 +20,7 @@ interface ListChannelsResponse {
 }
 
 export const slackSelectChannelDataSource = dataSourceConfigVar({
-  stableKey: "2BB5F3A9-9CFF-4DE4-8004-ECACDE6D03E3",
+  stableKey: "slack-channel-selection",
   dataSourceType: "picklist",
   perform: async (context) => {
     const client = createSlackClient(

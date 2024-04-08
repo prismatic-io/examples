@@ -1521,6 +1521,13 @@
   dependencies:
     "@sinclair/typebox" "^0.27.8"
 
+"@jest/schemas@^29.6.3":
+  version "29.6.3"
+  resolved "https://registry.yarnpkg.com/@jest/schemas/-/schemas-29.6.3.tgz#430b5ce8a4e0044a7e3819663305a7b3091c8e03"
+  integrity sha512-mo5j5X+jIZmJQveBKeS/clAueipV7KgiX1vMgCxam1RNYiqE1w62n0/tJJnHtjW8ZHcQco5gY85jA3mi0L+nSA==
+  dependencies:
+    "@sinclair/typebox" "^0.27.8"
+
 "@jest/source-map@^26.6.2":
   version "26.6.2"
   resolved "https://registry.yarnpkg.com/@jest/source-map/-/source-map-26.6.2.tgz#29af5e1e2e324cafccc936f218309f54ab69d535"
@@ -1710,6 +1717,18 @@
   integrity sha512-tPKQNMPuXgvdOn2/Lg9HNfUvjYVGolt04Hp03f5hAk878uwOLikN+JzeLY0HcVgKgFl9Hs3EIqpu3WX27XNhnw==
   dependencies:
     "@jest/schemas" "^29.6.0"
+    "@types/istanbul-lib-coverage" "^2.0.0"
+    "@types/istanbul-reports" "^3.0.0"
+    "@types/node" "*"
+    "@types/yargs" "^17.0.8"
+    chalk "^4.0.0"
+
+"@jest/types@^29.6.3":
+  version "29.6.3"
+  resolved "https://registry.yarnpkg.com/@jest/types/-/types-29.6.3.tgz#1131f8cf634e7e84c5e77bab12f052af585fba59"
+  integrity sha512-u3UPsIilWKOM3F9CXtrG8LEJmNxwoCQC/XVj4IKYXvvpx7QIi/Kg1LI5uDmDpKlac62NUtX7eLjRh+jVZcLOzw==
+  dependencies:
+    "@jest/schemas" "^29.6.3"
     "@types/istanbul-lib-coverage" "^2.0.0"
     "@types/istanbul-reports" "^3.0.0"
     "@types/node" "*"
@@ -2255,6 +2274,26 @@
     form-data "4.0.0"
     jest-mock "27.0.3"
     lodash "4.17.21"
+    safe-stable-stringify "2.3.1"
+    serialize-error "8.1.0"
+    url-join "5.0.0"
+    uuid "8.3.2"
+    valid-url "1.0.9"
+    yaml "2.3.4"
+
+"@prismatic-io/spectral@8.1.0-preview1":
+  version "8.1.0-preview1"
+  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-8.1.0-preview1.tgz#3295e1e4b5890dba8053898809a1025d7ec965e0"
+  integrity sha512-QO+HZaHIp0Ow+n7tKmL93LRhqAUEKjv/vA4UEeDZYW5OgOm5EHHQKiaGWZzzoUf7u1oH1oM0D5KZK7QFx9OCqA==
+  dependencies:
+    "@jsonforms/core" "3.0.0"
+    axios "1.6.2"
+    axios-retry "3.9.1"
+    date-fns "2.30.0"
+    form-data "4.0.0"
+    jest-mock "29.7.0"
+    lodash "4.17.21"
+    object-sizeof "^2.6.4"
     safe-stable-stringify "2.3.1"
     serialize-error "8.1.0"
     url-join "5.0.0"
@@ -8406,6 +8445,15 @@ jest-mock@27.0.3:
     "@jest/types" "^27.0.2"
     "@types/node" "*"
 
+jest-mock@29.7.0:
+  version "29.7.0"
+  resolved "https://registry.yarnpkg.com/jest-mock/-/jest-mock-29.7.0.tgz#4e836cf60e99c6fcfabe9f99d017f3fdd50a6347"
+  integrity sha512-ITOMZn+UkYS4ZFh83xYAOzWStloNzJFO2s8DWrE4lhtGD+AorgnbkiKERe4wQVBydIGPx059g6riW5Btp6Llnw==
+  dependencies:
+    "@jest/types" "^29.6.3"
+    "@types/node" "*"
+    jest-util "^29.7.0"
+
 jest-mock@^27.5.1:
   version "27.5.1"
   resolved "https://registry.yarnpkg.com/jest-mock/-/jest-mock-27.5.1.tgz#19948336d49ef4d9c52021d34ac7b5f36ff967d6"
@@ -8805,6 +8853,18 @@ jest-util@^29.0.0, jest-util@^29.6.2:
   integrity sha512-3eX1qb6L88lJNCFlEADKOkjpXJQyZRiavX1INZ4tRnrBVr2COd3RgcTLyUiEXMNBlDU/cgYq6taUS0fExrWW4w==
   dependencies:
     "@jest/types" "^29.6.1"
+    "@types/node" "*"
+    chalk "^4.0.0"
+    ci-info "^3.2.0"
+    graceful-fs "^4.2.9"
+    picomatch "^2.2.3"
+
+jest-util@^29.7.0:
+  version "29.7.0"
+  resolved "https://registry.yarnpkg.com/jest-util/-/jest-util-29.7.0.tgz#23c2b62bfb22be82b44de98055802ff3710fc0bc"
+  integrity sha512-z6EbKajIpqGKU56y5KBUgy1dt1ihhQJgWzUlZHArA/+X2ad7Cb5iF+AK1EWVL/Bo7Rz9uurpqw6SiBCefUbCGA==
+  dependencies:
+    "@jest/types" "^29.6.3"
     "@types/node" "*"
     chalk "^4.0.0"
     ci-info "^3.2.0"
@@ -9805,6 +9865,13 @@ object-keys@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/object-keys/-/object-keys-1.1.1.tgz#1c47f272df277f3b1daf061677d9c82e2322c60e"
   integrity sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA==
+
+object-sizeof@^2.6.4:
+  version "2.6.4"
+  resolved "https://registry.yarnpkg.com/object-sizeof/-/object-sizeof-2.6.4.tgz#cdcb6697ac20978ddfa57d6d4f5fae8e7b8509dc"
+  integrity sha512-YuJAf7Bi61KROcYmXm8RCeBrBw8UOaJDzTm1gp0eU7RjYi1xEte3/Nmg/VyPaHcJZ3sNojs1Y0xvSrgwkLmcFw==
+  dependencies:
+    buffer "^6.0.3"
 
 object-visit@^1.0.0:
   version "1.0.1"

@@ -1,7 +1,7 @@
 import { OAuth2Type, connectionConfigVar } from "@prismatic-io/spectral";
 
 export const slackConnectionConfigVar = connectionConfigVar({
-  stableKey: "2873B0E7-62C0-4B00-B5D0-3EF6F5362C6D",
+  stableKey: "slack-oauth-connection",
   label: "Slack OAuth Connection Label",
   oauth2Type: OAuth2Type.AuthorizationCode,
   inputs: {

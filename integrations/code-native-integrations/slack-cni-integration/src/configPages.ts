@@ -22,7 +22,7 @@ export const configPages = {
   "Other Config": configPage({
     elements: {
       "Acme API Endpoint": configVar({
-        stableKey: "1F886045-27E7-452B-9B44-776863F6A862",
+        stableKey: "acme-api-endpoint",
         dataType: ConfigVarDataType.String,
         description: "The endpoint to fetch TODO items from Acme",
         defaultValue:

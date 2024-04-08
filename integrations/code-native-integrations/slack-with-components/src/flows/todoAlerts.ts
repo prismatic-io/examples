@@ -6,8 +6,8 @@
  * https://prismatic.io/docs/getting-started/first-integration/build-first-integration/
  */
 
-import { flow } from "@prismatic-io/spectral";
-import { configPages } from "../configPages";
+import { Connection, flow } from "@prismatic-io/spectral";
+import { ConfigPages } from "../configPages";
 import axios from "axios";
 import { createSlackClient } from "../slackClient";
 
@@ -17,15 +17,10 @@ interface TodoItem {
   task: string;
 }
 
-// <typeof configPages> provides your flow with type hinting and access to config variables defined in configPages
-export const todoAlertsFlow = flow<typeof configPages>({
+export const todoAlertsFlow = flow<ConfigPages>({
   name: "Send TODO messages to Slack",
-  stableKey: "slack-todo-alerts-flow",
+  stableKey: "todo-alerts-flow",
   description: "Fetch TODO items from Acme and send to Slack",
-  // This trigger function is simple - it just returns the payload it receives
-  onTrigger: async (context, payload) => {
-    return Promise.resolve({ payload });
-  },
   // This function runs when the trigger has completed its work
   onExecution: async (context) => {
     // Config variables are accessed using the context object
@@ -35,7 +30,9 @@ export const todoAlertsFlow = flow<typeof configPages>({
       configVars["Acme API Endpoint"]
     );
 
-    const slackClient = createSlackClient(configVars["Slack OAuth Connection"]);
+    const slackClient = createSlackClient(
+      configVars["Slack OAuth Connection"] as Connection
+    );
 
     for (const item of todoItems) {
       if (item.completed) {
