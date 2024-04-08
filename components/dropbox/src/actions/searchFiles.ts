@@ -5,28 +5,40 @@ import {
   directoryPath,
   limit,
   cursor,
+  teamMemberId,
+  userType,
+  fileName,
   debug,
 } from "../inputs";
 import { checkDebug, handleDropboxError } from "../util";
-import { listTeamFoldersPayload } from "../example-payloads";
+import { searchFilesPayload } from "../example-payloads";
 
-export const listTeamFolder = action({
+export const searchFiles = action({
   display: {
-    label: "List Team's Folders",
-    description: "List Team's Folder contents",
+    label: "Search Files",
+    description: "Search for files at the specified path",
   },
   perform: async (context, params) => {
     checkDebug(params, context);
-    const dbx = createAuthorizedClient(params.dropboxConnection);
+    const dbx = createAuthorizedClient(
+      params.dropboxConnection,
+      params.userType,
+      params.teamMemberId
+    );
 
     try {
       const data =
         params.cursor !== ""
-          ? await dbx.teamTeamFolderListContinue({
+          ? await dbx.filesSearchContinueV2({
               cursor: params.cursor,
             })
-          : await dbx.teamTeamFolderList({
-              limit: params.limit || undefined,
+          : await dbx.filesSearchV2({
+              query: params.query,
+              options: {
+                filename_only: true,
+                max_results: params.limit,
+                path: params.path,
+              },
             });
 
       return {
@@ -38,12 +50,15 @@ export const listTeamFolder = action({
   },
   inputs: {
     dropboxConnection: connectionInput,
+    query: { ...fileName, required: true },
     path: directoryPath,
     cursor,
     limit,
+    userType,
+    teamMemberId,
     debug,
   },
   examplePayload: {
-    data: listTeamFoldersPayload,
+    data: searchFilesPayload,
   },
 });

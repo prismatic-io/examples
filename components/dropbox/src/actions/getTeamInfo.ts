@@ -1,7 +1,8 @@
-import { action, util } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
-import { connectionInput } from "../inputs";
-import { handleDropboxError } from "../util";
+import { connectionInput, debug, lookupKey, lookupValue } from "../inputs";
+import { checkDebug, handleDropboxError } from "../util";
+import { getTeamInfoPayload } from "../example-payloads";
 
 export const getTeamMembers = action({
   display: {
@@ -9,11 +10,15 @@ export const getTeamMembers = action({
     description: "Get Team Members by Member ID, External ID, or Email",
   },
   perform: async (context, params) => {
-    const dbx = await createAuthorizedClient(params.dropboxConnection);
+    checkDebug(params, context);
+    const dbx = createAuthorizedClient(params.dropboxConnection);
     try {
       const data = await dbx.teamMembersGetInfoV2({
         members: [
-          { ".tag": params.lookupKey, [params.lookupKey]: params.lookupValue },
+          {
+            ".tag": params.lookupKey,
+            [params.lookupKey]: params.lookupValue,
+          },
         ] as any,
       });
 
@@ -26,22 +31,11 @@ export const getTeamMembers = action({
   },
   inputs: {
     dropboxConnection: connectionInput,
-    lookupKey: {
-      label: "Lookup By",
-      type: "string",
-      required: true,
-      model: [
-        { label: "Email", value: "email" },
-        { label: "Team Member Id", value: "team_member_id" },
-        { label: "External ID", value: "external_id" },
-      ],
-      clean: util.types.toString,
-    },
-    lookupValue: {
-      label: "Value",
-      type: "string",
-      required: true,
-      clean: util.types.toString,
-    },
+    lookupKey,
+    lookupValue,
+    debug,
+  },
+  examplePayload: {
+    data: getTeamInfoPayload,
   },
 });

@@ -1,6 +1,6 @@
 import fetch from "cross-fetch";
 import { Dropbox } from "dropbox";
-import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
+import { Connection, util } from "@prismatic-io/spectral";
 import { getUserTypeHeader } from "./util";
 
 export const createAuthorizedClient = (

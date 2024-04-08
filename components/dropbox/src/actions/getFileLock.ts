@@ -1,7 +1,15 @@
-import { action, input } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
-import { filePaths, connectionInput, teamMemberId, userType } from "../inputs";
-import { handleDropboxError, validatePath } from "../util";
+import {
+  filePaths,
+  connectionInput,
+  teamMemberId,
+  dynamicPaths,
+  debug,
+} from "../inputs";
+import { checkDebug, getEntries, handleDropboxError } from "../util";
+import { MISSING_PATHS_ERROR_MESSAGE } from "../constants";
+import { getFileLockPayload } from "../example-payloads";
 
 export const getFileLock = action({
   display: {
@@ -10,50 +18,52 @@ export const getFileLock = action({
   },
   perform: async (
     context,
-    { filePaths, dropboxConnection, teamMemberId, userType, dynamicPaths }
+    { filePaths, dropboxConnection, teamMemberId, dynamicPaths, debug }
   ) => {
+    checkDebug(
+      {
+        filePaths,
+        dropboxConnection,
+        teamMemberId,
+        dynamicPaths,
+        debug,
+      },
+      context
+    );
     if (!filePaths && !dynamicPaths) {
-      throw new Error("File Paths or Dynamic Paths must be specified");
+      throw new Error(MISSING_PATHS_ERROR_MESSAGE);
     }
-    const dbx = await createAuthorizedClient(
+    const dbx = createAuthorizedClient(
       dropboxConnection,
-      userType,
+      teamMemberId ? "user" : undefined,
       teamMemberId
     );
+
+    const entries = getEntries(filePaths, dynamicPaths);
+
     try {
       const args = {
-        entries: filePaths.map((path) => {
-          validatePath(path);
-          return { path };
-        }),
+        entries,
       };
-      if (dynamicPaths && Array.isArray(dynamicPaths)) {
-        args.entries = args.entries.concat(
-          dynamicPaths.map((path) => {
-            validatePath(path);
-            return { path };
-          })
-        );
-      }
       const result = await dbx.filesGetFileLockBatch(args);
       return {
         data: result,
       };
     } catch (err) {
-      handleDropboxError(err, filePaths);
+      handleDropboxError(err, entries);
     }
   },
   inputs: {
     dropboxConnection: connectionInput,
-    teamMemberId,
-    userType,
-    filePaths: { ...filePaths, required: false },
-    dynamicPaths: input({
-      label: "Dynamic Paths",
-      type: "data",
-      required: false,
-      comments: "An optional list of paths",
-      example: `["/path/to/file", "/path/to/another/file"]`,
-    }),
+    teamMemberId: {
+      ...teamMemberId,
+      comments: "Used to specify the user to act on behalf of.",
+    },
+    filePaths,
+    dynamicPaths,
+    debug,
+  },
+  examplePayload: {
+    data: getFileLockPayload,
   },
 });

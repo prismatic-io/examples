@@ -1,4 +1,4 @@
-import { action, util } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
 import {
   connectionInput,
@@ -7,16 +7,16 @@ import {
   cursor,
   teamMemberId,
   userType,
-  recursive,
+  fileName,
   debug,
 } from "../inputs";
 import { checkDebug, handleDropboxError } from "../util";
-import { listFolderPayload } from "../example-payloads";
+import { searchFoldersPayload } from "../example-payloads";
 
-export const listFolder = action({
+export const searchFolders = action({
   display: {
-    label: "List Folder",
-    description: "List Folder contents at the specified path",
+    label: "Search Folders",
+    description: "Search for folders at the specified path",
   },
   perform: async (context, params) => {
     checkDebug(params, context);
@@ -29,13 +29,16 @@ export const listFolder = action({
     try {
       const data =
         params.cursor !== ""
-          ? await dbx.filesListFolderContinue({
-              cursor: util.types.toString(params.cursor),
+          ? await dbx.filesSearchContinueV2({
+              cursor: params.cursor,
             })
-          : await dbx.filesListFolder({
-              path: util.types.toString(params.path),
-              limit: util.types.toInt(params.limit) || undefined,
-              recursive: util.types.toBool(params.recursive),
+          : await dbx.filesSearchV2({
+              query: params.query,
+              options: {
+                filename_only: false,
+                max_results: params.limit,
+                path: params.path,
+              },
             });
 
       return {
@@ -47,15 +50,21 @@ export const listFolder = action({
   },
   inputs: {
     dropboxConnection: connectionInput,
-    path: directoryPath,
+    query: {
+      ...fileName,
+      label: "Folder Name",
+      comments: "The name of the folder to search for",
+      example: "My Folder",
+      required: true,
+    },
+    path: { ...directoryPath },
     cursor,
     limit,
-    recursive,
     userType,
     teamMemberId,
     debug,
   },
   examplePayload: {
-    data: listFolderPayload,
+    data: searchFoldersPayload,
   },
 });

@@ -3,30 +3,37 @@ import { createAuthorizedClient } from "../auth";
 import {
   connectionInput,
   directoryPath,
-  limit,
   cursor,
+  teamMemberId,
+  userType,
+  direct_only,
   debug,
 } from "../inputs";
 import { checkDebug, handleDropboxError } from "../util";
-import { listTeamFoldersPayload } from "../example-payloads";
+import { listSharedLinksPayload } from "../example-payloads";
 
-export const listTeamFolder = action({
+export const listSharedLinks = action({
   display: {
-    label: "List Team's Folders",
-    description: "List Team's Folder contents",
+    label: "List Shared Links",
+    description: "List Folder contents at the specified path",
   },
   perform: async (context, params) => {
     checkDebug(params, context);
-    const dbx = createAuthorizedClient(params.dropboxConnection);
+    const dbx = createAuthorizedClient(
+      params.dropboxConnection,
+      params.userType,
+      params.teamMemberId
+    );
 
     try {
       const data =
         params.cursor !== ""
-          ? await dbx.teamTeamFolderListContinue({
+          ? await dbx.sharingListSharedLinks({
               cursor: params.cursor,
             })
-          : await dbx.teamTeamFolderList({
-              limit: params.limit || undefined,
+          : await dbx.sharingListSharedLinks({
+              path: params.path,
+              direct_only: params.direct_only,
             });
 
       return {
@@ -39,11 +46,13 @@ export const listTeamFolder = action({
   inputs: {
     dropboxConnection: connectionInput,
     path: directoryPath,
+    direct_only,
     cursor,
-    limit,
+    userType,
+    teamMemberId,
     debug,
   },
   examplePayload: {
-    data: listTeamFoldersPayload,
+    data: listSharedLinksPayload,
   },
 });

@@ -1,5 +1,6 @@
-import { util } from "@prismatic-io/spectral";
+import { ActionContext, util } from "@prismatic-io/spectral";
 import { DropboxResponseError } from "dropbox";
+import { StringTag } from "./types";
 
 export const handleDropboxError = (err, paths = []) => {
   // https://developers.dropbox.com/error-handling-guide
@@ -74,4 +75,48 @@ export const getUserTypeHeader = (userType, teamMemberId) => {
     throw new Error("Invalid user type. Must be 'user' or 'admin'.");
   }
   return headers;
+};
+
+export const cleanString = (value: unknown) =>
+  util.types.toString(value).replace(/\/$/, "");
+
+export const cleanActionArray = (value: unknown): StringTag[] => {
+  if (Array.isArray(value) && value.length > 0) {
+    return value.map((item) => ({ ".tag": util.types.toString(item) }));
+  }
+  return undefined;
+};
+
+export const cleanStringWithTag = (value: unknown): StringTag => {
+  if (value) {
+    return { ".tag": util.types.toString(value) };
+  }
+  return undefined;
+};
+
+export const checkDebug = (params: any, context: ActionContext) => {
+  if (params.debug) {
+    const { debug, ...rest } = params;
+    context.logger.debug("Params", rest);
+  }
+};
+
+export const getEntries = (
+  filePaths,
+  dynamicPaths
+): Array<{ path: string }> => {
+  let entries = filePaths.map((path) => {
+    validatePath(path);
+    return { path };
+  });
+
+  if (dynamicPaths && Array.isArray(dynamicPaths)) {
+    entries = entries.concat(
+      dynamicPaths.map((path) => {
+        validatePath(path);
+        return { path };
+      })
+    );
+  }
+  return entries;
 };

@@ -7,6 +7,7 @@ import {
   cursor,
   teamMemberId,
   userType,
+  recursive,
 } from "../inputs";
 import { handleDropboxError } from "../util";
 
@@ -20,12 +21,7 @@ export const listFolders = dataSource({
     path: directoryPath,
     cursor,
     limit,
-    recursive: {
-      label: "Recursive",
-      type: "boolean",
-      default: false,
-      comments: "Recursively list all contents of a directory",
-    },
+    recursive,
     userType,
     teamMemberId,
   },

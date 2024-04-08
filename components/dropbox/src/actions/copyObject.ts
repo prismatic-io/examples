@@ -1,17 +1,19 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
-import { fromPath, toPath, connectionInput } from "../inputs";
-import { handleDropboxError, validatePath } from "../util";
+import { fromPath, toPath, connectionInput, debug } from "../inputs";
+import { checkDebug, handleDropboxError, validatePath } from "../util";
+import { copyObjectPayload } from "../example-payloads";
 
 export const copyObject = action({
   display: {
     label: "Copy Object",
     description: "Copy a Folder or File from one path to another",
   },
-  perform: async (context, { dropboxConnection, fromPath, toPath }) => {
+  perform: async (context, { dropboxConnection, fromPath, toPath, debug }) => {
+    checkDebug({ dropboxConnection, fromPath, toPath, debug }, context);
     validatePath(fromPath);
     validatePath(toPath);
-    const dbx = await createAuthorizedClient(dropboxConnection);
+    const dbx = createAuthorizedClient(dropboxConnection);
     try {
       const result = await dbx.filesCopyV2({
         from_path: util.types.toString(fromPath),
@@ -24,22 +26,8 @@ export const copyObject = action({
       handleDropboxError(err, [fromPath, toPath]);
     }
   },
-  inputs: { dropboxConnection: connectionInput, fromPath, toPath },
+  inputs: { dropboxConnection: connectionInput, fromPath, toPath, debug },
   examplePayload: {
-    data: {
-      status: 200,
-      headers: {},
-      result: {
-        metadata: {
-          ".tag": "file",
-          name: "myCopy",
-          id: "exampleId",
-          client_modified: new Date("2020-01-01").toUTCString(),
-          server_modified: new Date("2020-01-01").toUTCString(),
-          rev: undefined,
-          size: 2048,
-        },
-      },
-    },
+    data: copyObjectPayload,
   },
 });

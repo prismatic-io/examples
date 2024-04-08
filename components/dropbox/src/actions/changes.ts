@@ -1,7 +1,17 @@
 import isEqual from "lodash.isequal";
-import { action, input, util } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { createAuthorizedClient } from "../auth";
-import { connectionInput, directoryPath } from "../inputs";
+import {
+  connectionInput,
+  debug,
+  directoryPath,
+  includeDeleted,
+  recursive,
+  teamMemberId,
+  userType,
+} from "../inputs";
+import { checkDebug } from "../util";
+import { listChangesPayload } from "../example-payloads";
 
 interface CursorData {
   cursor: string;
@@ -17,8 +27,14 @@ export const listChanges = action({
       "List changes that have been made to files in this folder since the last time this action was run.",
   },
   perform: async (context, params) => {
-    const dbx = await createAuthorizedClient(params.dropboxConnection);
+    const dbx = createAuthorizedClient(
+      params.dropboxConnection,
+      params.userType,
+      params.teamMemberId
+    );
     const cursorData = context.instanceState[context.stepId] as CursorData;
+
+    checkDebug(params, context);
 
     if (
       cursorData &&
@@ -46,7 +62,7 @@ export const listChanges = action({
         includeDeleted: params.includeDeleted,
       };
       return {
-        data: response.result,
+        data: response.result as any,
         instanceState: { [context.stepId]: newCursorData },
       };
     } else {
@@ -80,52 +96,14 @@ export const listChanges = action({
   inputs: {
     dropboxConnection: connectionInput,
     directoryPath,
-    recursive: input({
-      label: "Recursive",
-      comments:
-        "If true, the response will contain contents of all subfolders.",
-      type: "boolean",
-      default: "false",
-      required: true,
-      clean: util.types.toBool,
-    }),
-    includeDeleted: input({
-      label: "Include Deleted?",
-      comments:
-        "If true, the results will include entries for files and folders that used to exist but were deleted.",
-      type: "boolean",
-      default: "false",
-      required: true,
-      clean: util.types.toBool,
-    }),
+    recursive,
+    includeDeleted,
+    userType,
+    teamMemberId,
+    debug,
   },
   examplePayload: {
-    data: {
-      entries: [
-        {
-          ".tag": "deleted",
-          name: "my-old-image.png",
-          path_lower: "/my-old-image.png",
-          path_display: "/my-old-image.png",
-        },
-        {
-          ".tag": "file",
-          name: "my-new-image.png",
-          path_lower: "/my-new-image.png",
-          path_display: "/my-new-image.png",
-          id: "id:BTY6k_2K8PAAAAAAAAAX9g",
-          client_modified: "2022-12-12T21:39:30Z",
-          server_modified: "2022-12-12T22:40:57Z",
-          rev: "5efa9326918a601c39731",
-          size: 1758021,
-          is_downloadable: true,
-          content_hash:
-            "dc05a61ecd59d294da1e971c4e40a980b9042c633b7bc777367991a046d2b32d",
-        },
-      ],
-      cursor: "AAFCBKRdVxEXAMPLE",
-      has_more: false,
-    },
-    instanceState: { "step-id": "AAFCBKRdVxEXAMPLE" },
+    data: listChangesPayload,
+    instanceState: {},
   },
 });
