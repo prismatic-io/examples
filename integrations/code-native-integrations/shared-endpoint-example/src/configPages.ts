@@ -1,11 +1,11 @@
-import { ConfigVarDataType, configPage } from "@prismatic-io/spectral";
+import { configPage } from "@prismatic-io/spectral";
 
 export const configPages = {
   Connections: configPage({
     elements: {
       "My String": {
         stableKey: "myString",
-        dataType: ConfigVarDataType.String,
+        dataType: "string",
         defaultValue: "My Value",
       },
     },

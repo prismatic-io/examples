@@ -1,8 +1,4 @@
-import {
-  ConfigVarDataType,
-  configPage,
-  configVar,
-} from "@prismatic-io/spectral";
+import { configPage, configVar } from "@prismatic-io/spectral";
 import { slackConnectionConfigVar } from "./connections";
 import { slackSelectChannelDataSource } from "./dataSources";
 
@@ -23,14 +19,14 @@ export const configPages = {
     elements: {
       "Acme API Endpoint": configVar({
         stableKey: "acme-api-endpoint",
-        dataType: ConfigVarDataType.String,
+        dataType: "string",
         description: "The endpoint to fetch TODO items from Acme",
         defaultValue:
           "https://my-json-server.typicode.com/prismatic-io/placeholder-data/todo",
       }),
       "Webhook Config Endpoint": configVar({
         stableKey: "webhook-config-endpoint",
-        dataType: ConfigVarDataType.String,
+        dataType: "string",
         description:
           "The endpoint to call when deploying or deleting an instance",
       }),

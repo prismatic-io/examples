@@ -2280,25 +2280,6 @@
     uuid "8.3.2"
     valid-url "1.0.9"
 
-"@prismatic-io/spectral@8.0.6":
-  version "8.0.6"
-  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-8.0.6.tgz#df5600e5f4fa7bf3d29ce87d80a72454899a1238"
-  integrity sha512-fyBlWgSXdxl+VQI2AKCme5CmY2/RTHTIA8VBPp1quMzUC/UQfsBlQDzr3gA7uqsuEvF32SBBone80yyMphflRQ==
-  dependencies:
-    "@jsonforms/core" "3.0.0"
-    axios "1.6.2"
-    axios-retry "3.9.1"
-    date-fns "2.30.0"
-    form-data "4.0.0"
-    jest-mock "27.0.3"
-    lodash "4.17.21"
-    safe-stable-stringify "2.3.1"
-    serialize-error "8.1.0"
-    url-join "5.0.0"
-    uuid "8.3.2"
-    valid-url "1.0.9"
-    yaml "2.3.4"
-
 "@prismatic-io/spectral@8.1.0-preview2":
   version "8.1.0-preview2"
   resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-8.1.0-preview2.tgz#5798150cdfbe05eb23e3ea6c0d37fab9838da007"
