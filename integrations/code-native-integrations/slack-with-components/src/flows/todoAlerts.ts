@@ -10,6 +10,7 @@ import { Connection, flow } from "@prismatic-io/spectral";
 import { ConfigPages } from "../configPages";
 import axios from "axios";
 import { createSlackClient } from "../slackClient";
+import { Components } from "../components";
 
 interface TodoItem {
   id: number;
@@ -17,7 +18,7 @@ interface TodoItem {
   task: string;
 }
 
-export const todoAlertsFlow = flow<ConfigPages>({
+export const todoAlertsFlow = flow<ConfigPages, Components>({
   name: "Send TODO messages to Slack",
   stableKey: "todo-alerts-flow",
   description: "Fetch TODO items from Acme and send to Slack",

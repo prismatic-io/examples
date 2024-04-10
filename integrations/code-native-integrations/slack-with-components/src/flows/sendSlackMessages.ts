@@ -27,6 +27,7 @@ import { ConfigPages } from "../configPages";
 import { XMLParser } from "fast-xml-parser";
 import { createSlackClient } from "../slackClient";
 import axios from "axios";
+import { Components } from "../components";
 
 interface AccountNotification {
   notification: {
@@ -44,7 +45,7 @@ interface AccountNotification {
   };
 }
 
-const sendMessagesFlow = flow<ConfigPages>({
+const sendMessagesFlow = flow<ConfigPages, Components>({
   name: "Send Slack Message on Account Received",
   stableKey: "send-slack-messages",
   description: "Send a message to a Slack channel when an account is received",

@@ -2299,10 +2299,10 @@
     valid-url "1.0.9"
     yaml "2.3.4"
 
-"@prismatic-io/spectral@8.1.0-preview1":
-  version "8.1.0-preview1"
-  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-8.1.0-preview1.tgz#3295e1e4b5890dba8053898809a1025d7ec965e0"
-  integrity sha512-QO+HZaHIp0Ow+n7tKmL93LRhqAUEKjv/vA4UEeDZYW5OgOm5EHHQKiaGWZzzoUf7u1oH1oM0D5KZK7QFx9OCqA==
+"@prismatic-io/spectral@8.1.0-preview2":
+  version "8.1.0-preview2"
+  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-8.1.0-preview2.tgz#5798150cdfbe05eb23e3ea6c0d37fab9838da007"
+  integrity sha512-G+N93rsQ8jM8BVvIo4R3ecapLVVjKk4ApnvVTCEnmiuUeDNtrcneHYIqr0/+nXIxErv0/Oo56WsB3BDp8nZjmw==
   dependencies:
     "@jsonforms/core" "3.0.0"
     axios "1.6.2"

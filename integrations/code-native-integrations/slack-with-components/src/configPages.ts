@@ -1,16 +1,11 @@
-import {
-  configPage,
-  configVar,
-  connectionConfigVar,
-  dataSourceConfigVar,
-} from "@prismatic-io/spectral";
+import { configPage, configVar, reference } from "@prismatic-io/spectral";
 import { Components } from "./components";
 
 export const configPages = {
-  Connections: configPage<Components>({
+  Connections: configPage({
     tagline: "Authenticate with Slack",
     elements: {
-      "Slack OAuth Connection": connectionConfigVar<Components>({
+      "Slack OAuth Connection": reference<Components>().connection({
         stableKey: "slack-connection",
         connection: {
           component: "slack",
@@ -25,10 +20,10 @@ export const configPages = {
       }),
     },
   }),
-  "Slack Config": configPage<Components>({
+  "Slack Config": configPage({
     tagline: "Select a Slack channel from a dropdown menu",
     elements: {
-      "Select Slack Channel": dataSourceConfigVar<Components>({
+      "Select Slack Channel": reference<Components>().dataSource({
         stableKey: "slack-channel",
         dataSourceType: "picklist",
         dataSource: {
