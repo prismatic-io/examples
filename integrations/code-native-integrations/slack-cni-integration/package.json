@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@prismatic-io/spectral": "8.0.6",
-    "axios": "1.6.7",
+    "axios": "0.28.1",
     "fast-xml-parser": "^4.3.4"
   },
   "devDependencies": {

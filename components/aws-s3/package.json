@@ -18,7 +18,7 @@
     "@aws-sdk/client-sns": "3.391.0",
     "@aws-sdk/s3-request-presigner": "3.391.0",
     "@prismatic-io/spectral": "7.6.3",
-    "axios": "^1.6.0",
+    "axios": "^0.28.1",
     "@aws-sdk/signature-v4-crt": "3.391.0"
   },
   "author": "Prismatic",
