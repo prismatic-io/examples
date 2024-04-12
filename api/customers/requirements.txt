@@ -2,7 +2,7 @@ certifi==2023.7.22
 charset-normalizer==2.0.4
 gql==2.0.0
 graphql-core==2.3.2
-idna==3.2
+idna==3.7
 promise==2.3
 requests==2.31.0
 Rx==1.6.1
