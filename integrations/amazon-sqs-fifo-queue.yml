@@ -42,7 +42,7 @@ flows:
             value: us-east-1
           contentBasedDeduplication:
             type: value
-            value: "false"
+            value: "true"
           dynamicAccessKeyId:
             type: value
             value: ""
