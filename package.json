@@ -4,6 +4,7 @@
   "workspaces": {
     "packages": [
       "components/*",
+      "components/on-prem-example/*",
       "components/packages/*",
       "integrations/code-native-integrations/*",
       "packages/*"

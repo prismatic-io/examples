@@ -1,0 +1,15 @@
+services:
+  # Mock service to simulate a service running on-prem
+  mock-service:
+    build:
+      context: ./mock-service
+    ports:
+      - "3000:3000"
+
+  # Prismatic on-prem agent
+  # Ensure you replace the JWT in on-prem-agent.env
+  on-prem-agent:
+    image: prismaticio/on-prem-agent:local
+    restart: always # Ensure the agent restarts on failure
+    env_file:
+      - on-prem-agent.env
