@@ -1,4 +1,4 @@
-import { action, input, util } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { createOauthClient } from "../client";
 import {
   connectionInput,
@@ -14,50 +14,62 @@ import {
   includePrivateChannels,
   includeMultiPartyImchannels,
   includeImChannels,
+  includeAllMetadata,
+  inclusive,
+  latest,
+  oldest,
+  conversationPurpose,
+  conversationTopic,
+  debug,
+  connected_team_ids,
+  search_channel_types,
+  sort,
+  sort_dir,
+  team_ids,
+  total_count_only,
 } from "../inputs";
-import { handleErrors } from "../errors";
-import { generateChannelTypesString } from "../utils";
+import { debugLogger, generateChannelTypesString } from "../utils";
+import {
+  archiveConversationResponse,
+  closeConversationResponse,
+  createConversationResponse,
+  getConversationsHistoryResponse,
+  inviteUserToConversationResponse,
+  leaveConversationResponse,
+  listConversationMembersResponse,
+  listConversationResponse,
+  renameConversationResponse,
+  inviteUserToConversationResponse as setConversationTopicResponse,
+  archiveConversationResponse as setConversationPurposeResponse,
+} from "../examplePayloads";
 
 export const createConversation = action({
   display: {
     label: "Create Conversation",
     description: "Create a new conversation",
   },
-  perform: async (context, { connection, isPrivate, conversationName }) => {
+  perform: async (
+    context,
+    { connection, isPrivate, conversationName, teamId, debug }
+  ) => {
+    debugLogger({ debug, isPrivate, conversationName, teamId });
     const client = await createOauthClient({ slackConnection: connection });
-    const data = await handleErrors(
-      client.conversations.create({
-        name: util.types.toString(conversationName),
-        is_private: util.types.toBool(isPrivate) || undefined,
-        team_id: util.types.toString(teamId) || undefined,
-      })
-    );
+    const data = await client.conversations.create({
+      name: conversationName,
+      is_private: isPrivate || undefined,
+      team_id: teamId || undefined,
+    });
     return { data };
   },
-  inputs: { conversationName, isPrivate, teamId, connection: connectionInput },
+  inputs: {
+    conversationName,
+    isPrivate,
+    teamId,
+    connection: connectionInput,
+    debug,
+  },
   examplePayload: {
-    data: {
-      ok: true,
-      channels: [
-        {
-          id: "COZ7e3d",
-          name: "example channel",
-          is_channel: true,
-          is_group: false,
-          is_im: false,
-          is_private: false,
-          is_archived: false,
-          created: 6426934241,
-          creator: "example",
-          unlinked: 0,
-          name_normalized: "example channel",
-          shared_team_ids: ["TW2oP78"],
-          purpose: {
-            value: "This channel was created for an example response.",
-          },
-        },
-      ],
-    },
+    data: createConversationResponse,
   },
 });
 
@@ -66,16 +78,20 @@ export const closeConversation = action({
     label: "Close Conversation",
     description: "Close an existing conversation",
   },
-  perform: async (context, { connection, conversationName }) => {
-    const client = await createOauthClient({ slackConnection: connection });
-    const data = await handleErrors(
-      client.conversations.close({
-        channel: util.types.toString(conversationName),
-      })
-    );
+  perform: async (context, { connection, conversationName, debug }) => {
+    debugLogger({ debug, conversationName });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.conversations.close({
+      channel: conversationName,
+    });
     return { data };
   },
-  inputs: { conversationName, connection: connectionInput },
+  inputs: { conversationName, connection: connectionInput, debug },
+  examplePayload: {
+    data: closeConversationResponse,
+  },
 });
 
 export const renameConversation = action({
@@ -85,15 +101,16 @@ export const renameConversation = action({
   },
   perform: async (
     context,
-    { connection, newConversationName, conversationName }
+    { connection, newConversationName, conversationName, debug }
   ) => {
-    const client = await createOauthClient({ slackConnection: connection });
-    const data = await handleErrors(
-      client.conversations.rename({
-        channel: util.types.toString(conversationName),
-        name: util.types.toString(newConversationName),
-      })
-    );
+    debugLogger({ debug, newConversationName, conversationName });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.conversations.rename({
+      channel: conversationName,
+      name: newConversationName,
+    });
     return { data };
   },
   inputs: {
@@ -103,6 +120,10 @@ export const renameConversation = action({
       label: "New Conversation Name",
     },
     connection: connectionInput,
+    debug,
+  },
+  examplePayload: {
+    data: renameConversationResponse,
   },
 });
 
@@ -122,69 +143,46 @@ export const getConversationsHistory = action({
       oldest,
       inclusive,
       latest,
+      debug,
     }
   ) => {
-    const client = await createOauthClient({ slackConnection: connection });
-    const data = await handleErrors(
-      client.conversations.history({
-        channel: util.types.toString(channelName),
-        cursor: util.types.toString(cursor) || undefined,
-        include: util.types.toBool(includeAllMetadata) || undefined,
-        limit: util.types.toNumber(limit) || undefined,
-        inclusive: inclusive,
-        ...(oldest ? { oldest: util.types.toString(oldest) } : {}),
-        ...(latest ? { latest: util.types.toString(latest) } : {}),
-      })
-    );
+    debugLogger({
+      debug,
+      channelName,
+      cursor,
+      includeAllMetadata,
+      limit,
+      oldest,
+      inclusive,
+      latest,
+    });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.conversations.history({
+      channel: channelName,
+      cursor: cursor || undefined,
+      include: includeAllMetadata || undefined,
+      limit: limit || undefined,
+      inclusive,
+      ...(oldest ? { oldest } : {}),
+      ...(latest ? { latest } : {}),
+    });
     return { data };
   },
   inputs: {
     channelName,
     limit,
     cursor,
-    includeAllMetadata: input({
-      label: "Include All Metadata",
-      type: "boolean",
-      default: false,
-    }),
-    inclusive: input({
-      label: "Inclusive",
-      comments:
-        "Include messages with oldest or latest timestamps in results. Ignored unless either timestamp is specified",
-      type: "boolean",
-      required: false,
-      default: false,
-    }),
-    latest: input({
-      label: "Latest",
-      comments:
-        "Only messages before this Unix timestamp will be included in results. Default is current time.",
-      type: "string",
-      required: false,
-    }),
-    oldest: input({
-      label: "Oldest",
-      comments:
-        "Only messages after this Unix timestamp will be included in results",
-      type: "string",
-      required: false,
-    }),
+    includeAllMetadata,
+    inclusive,
+    latest,
+    oldest,
     connection: connectionInput,
+    debug,
   },
   examplePayload: {
-    data: {
-      ok: true,
-      messages: [
-        {
-          client_msg_id: "123123-123123-123123",
-          type: "message",
-          text: "hello world",
-          user: "U01QFFSE2QK",
-          ts: "166149417.178179",
-          team: "TH0GJM0M8",
-        },
-      ],
-    },
+    data: getConversationsHistoryResponse,
   },
 });
 
@@ -194,20 +192,18 @@ export const listConversations = action({
     description: "List all conversations",
   },
   perform: async (context, params) => {
+    debugLogger(params);
     const client = await createOauthClient({
       slackConnection: params.connection,
     });
 
-    const data = await handleErrors(
-      client.conversations.list({
-        cursor: util.types.toString(params.cursor) || undefined,
-        exclude_archived:
-          util.types.toBool(params.excludeArchived) || undefined,
-        limit: util.types.toNumber(params.limit) || undefined,
-        team_id: util.types.toString(params.teamId) || undefined,
-        types: generateChannelTypesString(params),
-      })
-    );
+    const data = await client.conversations.list({
+      cursor: params.cursor || undefined,
+      exclude_archived: params.excludeArchived || undefined,
+      limit: params.limit || undefined,
+      team_id: params.teamId || undefined,
+      types: generateChannelTypesString(params),
+    });
     return { data };
   },
   inputs: {
@@ -220,30 +216,10 @@ export const listConversations = action({
     includePrivateChannels,
     includeMultiPartyImchannels,
     includeImChannels,
+    debug,
   },
   examplePayload: {
-    data: {
-      ok: true,
-      channels: [
-        {
-          id: "COZ7e3d",
-          name: "example channel",
-          is_channel: true,
-          is_group: false,
-          is_im: false,
-          is_private: false,
-          is_archived: false,
-          created: 6426934241,
-          creator: "example",
-          unlinked: 0,
-          name_normalized: "example channel",
-          shared_team_ids: ["TW2oP78"],
-          purpose: {
-            value: "This channel was created for an example response.",
-          },
-        },
-      ],
-    },
+    data: listConversationResponse,
   },
 });
 
@@ -252,18 +228,23 @@ export const leaveConversation = action({
     label: "Leave Conversations",
     description: "Leave an existing conversation",
   },
-  perform: async (context, { connection, channelName }) => {
-    const client = await createOauthClient({ slackConnection: connection });
-    const data = await handleErrors(
-      client.conversations.leave({
-        channel: util.types.toString(channelName),
-      })
-    );
+  perform: async (context, { connection, channelName, debug }) => {
+    debugLogger({ debug, channelName });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.conversations.leave({
+      channel: channelName,
+    });
     return { data };
   },
   inputs: {
     channelName,
     connection: connectionInput,
+    debug,
+  },
+  examplePayload: {
+    data: leaveConversationResponse,
   },
 });
 
@@ -272,15 +253,19 @@ export const listConversationMembers = action({
     label: "List Conversation Members",
     description: "List all members of a conversation",
   },
-  perform: async (context, { connection, channelName, cursor, limit }) => {
-    const client = await createOauthClient({ slackConnection: connection });
-    const data = await handleErrors(
-      client.conversations.members({
-        cursor: util.types.toString(cursor) || undefined,
-        limit: util.types.toNumber(limit) || undefined,
-        channel: util.types.toString(channelName),
-      })
-    );
+  perform: async (
+    context,
+    { connection, channelName, cursor, limit, debug }
+  ) => {
+    debugLogger({ debug, channelName, cursor, limit });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.conversations.members({
+      cursor: cursor || undefined,
+      limit: limit || undefined,
+      channel: channelName,
+    });
     return { data };
   },
   inputs: {
@@ -288,6 +273,10 @@ export const listConversationMembers = action({
     limit,
     cursor,
     connection: connectionInput,
+    debug,
+  },
+  examplePayload: {
+    data: listConversationMembersResponse,
   },
 });
 
@@ -296,18 +285,23 @@ export const archiveConversation = action({
     label: "Archive Conversation",
     description: "Archive an existing conversation",
   },
-  perform: async (context, { connection, channelName }) => {
-    const client = await createOauthClient({ slackConnection: connection });
-    const data = await handleErrors(
-      client.conversations.archive({
-        channel: util.types.toString(channelName),
-      })
-    );
+  perform: async (context, { connection, channelName, debug }) => {
+    debugLogger({ debug, channelName });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.conversations.archive({
+      channel: channelName,
+    });
     return { data };
   },
   inputs: {
     channelName,
     connection: connectionInput,
+    debug,
+  },
+  examplePayload: {
+    data: archiveConversationResponse,
   },
 });
 
@@ -316,7 +310,8 @@ export const conversationExists = action({
     label: "Conversation Exists",
     description: "Returns true if the conversation already exists",
   },
-  perform: async (context, { connection, channelName }) => {
+  perform: async (context, { connection, channelName, debug }) => {
+    debugLogger({ debug, channelName });
     const client = await createOauthClient({ slackConnection: connection });
     const data = await client.conversations.list();
 
@@ -333,6 +328,10 @@ export const conversationExists = action({
   inputs: {
     channelName,
     connection: connectionInput,
+    debug,
+  },
+  examplePayload: {
+    data: true,
   },
 });
 
@@ -341,14 +340,15 @@ export const inviteUserToConversation = action({
     label: "Invite User To Conversation",
     description: "Invite a user to an existing conversation",
   },
-  perform: async (context, { connection, channelName, userId }) => {
-    const client = await createOauthClient({ slackConnection: connection });
-    const data = await handleErrors(
-      client.conversations.invite({
-        channel: util.types.toString(channelName),
-        users: util.types.toString(userId),
-      })
-    );
+  perform: async (context, { connection, channelName, userId, debug }) => {
+    debugLogger({ debug, channelName, userId });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.conversations.invite({
+      channel: channelName,
+      users: userId,
+    });
 
     return { data };
   },
@@ -356,6 +356,10 @@ export const inviteUserToConversation = action({
     channelName,
     userId,
     connection: connectionInput,
+    debug,
+  },
+  examplePayload: {
+    data: inviteUserToConversationResponse,
   },
 });
 
@@ -364,28 +368,26 @@ export const setConversationPurpose = action({
     label: "Set Conversation Purpose",
     description: "Set the purpose of an existing conversation",
   },
-  perform: async (context, { connection, channelName, purpose }) => {
-    const client = await createOauthClient({ slackConnection: connection });
-    const data = await handleErrors(
-      client.conversations.setPurpose({
-        channel: util.types.toString(channelName),
-        purpose: util.types.toString(purpose),
-      })
-    );
+  perform: async (context, { connection, channelName, purpose, debug }) => {
+    debugLogger({ debug, channelName, purpose });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.conversations.setPurpose({
+      channel: channelName,
+      purpose,
+    });
 
     return { data };
   },
   inputs: {
     channelName,
-    userId,
     connection: connectionInput,
-    purpose: {
-      label: "Conversation Purpose",
-      type: "string",
-      comments:
-        "Provide a string value for the purpose of the given conversation.",
-      example: "Engineering",
-    },
+    purpose: conversationPurpose,
+    debug,
+  },
+  examplePayload: {
+    data: setConversationPurposeResponse,
   },
 });
 
@@ -394,14 +396,15 @@ export const setConversationTopic = action({
     label: "Set Conversation Topic",
     description: "Set the purpose of an existing conversation",
   },
-  perform: async (context, { connection, channelName, topic }) => {
-    const client = await createOauthClient({ slackConnection: connection });
-    const data = await handleErrors(
-      client.conversations.setTopic({
-        channel: util.types.toString(channelName),
-        topic: util.types.toString(topic),
-      })
-    );
+  perform: async (context, { connection, channelName, topic, debug }) => {
+    debugLogger({ debug, channelName, topic });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.conversations.setTopic({
+      channel: channelName,
+      topic,
+    });
 
     return { data };
   },
@@ -409,12 +412,78 @@ export const setConversationTopic = action({
     connection: connectionInput,
     channelName,
     userId,
-    topic: {
-      label: "Conversation Topic",
-      type: "string",
-      comments:
-        "Provide a string value for the topic of the given conversation.",
-      example: "Engineering",
-    },
+    topic: conversationTopic,
+    debug,
+  },
+  examplePayload: {
+    data: setConversationTopicResponse,
+  },
+});
+
+export const searchConversation = action({
+  display: {
+    label: "Search Conversation",
+    description:
+      "Search for public or private channels in an Enterprise organization.",
+  },
+  perform: async (
+    context,
+    {
+      connection,
+      debug,
+      connected_team_ids,
+      cursor,
+      limit,
+      query,
+      search_channel_types,
+      sort,
+      sort_dir,
+      team_ids,
+      total_count_only,
+    }
+  ) => {
+    debugLogger({
+      debug,
+      connected_team_ids,
+      cursor,
+      limit,
+      query,
+      search_channel_types,
+      sort,
+      sort_dir,
+      team_ids,
+      total_count_only,
+    });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.admin.conversations.search({
+      connected_team_ids,
+      cursor,
+      limit,
+      query,
+      search_channel_types,
+      sort,
+      sort_dir,
+      team_ids,
+      total_count_only,
+    });
+    return { data };
+  },
+  inputs: {
+    connected_team_ids,
+    cursor,
+    limit,
+    query: channelName,
+    search_channel_types,
+    sort,
+    sort_dir,
+    team_ids,
+    total_count_only,
+    connection: connectionInput,
+    debug,
+  },
+  examplePayload: {
+    data: closeConversationResponse,
   },
 });

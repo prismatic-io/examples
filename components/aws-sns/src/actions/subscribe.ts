@@ -1,13 +1,8 @@
 import { action, util } from "@prismatic-io/spectral";
 import { SubscribeCommand, SubscribeResponse } from "@aws-sdk/client-sns";
 import { createSNSClient } from "../client";
-import {
-  awsRegion,
-  topicArn,
-  protocol,
-  endpoint,
-  connectionInput,
-} from "../inputs";
+import { awsRegion } from "aws-utils";
+import { topicArn, protocol, endpoint, connectionInput } from "../inputs";
 
 interface Response {
   data: SubscribeResponse;
@@ -25,7 +20,7 @@ export const subscribe = action({
     description: "Subscribe to an Amazon SNS Topic",
   },
   perform: async (context, params) => {
-    const sns = createSNSClient({
+    const sns = await createSNSClient({
       awsConnection: params.awsConnection,
       awsRegion: util.types.toString(params.awsRegion),
     });

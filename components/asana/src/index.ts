@@ -16,6 +16,7 @@ import { createTask } from "./actions/tasks/createTask";
 import { deleteTask } from "./actions/tasks/deleteTask";
 import { getTask } from "./actions/tasks/getTask";
 import { updateTask } from "./actions/tasks/updateTask";
+import { removeAssigneeFromTask } from "./actions/tasks/removeAssigneeFromTask";
 import { addUserToTeam } from "./actions/teams/addUserToTeam";
 import { createTeam } from "./actions/teams/createTeam";
 import { getTeam } from "./actions/teams/getTeam";
@@ -139,6 +140,7 @@ export default component({
     attachFileToTask,
     addFollowersToTask,
     removeFollowersFromTask,
+    removeAssigneeFromTask,
     addTagToTask,
     removeTagFromTask,
     listTeams,

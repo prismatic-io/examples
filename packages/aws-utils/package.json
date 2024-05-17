@@ -1,0 +1,33 @@
+{
+  "name": "aws-utils",
+  "private": true,
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint --cache --quiet .",
+    "lint-fix": "eslint --cache --fix --quiet .",
+    "format": "npm run lint-fix && prettier --log-level error --write .",
+    "generate-regions-json": "aws ec2 describe-regions | jq '.Regions | map(.RegionName) | sort' > src/data/aws-regions.json",
+    "build": "npm run format && npm run lint && tsc --noEmit && webpack"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sts": "3.391.0",
+    "@prismatic-io/spectral": "^7.8.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "@prismatic-io/eslint-config-spectral": "^2.0.1",
+    "eslint": "^8.52.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "prettier": "^3.0.3",
+    "ts-loader": "^9.5.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
+}

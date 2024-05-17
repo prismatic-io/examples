@@ -8,7 +8,6 @@
     "lint": "eslint --cache --quiet --ext .ts,.js --ignore-pattern '*testapp*' .",
     "lint-fix": "eslint --cache --fix --quiet --ext .ts,.js --ignore-pattern '*testapp*' .",
     "format": "npm run lint-fix && prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
-    "generate-regions-json": "aws ec2 describe-regions | jq '.Regions | map(.RegionName) | sort' > src/aws-regions.json",
     "check-format": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "build": "npm run format && npm run lint && webpack",
     "test": "jest --passWithNoTests"
@@ -16,8 +15,9 @@
   "dependencies": {
     "@aws-sdk/client-sns": "^3.332.0",
     "@prismatic-io/spectral": "7.6.3",
-    "axios": "1.6.8",
-    "sns-validator": "^0.3.5"
+    "axios": "0.21.4",
+    "sns-validator": "^0.3.5",
+    "aws-utils": "file:../../packages/aws-utils"
   },
   "author": "Prismatic",
   "license": "MIT",

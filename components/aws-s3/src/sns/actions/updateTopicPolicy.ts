@@ -1,7 +1,6 @@
 import { action } from "@prismatic-io/spectral";
-import { createSNSClient } from "../client";
+import { createSNSClient } from "../../auth";
 import {
-  awsRegion,
   accessKeyInput,
   bucket,
   snsTopicArn,
@@ -11,6 +10,8 @@ import {
   SetTopicAttributesCommand,
   SetTopicAttributesCommandInput,
 } from "@aws-sdk/client-sns";
+import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
+import { updateTopicPolicyPayload } from "../../examplePayloads";
 
 export const updateTopicPolicy = action({
   display: {
@@ -20,19 +21,31 @@ export const updateTopicPolicy = action({
   },
   perform: async (
     context,
-    { awsConnection, awsRegion, snsTopicArn, bucketOwnerAccountid, bucket }
-  ) => {
-    const sns = createSNSClient({
-      awsConnection: awsConnection,
+    {
+      awsConnection,
       awsRegion,
+      snsTopicArn,
+      bucketOwnerAccountid,
+      bucket,
+      dynamicAccessKeyId,
+      dynamicSecretAccessKey,
+      dynamicSessionToken,
+    }
+  ) => {
+    const sns = await createSNSClient({
+      awsConnection,
+      awsRegion,
+      dynamicAccessKeyId,
+      dynamicSecretAccessKey,
+      dynamicSessionToken,
     });
 
     const policy = {
       Version: "2012-10-17",
-      Id: "example-ID",
+      Id: "allow-s3-to-publish",
       Statement: [
         {
-          Sid: "Example SNS topic policy",
+          Sid: "allow-s3-to-publish",
           Effect: "Allow",
           Principal: {
             Service: "s3.amazonaws.com",
@@ -66,10 +79,10 @@ export const updateTopicPolicy = action({
   inputs: {
     awsRegion,
     awsConnection: accessKeyInput,
+    ...dynamicAccessAllInputs,
     bucket,
     snsTopicArn,
     bucketOwnerAccountid,
   },
+  examplePayload: updateTopicPolicyPayload,
 });
-
-export default updateTopicPolicy;

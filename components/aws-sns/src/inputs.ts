@@ -1,22 +1,5 @@
 import { input } from "@prismatic-io/spectral";
-import awsRegions from "./aws-regions.json";
-
-export const awsRegion = input({
-  label: "AWS Region",
-  placeholder: "AWS Region",
-  type: "string",
-  required: true,
-  comments:
-    "AWS provides services in multiple regions, like us-west-2 or eu-east-1. AWS region indicates the region in which your bucket(s) are stored.",
-  example: "us-east-1",
-  default: "us-east-1",
-  model: awsRegions.map((region) => {
-    return {
-      label: region,
-      value: region,
-    };
-  }),
-});
+import { batchMessageEntriesExample } from "./constants/batchMessageEntriesExample";
 
 export const name = input({
   label: "Name",
@@ -96,7 +79,7 @@ export const messageAttributes = input({
   collection: "keyvaluelist",
   example: "This is an example attribute",
   comments:
-    "For each item, provide a key value pair representing a message attribute. When determining your message attributes, it is important that you follow the specifications listed in the Amazon SNS docs: https://docs.aws.amazon.com/sns/latest/api/API_MessageAttributeValue.html",
+    "For each item, provide a key value pair representing a message attribute, to supply a binary you must provide a Buffer to the key value. When determining your message attributes, it is important that you follow the specifications listed in the Amazon SNS docs: https://docs.aws.amazon.com/sns/latest/api/API_MessageAttributeValue.html",
 });
 
 export const parseMessage = input({
@@ -130,4 +113,14 @@ export const connectionInput = input({
   label: "Connection",
   type: "connection",
   required: true,
+});
+
+export const publishBatchEntries = input({
+  label: "Message Entries",
+  type: "code",
+  language: "json",
+  required: true,
+  default: JSON.stringify(batchMessageEntriesExample, null, 2),
+  comments:
+    "To add a Binary Message add a Template Field containing a Buffer from a previous field to the BinaryValue attribute. For MessageAttributes data types, see: https://docs.aws.amazon.com/sns/latest/dg/sns-message-attributes.html",
 });

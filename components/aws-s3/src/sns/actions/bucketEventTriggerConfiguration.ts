@@ -1,17 +1,17 @@
 import { action } from "@prismatic-io/spectral";
-import {
-  PutBucketNotificationConfigurationCommand,
-  PutBucketNotificationConfigurationCommandInput,
-} from "@aws-sdk/client-s3";
-import { createS3Client } from "../client";
+import { createS3Client } from "../../auth";
 import {
   accessKeyInput,
-  awsRegion,
   eventsList,
   snsTopicArn,
   bucket,
   eventNotificationName,
+  bucketOwnerAccountid,
 } from "../../inputs";
+import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
+import { processTopicConfiguration } from "../../utils";
+import { TopicConfiguration } from "@aws-sdk/client-s3";
+import { bucketEventTriggerConfigurationPayload } from "../../examplePayloads";
 
 export const bucketEventTriggerConfiguration = action({
   display: {
@@ -27,31 +27,34 @@ export const bucketEventTriggerConfiguration = action({
       eventsList,
       bucket,
       eventNotificationName,
+      bucketOwnerAccountid,
+      dynamicAccessKeyId,
+      dynamicSecretAccessKey,
+      dynamicSessionToken,
     }
   ) => {
-    const sns = createS3Client({
+    const s3Client = await createS3Client({
       awsConnection,
       awsRegion,
+      dynamicAccessKeyId,
+      dynamicSecretAccessKey,
+      dynamicSessionToken,
     });
 
-    const input: PutBucketNotificationConfigurationCommandInput = {
-      Bucket: bucket,
-      NotificationConfiguration: {
-        TopicConfigurations: [
-          {
-            Id: eventNotificationName,
-            TopicArn: snsTopicArn,
-            Events: eventsList,
-          },
-        ],
-      },
+    const topicConfiguration: TopicConfiguration = {
+      Id: eventNotificationName,
+      TopicArn: snsTopicArn,
+      Events: eventsList,
     };
-    const command = new PutBucketNotificationConfigurationCommand(input);
-
-    const response = await sns.send(command);
 
     return {
-      data: response,
+      data: await processTopicConfiguration(
+        s3Client,
+        bucket,
+        bucketOwnerAccountid,
+        eventNotificationName,
+        topicConfiguration
+      ),
     };
   },
   inputs: {
@@ -59,9 +62,10 @@ export const bucketEventTriggerConfiguration = action({
     snsTopicArn,
     eventsList,
     awsConnection: accessKeyInput,
+    ...dynamicAccessAllInputs,
     bucket,
     eventNotificationName,
+    bucketOwnerAccountid,
   },
+  examplePayload: bucketEventTriggerConfigurationPayload,
 });
-
-export default bucketEventTriggerConfiguration;

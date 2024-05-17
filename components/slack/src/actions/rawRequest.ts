@@ -1,4 +1,4 @@
-import { action, util } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { connectionInput } from "../inputs";
 import { createOauthClient } from "../client";
 

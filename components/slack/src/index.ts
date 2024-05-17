@@ -13,6 +13,7 @@ import {
   postBlockMessage,
   postWebhookBlockMessage,
   listScheduledMessages,
+  searchMessages,
 } from "./actions/messages";
 import {
   closeConversation,
@@ -27,6 +28,7 @@ import {
   setConversationPurpose,
   setConversationTopic,
   getConversationsHistory,
+  // searchConversation,
 } from "./actions/conversations";
 import {
   getUser,
@@ -34,8 +36,11 @@ import {
   listUsers,
   listUsersConversations,
 } from "./actions/users";
-import { listFiles, uploadFile } from "./actions/files";
+import { listFiles, searchFiles, uploadFile } from "./actions/files";
 import rawRequest from "./actions/rawRequest";
+// import views from "./actions/views";
+import { searchAll } from "./actions/searchAll";
+import { handleErrors } from "@prismatic-io/spectral/dist/clients/http";
 
 export default component({
   key: "slack",
@@ -77,7 +82,15 @@ export default component({
     uploadFile,
     getConversationsHistory,
     rawRequest,
+    // ...views,
+    // searchConversation,
+    searchAll,
+    searchFiles,
+    searchMessages,
   },
   triggers,
   dataSources,
+  hooks: {
+    error: handleErrors,
+  },
 });

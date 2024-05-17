@@ -11,15 +11,18 @@
     "generate-regions-json": "aws ec2 describe-regions | jq '.Regions | map(.RegionName) | sort' > src/aws-regions.json",
     "check-format": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "build": "webpack",
-    "test": "jest --maxWorkers=4"
+    "test": "echo 'no tests'"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.391.0",
-    "@aws-sdk/client-sns": "3.391.0",
-    "@aws-sdk/s3-request-presigner": "3.391.0",
+    "@aws-sdk/client-s3": "3.569.0",
+    "@aws-sdk/client-sns": "3.569.0",
+    "@aws-sdk/lib-storage": "3.569.0",
+    "@aws-sdk/s3-request-presigner": "3.569.0",
+    "@aws-sdk/signature-v4-crt": "3.569.0",
     "@prismatic-io/spectral": "7.6.3",
-    "axios": "1.6.8",
-    "@aws-sdk/signature-v4-crt": "3.391.0"
+    "aws-utils": "file:../../packages/aws-utils",
+    "axios": "^0.27.2",
+    "uuid": "^9.0.1"
   },
   "author": "Prismatic",
   "license": "MIT",

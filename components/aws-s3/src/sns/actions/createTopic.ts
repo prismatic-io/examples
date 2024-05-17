@@ -1,21 +1,12 @@
-import { action, util } from "@prismatic-io/spectral";
-import { createSNSClient } from "../client";
-import { awsRegion, name, accessKeyInput } from "../../inputs";
+import { action } from "@prismatic-io/spectral";
+import { createSNSClient } from "../../auth";
+import { name, accessKeyInput } from "../../inputs";
+import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import {
-  CreateTopicResponse,
   CreateTopicCommand,
   CreateTopicCommandInput,
 } from "@aws-sdk/client-sns";
-
-interface Response {
-  data: CreateTopicResponse;
-}
-
-const examplePayload: Response = {
-  data: {
-    TopicArn: "arn:aws:Example Topic Arn",
-  },
-};
+import { createTopicPayload } from "../../examplePayloads";
 
 export const createTopic = action({
   display: {
@@ -23,10 +14,23 @@ export const createTopic = action({
     description:
       "Create an Amazon SNS Topic to be used with S3 Event Notifications",
   },
-  perform: async (context, { awsConnection, awsRegion, name }) => {
-    const sns = createSNSClient({
+  perform: async (
+    context,
+    {
       awsConnection,
       awsRegion,
+      name,
+      dynamicAccessKeyId,
+      dynamicSecretAccessKey,
+      dynamicSessionToken,
+    }
+  ) => {
+    const sns = await createSNSClient({
+      awsConnection,
+      awsRegion,
+      dynamicAccessKeyId,
+      dynamicSecretAccessKey,
+      dynamicSessionToken,
     });
 
     const createTopicParams: CreateTopicCommandInput = {
@@ -44,8 +48,7 @@ export const createTopic = action({
     awsRegion,
     name,
     awsConnection: accessKeyInput,
+    ...dynamicAccessAllInputs,
   },
-  examplePayload,
+  examplePayload: createTopicPayload,
 });
-
-export default createTopic;

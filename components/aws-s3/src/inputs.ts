@@ -1,9 +1,37 @@
 import { input, util } from "@prismatic-io/spectral";
-import awsRegions from "./aws-regions.json";
+import {
+  EVENT_BRIDGE_CONFIGURATION_EXAMPLE,
+  INPUT_EVENT_TYPES_MODEL,
+  LAMBDA_FUNCTION_CONFIGURATIONS_EXAMPLE,
+  OBJECT_ATTRIBUTES,
+  QUEUE_CONFIGURATIONS_EXAMPLE,
+  TOPIC_CONFIGURATIONS_EXAMPLE,
+} from "./constants";
+import {
+  getEventBridgeConfiguration,
+  getLambdaFunctionConfigurations,
+  getObjectAttributes,
+  getObjectIdentifiers,
+  getQueueConfigurations,
+  getTopicConfigurations,
+} from "./utils";
+import { ObjectCannedACL, ObjectLockRetentionMode } from "@aws-sdk/client-s3";
+
+export const objectKeys = input({
+  label: "Object Keys",
+  placeholder: "path/to/file1.txt",
+  type: "string",
+  collection: "valuelist",
+  required: true,
+  comments:
+    "A list of object keys to delete. These are the file paths of the objects you want to delete. Do not include a leading /.",
+  example: "path/to/file1.txt",
+  clean: getObjectIdentifiers,
+});
 
 export const objectKey = input({
   label: "Object Key",
-  placeholder: "Object Key",
+  placeholder: "path/to/file.txt",
   type: "string",
   required: true,
   comments:
@@ -14,7 +42,7 @@ export const objectKey = input({
 
 export const sourceKey = input({
   label: "Source Key",
-  placeholder: "Source Key",
+  placeholder: "path/to/source/file.txt",
   type: "string",
   required: true,
   comments:
@@ -25,7 +53,7 @@ export const sourceKey = input({
 
 export const destinationKey = input({
   label: "Destination Key",
-  placeholder: "Destination Key",
+  placeholder: "path/to/destination/file.txt",
   type: "string",
   required: true,
   comments:
@@ -47,7 +75,7 @@ export const fileContents = input({
 
 export const bucket = input({
   label: "Bucket Name",
-  placeholder: "Name of an S3 Bucket",
+  placeholder: "my-s3-bucket-abc123",
   type: "string",
   required: true,
   comments:
@@ -58,7 +86,7 @@ export const bucket = input({
 
 export const sourceBucket = input({
   label: "Source Bucket Name",
-  placeholder: "Source Bucket Name",
+  placeholder: "my-source-bucket",
   type: "string",
   required: true,
   comments:
@@ -69,7 +97,7 @@ export const sourceBucket = input({
 
 export const destinationBucket = input({
   label: "Destination Bucket Name",
-  placeholder: "Destination Bucket Name",
+  placeholder: "my-destination-bucket",
   type: "string",
   required: true,
   comments:
@@ -78,27 +106,9 @@ export const destinationBucket = input({
   clean: util.types.toString,
 });
 
-export const awsRegion = input({
-  label: "AWS Region",
-  placeholder: "AWS Region",
-  type: "string",
-  required: true,
-  comments:
-    "AWS provides services in multiple regions, like us-west-2 or eu-east-1. AWS region indicates the region in which your bucket(s) are stored.",
-  example: "us-east-1",
-  default: "us-east-1",
-  model: awsRegions.map((region) => {
-    return {
-      label: region,
-      value: region,
-    };
-  }),
-  clean: util.types.toString,
-});
-
 export const prefix = input({
   label: "Prefix",
-  placeholder: "Prefix",
+  placeholder: "path/to/files/",
   type: "string",
   required: false,
   default: "",
@@ -110,12 +120,13 @@ export const prefix = input({
 
 export const tagging = input({
   label: "Object Tags",
-  placeholder: "Object Tags",
+  placeholder: "Mars Missions Corp",
   type: "string",
   collection: "keyvaluelist",
   required: false,
   comments:
     "Objects in an S3 bucket can be optionally tagged so you can filter for files more easily. For example, you may want to tag customers with a key of 'Customer Name' and value of 'Mars Missions Corp'",
+  example: "key: Customer Name, value: Mars Missions Corp",
 });
 
 export const maxKeys = input({
@@ -125,16 +136,18 @@ export const maxKeys = input({
   comments:
     "Provide an integer value for the maximum amount of items that will be returned. Provide a value from 1 to 1000.",
   example: `1000`,
+  placeholder: "500",
   clean: util.types.toInt,
 });
 
 export const continuationToken = input({
-  label: "ContinuationToken",
+  label: "Continuation Token",
   type: "string",
   required: false,
   comments:
     "Specify the pagination token that's returned by a previous request to retrieve the next page of results",
   example: `lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E`,
+  placeholder: `lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E`,
   clean: util.types.toString,
 });
 
@@ -142,7 +155,7 @@ export const accessKeyInput = input({
   label: "Connection",
   type: "connection",
   placeholder: "AWS IAM Access Key",
-  required: true,
+  required: false,
   comments:
     "Access keys provide programmatic access to access resources in AWS. See https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html.",
 });
@@ -166,7 +179,7 @@ export const acl = input({
     { label: "public-read-write", value: "public-read-write" },
   ],
   default: "",
-  clean: util.types.toString,
+  clean: (val) => util.types.toString(val) as ObjectCannedACL,
 });
 
 export const name = input({
@@ -174,6 +187,7 @@ export const name = input({
   type: "string",
   required: true,
   example: "MyExampleTopic",
+  placeholder: "MyExampleTopic",
   comments: "Provide a string for the name of the topic.",
   clean: util.types.toString,
 });
@@ -183,6 +197,8 @@ export const snsTopicArn = input({
   type: "string",
   required: true,
   example: "arn:aws:sns:us-east-1:123456789012:MyExampleTopic",
+  placeholder: "arn:aws:sns:us-east-1:123456789012:MyExampleTopic",
+  comments: "The Amazon Resource Name (ARN) of the topic.",
   clean: util.types.toString,
 });
 
@@ -190,9 +206,10 @@ export const bucketOwnerAccountid = input({
   label: "Bucket Owner Account ID",
   type: "string",
   required: true,
-  example: "123456789012",
+  example: "012345678901",
+  placeholder: "012345678901",
   comments:
-    "Provide the AWS Account ID of the bucket owner. It can be found in the account settings of the AWS console.",
+    "Provide the AWS Account ID of the bucket owner. It can be found in the account settings of the AWS console, or can be retrieved using the 'Get Current Account' action.",
   clean: util.types.toString,
 });
 
@@ -201,6 +218,8 @@ export const endpoint = input({
   type: "string",
   required: true,
   example:
+    "https://hooks.prismatic.io/trigger/SW5zdGFuY2VGbG93Q29uZmlnOjhiNGY0ZTRkLWIyODMtNDE4Yy04YmZhLTg1NGI11234567890==",
+  placeholder:
     "https://hooks.prismatic.io/trigger/SW5zdGFuY2VGbG93Q29uZmlnOjhiNGY0ZTRkLWIyODMtNDE4Yy04YmZhLTg1NGI11234567890==",
   comments: "The endpoint that you want to trigger when an S3 event occurs.",
   clean: util.types.toString,
@@ -212,6 +231,8 @@ export const subscriptionArn = input({
   required: true,
   example:
     "arn:aws:sns:us-east-2:123456789012:MyExampleTopic:00000000-00000000-00000000-00000000",
+  placeholder:
+    "arn:aws:sns:us-east-2:123456789012:MyExampleTopic:00000000-00000000-00000000-00000000",
   comments: "The unique identifier for a topic subscription",
   clean: util.types.toString,
 });
@@ -221,7 +242,9 @@ export const eventsList = input({
   comments: "S3 Bucket change event type to trigger the webhook",
   type: "string",
   collection: "valuelist",
+  model: INPUT_EVENT_TYPES_MODEL,
   example: "s3:ObjectCreated:*",
+  placeholder: "s3:ObjectCreated:*",
   required: true,
   clean: (stringArray: any) =>
     stringArray.map((string: string) => util.types.toString(string).trim()),
@@ -232,6 +255,214 @@ export const eventNotificationName = input({
   type: "string",
   required: true,
   example: "MyExampleEventNotification",
+  placeholder: "MyExampleEventNotification",
   comments: "Provide a string for the name of the event notification.",
   clean: util.types.toString,
+});
+
+export const expirationSeconds = input({
+  label: "Expiration Seconds",
+  type: "string",
+  required: true,
+  default: "3600",
+  placeholder: "3600",
+  comments: "This presigned URL will expire in this many seconds",
+  clean: util.types.toInt,
+});
+
+export const actionType = input({
+  label: "Action (Download or Upload)",
+  type: "string",
+  comments: "Should this URL allow a user to upload or download an object?",
+  clean: util.types.toString,
+  required: true,
+  default: "download",
+  model: [
+    { label: "Download", value: "download" },
+    { label: "Upload", value: "upload" },
+  ],
+});
+
+export const urlsToGenerate = input({
+  label: "Urls to Generate",
+  type: "string",
+  required: true,
+  default: "5",
+  placeholder: "5",
+  example: "5",
+  comments: "The amount of urls to generate",
+  clean: (value: unknown) => util.types.toInt(value, 5),
+});
+
+export const uploadId = input({
+  label: "Upload ID",
+  type: "string",
+  required: true,
+  comments: "Multipart upload ID",
+  clean: util.types.toString,
+  example:
+    "xadcOB_7YPBOJuoFiQ9cz4P3Pe6FIZwO4f7wN93uHsNBEw97pl5eNwzExg0LAT2dUN91cOmrEQHDsP3WA60CEg",
+  placeholder:
+    "xadcOB_7YPBOJuoFiQ9cz4P3Pe6FIZwO4f7wN93uHsNBEw97pl5eNwzExg0LAT2dUN91cOmrEQHDsP3WA60CEg",
+});
+
+export const fileChunk = input({
+  label: "File Chunk",
+  type: "data",
+  required: true,
+  comments:
+    "The file data chunk to upload. This can be binary data referenced from a previous step.",
+  clean: (value): Buffer =>
+    util.types.isBufferDataPayload(value)
+      ? Buffer.from(value.data)
+      : (value as Buffer),
+});
+
+export const partNumber = input({
+  label: "Part Number",
+  type: "string",
+  required: true,
+  comments:
+    "Part number of part being uploaded. This is a positive integer between 1 and 10,000.",
+  placeholder: "1",
+  example: "1",
+  clean: util.types.toInt,
+});
+
+export const topicConfigurations = input({
+  label: "Topic Configurations",
+  type: "code",
+  language: "json",
+  required: false,
+  default: JSON.stringify(TOPIC_CONFIGURATIONS_EXAMPLE, null, 2),
+  example: JSON.stringify(TOPIC_CONFIGURATIONS_EXAMPLE),
+  comments:
+    "List of Topic configurations to be added to the bucket notification configuration.",
+  clean: getTopicConfigurations,
+});
+
+export const queueConfigurations = input({
+  label: "Queue Configurations",
+  type: "code",
+  language: "json",
+  required: false,
+  default: JSON.stringify(QUEUE_CONFIGURATIONS_EXAMPLE, null, 2),
+  example: JSON.stringify(QUEUE_CONFIGURATIONS_EXAMPLE),
+  comments:
+    "List of Queue configurations to be added to the bucket notification configuration.",
+  clean: getQueueConfigurations,
+});
+
+export const lambdaFunctionConfigurations = input({
+  label: "Lambda Function Configurations",
+  type: "code",
+  language: "json",
+  required: false,
+  default: JSON.stringify(LAMBDA_FUNCTION_CONFIGURATIONS_EXAMPLE, null, 2),
+  example: JSON.stringify(LAMBDA_FUNCTION_CONFIGURATIONS_EXAMPLE),
+  comments:
+    "List of Lambda Function configurations to be added to the bucket notification configuration.",
+  clean: getLambdaFunctionConfigurations,
+});
+
+export const eventBridgeConfiguration = input({
+  label: "EventBridge Configuration",
+  type: "code",
+  language: "json",
+  required: false,
+  default: JSON.stringify(EVENT_BRIDGE_CONFIGURATION_EXAMPLE, null, 2),
+  example: JSON.stringify(EVENT_BRIDGE_CONFIGURATION_EXAMPLE),
+  comments:
+    "EventBridge configuration to be added to the bucket notification configuration.",
+  clean: getEventBridgeConfiguration,
+});
+
+export const defaultRetentionDays = input({
+  label: "Default Retention Days",
+  type: "string",
+  required: false,
+  placeholder: "20",
+  example: "20",
+  comments:
+    "The number of days that you want to specify for the default retention period. You can specify either Default Retention Days or Default Retention Years, but not both.",
+  clean: util.types.toInt,
+});
+
+export const defaultRetentionYears = input({
+  label: "Default Retention Years",
+  type: "string",
+  required: false,
+  placeholder: "2",
+  example: "2",
+  comments:
+    "The number of years that you want to specify for the default retention period. You can specify either Default Retention Days or Default Retention Years, but not both.",
+  clean: util.types.toInt,
+});
+
+export const defaultRetentionMode = input({
+  label: "Default Retention Mode",
+  type: "string",
+  required: false,
+  comments:
+    "The default Object Lock retention mode you want to apply to new objects placed in the specified bucket. Must be used with either Default Retention Days or Default Retention Years.",
+  model: [
+    { label: "Unset", value: "" },
+    { label: "Governance", value: "GOVERNANCE" },
+    { label: "Compliance", value: "COMPLIANCE" },
+  ],
+  clean: (value) => util.types.toString(value) as ObjectLockRetentionMode,
+});
+
+export const versionId = input({
+  label: "Version ID",
+  type: "string",
+  required: false,
+  placeholder: "AMn71WZYnWqbvfy0unBOdtaBC.DRiN_r",
+  example: "AMn71WZYnWqbvfy0unBOdtaBC.DRiN_r",
+  comments:
+    "The version ID for the object that you want to apply this Object Retention configuration to.",
+  clean: util.types.toString,
+});
+
+export const retainUntilDate = input({
+  label: "Retain Until Date",
+  type: "string",
+  placeholder: "YYYY-MM-DDTHH:MM:SSZ",
+  example: "2024-08-25T20:00:00.000Z",
+  required: false,
+  comments:
+    "The date and time when you want the specified Object Retention configuration to expire. Required when using Retention Mode.",
+  clean: util.types.toString,
+});
+
+export const objectAttributes = input({
+  label: "Object Attributes",
+  type: "string",
+  collection: "valuelist",
+  required: true,
+  model: OBJECT_ATTRIBUTES.map((attribute) => ({
+    label: attribute,
+    value: attribute,
+  })),
+  comments:
+    "Specifies the fields at the root level that you want returned in the response. Fields that you do not specify are not returned.",
+  clean: getObjectAttributes,
+});
+
+export const includeMetadata = input({
+  label: "Include Metadata",
+  type: "boolean",
+  required: true,
+  default: "false",
+  comments:
+    "By default, this action returns a list of object keys. When this is set to true, additional metadata about each object is returned, along with pagination information.",
+  clean: util.types.toBool,
+});
+
+export const parts = input({
+  label: "Parts",
+  type: "data",
+  comments:
+    "Use the List Parts action to get the list of parts. Reference the 'Parts' field from the List Parts action output at the input for this field.",
+  required: true,
 });

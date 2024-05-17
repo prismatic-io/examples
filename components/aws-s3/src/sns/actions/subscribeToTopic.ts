@@ -1,21 +1,9 @@
 import { action } from "@prismatic-io/spectral";
-import {
-  SubscribeCommand,
-  SubscribeResponse,
-  SubscribeCommandInput,
-} from "@aws-sdk/client-sns";
-import { createSNSClient } from "../client";
-import { awsRegion, snsTopicArn, endpoint, accessKeyInput } from "../../inputs";
-
-interface Response {
-  data: SubscribeResponse;
-}
-const examplePayload: Response = {
-  data: {
-    SubscriptionArn:
-      "arn:aws:sns:us-east-2:123456789012:MyExampleTopic:00000000-00000000-00000000-00000000",
-  },
-};
+import { SubscribeCommand, SubscribeCommandInput } from "@aws-sdk/client-sns";
+import { createSNSClient } from "../../auth";
+import { snsTopicArn, endpoint, accessKeyInput } from "../../inputs";
+import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
+import { subscribeToTopicPayload } from "../../examplePayloads";
 
 export const subscribeToTopic = action({
   display: {
@@ -24,11 +12,22 @@ export const subscribeToTopic = action({
   },
   perform: async (
     context,
-    { awsRegion, awsConnection, snsTopicArn, endpoint }
+    {
+      awsRegion,
+      awsConnection,
+      snsTopicArn,
+      endpoint,
+      dynamicAccessKeyId,
+      dynamicSecretAccessKey,
+      dynamicSessionToken,
+    }
   ) => {
-    const sns = createSNSClient({
+    const sns = await createSNSClient({
       awsConnection,
       awsRegion,
+      dynamicAccessKeyId,
+      dynamicSecretAccessKey,
+      dynamicSessionToken,
     });
     const subscribeParams: SubscribeCommandInput = {
       Protocol: "https",
@@ -47,8 +46,7 @@ export const subscribeToTopic = action({
     snsTopicArn,
     endpoint,
     awsConnection: accessKeyInput,
+    ...dynamicAccessAllInputs,
   },
-  examplePayload,
+  examplePayload: subscribeToTopicPayload,
 });
-
-export default subscribeToTopic;

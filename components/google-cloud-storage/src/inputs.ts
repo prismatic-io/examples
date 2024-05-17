@@ -1,4 +1,4 @@
-import { input } from "@prismatic-io/spectral";
+import { input, util } from "@prismatic-io/spectral";
 
 export const project = input({
   label: "GCP Project ID",
@@ -18,6 +18,7 @@ export const bucketName = input({
   comments:
     "Buckets in Google Cloud Storage contain files, and can be configured in the GCP console. Bucket names contain only letters, numbers, and dashes.",
   example: "my-gcs-bucket",
+  clean: util.types.toString,
 });
 
 export const sourceBucketName = input({
@@ -58,6 +59,7 @@ export const fileName = input({
   comments:
     "A file is saved in a 'bucket'. This represents the file's path without a leading /",
   example: "path/to/file.txt",
+  clean: util.types.toString,
 });
 
 export const sourceFileName = input({
@@ -106,7 +108,7 @@ export const pageToken = input({
   required: false,
   comments:
     "Specify the pagination token that's returned by a previous request to retrieve the next page of results",
-  example: `lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E`,
+  example: `bXkvbGFzdC9wcm9jZXNzZWQvZmlsZS50eHQ`,
 });
 
 export const connectionInput = input({
@@ -152,4 +154,15 @@ export const storageClass = input({
     { label: "Regional", value: "regional" },
   ],
   comments: "This flag will determine the StorageClass your bucket will use.",
+});
+
+export const expirationTime = input({
+  label: "Expiration Time",
+  type: "string",
+  required: false,
+  comments:
+    "This flag will determine the expiration time of the bucket. The value is in seconds.",
+  example: "3600",
+  default: "3600",
+  clean: (value) => util.types.toInt(value, 3600),
 });

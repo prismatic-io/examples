@@ -5,7 +5,8 @@
     "packages": [
       "components/*",
       "components/packages/*",
-      "integrations/code-native-integrations/*"
+      "integrations/code-native-integrations/*",
+      "packages/*"
     ]
   },
   "devDependencies": {

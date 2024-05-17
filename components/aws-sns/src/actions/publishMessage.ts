@@ -1,7 +1,7 @@
 import { action, util } from "@prismatic-io/spectral";
 import { createSNSClient } from "../client";
+import { awsRegion } from "aws-utils";
 import {
-  awsRegion,
   message,
   topicArn,
   messageAttributes,
@@ -24,31 +24,46 @@ const examplePayload: Response = {
 };
 
 const getAttributeType = (input: unknown): MessageAttributeValue => {
-  if (util.types.isNumber(input)) {
-    return {
-      DataType: "Number",
-      StringValue: util.types.toString(input),
-    };
-  }
-  if (Array.isArray(input)) {
-    return {
-      DataType: "String.Array",
-      StringValue: JSON.stringify(input),
-    };
-  }
   if (typeof input === "string") {
+    if (util.types.isNumber(input)) {
+      // Handle numbers
+      return {
+        DataType: "Number",
+        StringValue: input,
+      };
+    }
+
+    if (util.types.isJSON(input)) {
+      try {
+        const array = JSON.parse(input);
+        if (Array.isArray(array)) {
+          // Handle JSON arrays
+          return {
+            DataType: "String.Array",
+            StringValue: JSON.stringify(array),
+          };
+        }
+      } catch (error) {
+        // JSON parsing error; continue without doing anything
+      }
+    }
+
+    // Default to handling as a string
     return {
       DataType: "String",
       StringValue: input,
     };
   }
+  // To enter this condition, a Buffer from a previous step was added to the key/value input
   if (Buffer.isBuffer(input)) {
+    // Handle binary data
     return {
       DataType: "Binary",
       BinaryValue: input,
     };
   }
 
+  // Default to handling as a string
   return {
     DataType: "String",
     StringValue: JSON.stringify(input),
@@ -68,7 +83,7 @@ export const publishMessage = action({
     description: "Publish a message to an Amazon SNS Topic",
   },
   perform: async (context, params) => {
-    const sns = createSNSClient({
+    const sns = await createSNSClient({
       awsConnection: params.awsConnection,
       awsRegion: util.types.toString(params.awsRegion),
     });

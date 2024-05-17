@@ -1,4 +1,4 @@
-import { action, input, util } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { createOauthClient } from "../client";
 import {
   connectionInput,
@@ -7,44 +7,33 @@ import {
   limit,
   teamId,
   userId,
+  debug,
 } from "../inputs";
+import {
+  getUserResponse,
+  listUserConversationsResponse,
+  listUsersResponse,
+} from "../examplePayloads";
+import { debugLogger } from "../utils";
 
 export const getUser = action({
   display: {
     label: "Get User By Email",
     description: "Get a user's information by email",
   },
-  perform: async (context, { connection, email }) => {
-    const client = await createOauthClient({ slackConnection: connection });
+  perform: async (context, { connection, email, debug }) => {
+    debugLogger({ debug, email });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
     const data = await client.users.lookupByEmail({
-      email: util.types.toString(email),
+      email,
     });
     return { data };
   },
-  inputs: { email, connection: connectionInput },
+  inputs: { email, connection: connectionInput, debug },
   examplePayload: {
-    data: {
-      ok: true,
-      user: {
-        id: "example",
-        color: "example",
-        deleted: false,
-        real_name: "Example User",
-        name: "Example User",
-        tz: "America/Chicago",
-        profile: {
-          title: "example",
-          phone: "example",
-          skype: "example",
-          real_name: "Slackbots",
-          real_name_normalized: "example",
-          first_name: "example",
-          email: "example",
-          team: "example",
-          display_name: "example",
-        },
-      },
-    },
+    data: getUserResponse,
   },
 });
 
@@ -53,44 +42,23 @@ export const getUserById = action({
     label: "Get User By ID",
     description: "Get a user's information by ID",
   },
-  perform: async (context, { connection, user }) => {
-    const client = await createOauthClient({ slackConnection: connection });
-    const data = await client.users.info({ user: util.types.toString(user) });
+  perform: async (context, { connection, user, debug }) => {
+    debugLogger({ debug, user });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
+    const data = await client.users.info({
+      user,
+    });
     return { data };
   },
   inputs: {
-    user: input({
-      label: "User ID",
-      type: "string",
-      required: true,
-      example: "W012A3CDE",
-    }),
+    user: userId,
     connection: connectionInput,
+    debug,
   },
   examplePayload: {
-    data: {
-      ok: true,
-      user: {
-        id: "example",
-        color: "example",
-        deleted: false,
-        real_name: "Example User",
-        name: "Example User",
-        tz: "America/Chicago",
-        profile: {
-          title: "example",
-          phone: "example",
-          skype: "example",
-          real_name: "Slackbots",
-          real_name_normalized: "example",
-          always_active: true,
-          first_name: "example",
-          email: "example",
-          team: "example",
-          display_name: "example",
-        },
-      },
-    },
+    data: getUserResponse,
   },
 });
 
@@ -99,12 +67,15 @@ export const listUsers = action({
     label: "List Users",
     description: "List Users",
   },
-  perform: async (context, { connection, cursor, limit, teamId }) => {
-    const client = await createOauthClient({ slackConnection: connection });
+  perform: async (context, { connection, cursor, limit, teamId, debug }) => {
+    debugLogger({ cursor, limit, teamId, debug });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
     const data = await client.users.list({
-      cursor: util.types.toString(cursor) || undefined,
-      limit: util.types.toNumber(limit) || undefined,
-      team_id: util.types.toString(teamId) || undefined,
+      cursor: cursor || undefined,
+      limit: limit || undefined,
+      team_id: teamId || undefined,
     });
     return { data };
   },
@@ -113,36 +84,10 @@ export const listUsers = action({
     cursor,
     teamId,
     connection: connectionInput,
+    debug,
   },
   examplePayload: {
-    data: {
-      ok: true,
-      members: [
-        {
-          id: "Exmple",
-          team_id: "34700c09vs0zx",
-          name: "Example",
-          deleted: false,
-          color: "37373",
-          profile: {
-            title: "example",
-            phone: "example",
-            skype: "example",
-            real_name: "Slackbots",
-            real_name_normalized: "example",
-            always_active: true,
-            first_name: "example",
-            email: "example",
-            team: "example",
-            display_name: "example",
-          },
-        },
-      ],
-      response_metadata: {
-        next_cursor: "",
-        scopes: ["admin", "idetify", "channels:read"],
-      },
-    },
+    data: listUsersResponse,
   },
 });
 
@@ -151,13 +96,19 @@ export const listUsersConversations = action({
     label: "List Users Conversations",
     description: "List Users Conversations",
   },
-  perform: async (context, { connection, cursor, limit, teamId, userId }) => {
-    const client = await createOauthClient({ slackConnection: connection });
+  perform: async (
+    context,
+    { connection, cursor, limit, teamId, userId, debug }
+  ) => {
+    debugLogger({ cursor, limit, teamId, userId, debug });
+    const client = await createOauthClient({
+      slackConnection: connection,
+    });
     const data = await client.users.conversations({
-      user: util.types.toString(userId) || undefined,
-      cursor: util.types.toString(cursor) || undefined,
-      limit: util.types.toNumber(limit) || undefined,
-      team_id: util.types.toString(teamId) || undefined,
+      user: userId || undefined,
+      cursor: cursor || undefined,
+      limit: limit || undefined,
+      team_id: teamId || undefined,
     });
     return { data };
   },
@@ -167,29 +118,9 @@ export const listUsersConversations = action({
     cursor,
     teamId,
     connection: connectionInput,
+    debug,
   },
   examplePayload: {
-    data: {
-      ok: true,
-      channels: [
-        {
-          id: "COZ7e3d",
-          name: "example channel",
-          is_channel: true,
-          is_group: false,
-          is_im: false,
-          is_private: false,
-          is_archived: false,
-          created: 6426934241,
-          creator: "example",
-          unlinked: 0,
-          name_normalized: "example channel",
-          shared_team_ids: ["TW2oP78"],
-          purpose: {
-            value: "This channel was created for an example response.",
-          },
-        },
-      ],
-    },
+    data: listUserConversationsResponse,
   },
 });

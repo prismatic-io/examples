@@ -1,30 +1,31 @@
 import { SNSClient } from "@aws-sdk/client-sns";
-import { util } from "@prismatic-io/spectral";
-import { Connection, ConnectionError } from "@prismatic-io/spectral";
+import { ConnectionError } from "@prismatic-io/spectral";
+import { assumeRoleConnection, assumeRole } from "aws-utils";
+import { getCredentials, toTrimmedString } from "./helpers";
+import { ClientProps } from "./interfaces/ClientProps";
 
-interface ClientProps {
-  awsRegion: string;
-  awsConnection: Connection;
-}
+export const createSNSClient = async ({
+  awsRegion,
+  awsConnection,
+}: ClientProps): Promise<SNSClient> => {
+  const { accessKeyId, secretAccessKey } = getCredentials(awsConnection);
+  const shouldAssumeRole = awsConnection.key === assumeRoleConnection.key;
 
-export const createSNSClient = ({ awsRegion, awsConnection }: ClientProps) => {
-  if (awsConnection.key !== "apiKeySecret") {
-    throw new ConnectionError(
-      awsConnection,
-      `Unsupported connection method ${awsConnection.key}.`
-    );
-  }
+  const credentials = shouldAssumeRole
+    ? await assumeRole(
+        awsRegion,
+        accessKeyId,
+        secretAccessKey,
+        toTrimmedString(awsConnection.fields.roleARN)
+      )
+    : { accessKeyId, secretAccessKey };
+
+  const region = awsRegion.length > 0 ? awsRegion : undefined;
+
   try {
     return new SNSClient({
-      region: awsRegion,
-      credentials: {
-        accessKeyId: util.types
-          .toString(awsConnection.fields.accessKeyId)
-          .trim(),
-        secretAccessKey: util.types
-          .toString(awsConnection.fields.secretAccessKey)
-          .trim(),
-      },
+      region,
+      credentials,
     });
   } catch (err) {
     throw new ConnectionError(

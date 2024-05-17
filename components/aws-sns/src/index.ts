@@ -1,16 +1,7 @@
 import { component } from "@prismatic-io/spectral";
-import createTopic from "./actions/createTopic";
-import deleteTopic from "./actions/deleteTopics";
-import getTopicAttributes from "./actions/getTopicAttributes";
-import listTopics from "./actions/listTopics";
-import publishMessage from "./actions/publishMessage";
-import listSubscriptions from "./actions/listSubscriptions";
-import subscribe from "./actions/subscribe";
-import unsubscribe from "./actions/unsubscribe";
-import publishSms from "./actions/publishSms";
-import listOptOutNumbers from "./actions/listOptOutNumbers";
+import actions from "./actions";
 import triggers from "./triggers/trigger";
-import { accessKeySecretPair } from "./connections";
+import connections from "./connections";
 
 export default component({
   key: "aws-sns",
@@ -23,18 +14,7 @@ export default component({
     iconPath: "icon.png",
     category: "Data Platforms",
   },
-  actions: {
-    createTopic,
-    deleteTopic,
-    getTopicAttributes,
-    listTopics,
-    publishMessage,
-    listSubscriptions,
-    subscribe,
-    unsubscribe,
-    listOptOutNumbers,
-    publishSms,
-  },
+  actions,
   triggers,
-  connections: [accessKeySecretPair],
+  connections,
 });
