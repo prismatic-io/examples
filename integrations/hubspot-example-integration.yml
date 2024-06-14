@@ -1,0 +1,933 @@
+category: CRM
+configPages:
+  - elements:
+      - type: configVar
+        value: Hubspot Connection
+      - type: configVar
+        value: Acme API Endpoint
+    name: Configuration
+  - elements:
+      - type: configVar
+        value: Hubspot Company Field Mapping
+    name: Map Hubspot fields
+    tagline: Map fields from Hubspot to Acme
+    userLevelConfigured: false
+defaultInstanceProfile: Default Instance Profile
+definitionVersion: 7
+description: ''
+documentation: >-
+  This is an example of a Hubspot integration that will sync companies to an
+  external system, send data from an external system to Hubspot to create a
+  company, and listen for changes to the company object in Hubspot and update
+  the appropriate object in the external system.
+endpointType: flow_specific
+flows:
+  - description: Initial import of Hubspot accounts
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Initial Sync
+    steps:
+      - action:
+          component:
+            isPublic: true
+            key: management-triggers
+            version: 5
+          key: instanceDeploy
+        description: ''
+        inputs: {}
+        isTrigger: true
+        name: Initial Account sync
+      - action:
+          component:
+            isPublic: true
+            key: loop
+            version: 4
+          key: loopNTimes
+        description: ''
+        inputs:
+          iterationCount:
+            type: value
+            value: '20'
+        name: Loop N Times
+        steps:
+          - action:
+              component:
+                isPublic: true
+                key: persist-data
+                version: 22
+              key: getExecutionValue
+            description: ''
+            inputs:
+              defaultValueInput:
+                type: value
+                value: ''
+              keyInput:
+                type: value
+                value: AFTER
+            name: Execution - Get Value
+          - action:
+              component:
+                isPublic: true
+                key: hubspot
+                version: 103
+              key: listCompanies
+            description: ''
+            inputs:
+              additionalProperties:
+                type: complex
+                value:
+                  - type: value
+                    value: numberofemployees
+                  - type: value
+                    value: annualrevenue
+                  - type: value
+                    value: website
+                  - type: value
+                    value: name
+                  - type: value
+                    value: country
+              after:
+                type: reference
+                value: executionGetValue.results
+              archived:
+                type: value
+                value: 'false'
+              associationsList:
+                type: complex
+                value: []
+              debugRequest:
+                type: value
+                value: 'false'
+              hubspotConnection:
+                type: configVar
+                value: Hubspot Connection
+              limit:
+                type: value
+                value: ''
+              timeout:
+                type: value
+                value: ''
+            name: List Companies
+          - action:
+              component:
+                isPublic: true
+                key: branch
+                version: 26
+              key: branchOnExpression
+            branches:
+              - name: If null
+                steps:
+                  - action:
+                      component:
+                        isPublic: true
+                        key: loop
+                        version: 4
+                      key: breakLoop
+                    description: ''
+                    inputs: {}
+                    name: Break Loop
+              - name: Else
+                steps: []
+            description: ''
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: If null
+                    type: complex
+                    value:
+                      - and
+                      - - isEmpty
+                        - name: ''
+                          type: reference
+                          value: listCompanies.results.results
+                        - name: ''
+                          type: value
+                          value: ''
+            name: Branch on Expression
+          - action:
+              component:
+                isPublic: true
+                key: loop
+                version: 4
+              key: loopOverItems
+            description: ''
+            inputs:
+              items:
+                type: reference
+                value: listCompanies.results.results
+            name: Loop Over Items
+            steps:
+              - action:
+                  component:
+                    isPublic: true
+                    key: code
+                    version: 31
+                  key: runCode
+                description: ''
+                inputs:
+                  code:
+                    type: value
+                    value: >
+                      /*
+                        Access config variables by name through the configVars object. e.g.
+                          const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                        Access previous steps' results through the stepResults object. Trigger
+                        and step names are camelCased. If the step "Get Data from API" returned
+                        {"foo": "bar", "baz": 123}, you could destructure that data with:
+                          const { foo, baz } = stepResults.getDataFromApi.results;
+
+                        You can return string, number or complex object data. e.g.
+                          return { data: { foo: "Hello", bar: 123.45, baz: true } };
+                      */
+
+
+                      module.exports = async ({ logger, configVars },
+                      stepResults) => {
+                        const hubspotAccount = stepResults.loopOverItems.currentItem.properties;
+                        console.log(hubspotAccount)
+                        const mapping = configVars["Hubspot Company Field Mapping"];
+                        console.log(mapping);
+                        const mappedFields = mapping.reduce(
+                          (acc, { source, destination }) => ({
+                            [destination]: hubspotAccount[source],
+                            ...acc,
+                          }),
+                          {},
+                        );
+                        return { data: mappedFields };
+                      };
+                name: Map Fields to Acme Format
+              - action:
+                  component:
+                    isPublic: true
+                    key: http
+                    version: 56
+                  key: httpPost
+                description: ''
+                inputs:
+                  connection:
+                    type: configVar
+                    value: ''
+                  data:
+                    type: reference
+                    value: mapFieldsToAcmeFormat.results
+                  debugRequest:
+                    type: value
+                    value: 'false'
+                  headers:
+                    type: complex
+                    value:
+                      - name:
+                          type: value
+                          value: Content-Type
+                        type: value
+                        value: application/json
+                  ignoreSslErrors:
+                    type: value
+                    value: 'false'
+                  includeFullResponse:
+                    type: value
+                    value: 'false'
+                  maxRetries:
+                    type: value
+                    value: '0'
+                  queryParams:
+                    type: complex
+                    value: []
+                  responseType:
+                    type: value
+                    value: json
+                  retryDelayMS:
+                    type: value
+                    value: '0'
+                  retryOnAllErrors:
+                    type: value
+                    value: 'false'
+                  timeout:
+                    type: value
+                    value: ''
+                  url:
+                    type: configVar
+                    value: Acme API Endpoint
+                  useExponentialBackoff:
+                    type: value
+                    value: 'false'
+                name: POST Account to Acme
+              - action:
+                  component:
+                    isPublic: true
+                    key: log
+                    version: 6
+                  key: writeLog
+                description: ''
+                inputs:
+                  level:
+                    type: value
+                    value: info
+                  message:
+                    type: reference
+                    value: postAccountToAcme.results.data
+                name: Write Log Message
+          - action:
+              component:
+                isPublic: true
+                key: change-data-format
+                version: 30
+              key: convertToString
+            description: ''
+            inputs:
+              value:
+                type: reference
+                value: listCompanies.results.paging.next.after
+            name: Convert To String
+          - action:
+              component:
+                isPublic: true
+                key: persist-data
+                version: 22
+              key: saveExecutionValue
+            description: ''
+            inputs:
+              keyInput:
+                type: value
+                value: AFTER
+              valueInput:
+                type: reference
+                value: convertToString.results
+            name: Execution - Save Value
+          - action:
+              component:
+                isPublic: true
+                key: branch
+                version: 26
+              key: branchOnExpression
+            branches:
+              - name: If Done
+                steps:
+                  - action:
+                      component:
+                        isPublic: true
+                        key: loop
+                        version: 4
+                      key: breakLoop
+                    description: ''
+                    inputs: {}
+                    name: Break Loop 2
+              - name: Else
+                steps: []
+            description: ''
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: If Done
+                    type: complex
+                    value:
+                      - and
+                      - - isEmpty
+                        - name: ''
+                          type: reference
+                          value: executionSaveValue.results.value
+                        - name: ''
+                          type: value
+                          value: ''
+            name: Branch on Expression 2
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Hubspot Account Update
+    steps:
+      - action:
+          component:
+            isPublic: true
+            key: hubspot
+            version: 103
+          key: eventTypeSubscription
+        description: ''
+        inputs:
+          eventTypes:
+            type: complex
+            value:
+              - type: value
+                value: company.creation
+              - type: value
+                value: company.deletion
+          hubspotConnection:
+            type: configVar
+            value: Hubspot Connection
+          overwriteWebhookSettings:
+            type: value
+            value: 'false'
+        isTrigger: true
+        name: Hubspot Account Update Trigger
+      - action:
+          component:
+            isPublic: true
+            key: change-data-format
+            version: 30
+          key: convertToString
+        description: ''
+        inputs:
+          value:
+            type: reference
+            value: hubspotAccountUpdateTrigger.results.body.data.0.objectId
+        name: Convert To String
+      - action:
+          component:
+            isPublic: true
+            key: hubspot
+            version: 103
+          key: getCompany
+        description: ''
+        inputs:
+          additionalProperties:
+            type: complex
+            value:
+              - type: value
+                value: website
+              - type: value
+                value: numberofemployees
+              - type: value
+                value: country
+              - type: value
+                value: annualrevenue
+              - type: value
+                value: name
+          archived:
+            type: value
+            value: 'false'
+          associationsList:
+            type: complex
+            value: []
+          companyId:
+            type: reference
+            value: convertToString.results
+          companyName:
+            type: value
+            value: ''
+          debugRequest:
+            type: value
+            value: 'false'
+          domain:
+            type: value
+            value: ''
+          hubspotConnection:
+            type: configVar
+            value: Hubspot Connection
+          timeout:
+            type: value
+            value: ''
+        name: Get Company
+      - action:
+          component:
+            isPublic: true
+            key: code
+            version: 31
+          key: runCode
+        description: ''
+        inputs:
+          code:
+            type: value
+            value: |
+              /*
+                Access config variables by name through the configVars object. e.g.
+                  const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                Access previous steps' results through the stepResults object. Trigger
+                and step names are camelCased. If the step "Get Data from API" returned
+                {"foo": "bar", "baz": 123}, you could destructure that data with:
+                  const { foo, baz } = stepResults.getDataFromApi.results;
+
+                You can return string, number or complex object data. e.g.
+                  return { data: { foo: "Hello", bar: 123.45, baz: true } };
+              */
+
+              module.exports = async ({ logger, configVars }, stepResults) => {
+                const hubspotAccount = stepResults.getCompany.results.properties;
+                console.log(hubspotAccount)
+                const mapping = configVars["Hubspot Company Field Mapping"];
+                console.log(mapping);
+                const mappedFields = mapping.reduce(
+                  (acc, { source, destination }) => ({
+                    [destination]: hubspotAccount[source],
+                    ...acc,
+                  }),
+                  {},
+                );
+                return { data: mappedFields };
+              };
+        name: Map Fields to Acme Format
+      - action:
+          component:
+            isPublic: true
+            key: http
+            version: 56
+          key: httpPost
+        description: ''
+        inputs:
+          connection:
+            type: configVar
+            value: ''
+          data:
+            type: reference
+            value: mapFieldsToAcmeFormat.results
+          debugRequest:
+            type: value
+            value: 'false'
+          headers:
+            type: complex
+            value:
+              - name:
+                  type: value
+                  value: Content-Type
+                type: value
+                value: application/json
+          ignoreSslErrors:
+            type: value
+            value: 'false'
+          includeFullResponse:
+            type: value
+            value: 'false'
+          maxRetries:
+            type: value
+            value: '0'
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: '0'
+          retryOnAllErrors:
+            type: value
+            value: 'false'
+          timeout:
+            type: value
+            value: ''
+          url:
+            type: configVar
+            value: Acme API Endpoint
+          useExponentialBackoff:
+            type: value
+            value: 'false'
+        name: Update Company in Acme
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create Contact from ACME
+    steps:
+      - action:
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: 7
+          key: webhook
+        description: ''
+        inputs:
+          body:
+            type: value
+            value: ''
+          contentType:
+            type: value
+            value: ''
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ''
+        isTrigger: true
+        name: Create Contact from ACME Trigger
+      - action:
+          component:
+            isPublic: true
+            key: change-data-format
+            version: 30
+          key: binaryToJson
+        description: ''
+        inputs:
+          data:
+            type: reference
+            value: createContactFromAcmeTrigger.results.body.data
+        name: JavaScript Object to JSON
+      - action:
+          component:
+            isPublic: true
+            key: collection-tools
+            version: 28
+          key: validateJsonSchema
+        description: ''
+        inputs:
+          jsonInput:
+            type: reference
+            value: javascriptObjectToJson.results
+          jsonSchema:
+            type: value
+            value: |-
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "website": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "numberofemployees": {
+                    "type": "string"
+                  },
+                  "annualrevenue": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "website",
+                  "country",
+                  "numberofemployees",
+                  "annualrevenue",
+                  "id"
+                ]
+              }
+        name: Validate JSON Schema
+      - action:
+          component:
+            isPublic: true
+            key: code
+            version: 31
+          key: runCode
+        description: ''
+        inputs:
+          code:
+            type: value
+            value: |
+              /*
+                Access config variables by name through the configVars object. e.g.
+                  const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                Access previous steps' results through the stepResults object. Trigger
+                and step names are camelCased. If the step "Get Data from API" returned
+                {"foo": "bar", "baz": 123}, you could destructure that data with:
+                  const { foo, baz } = stepResults.getDataFromApi.results;
+
+                You can return string, number or complex object data. e.g.
+                  return { data: { foo: "Hello", bar: 123.45, baz: true } };
+              */
+
+              module.exports = async ({ logger, configVars }, stepResults) => {
+                const acmeAccount =
+                  stepResults.createContactFromAcmeTrigger.results.body.data;
+                const mapping = configVars["Hubspot Company Field Mapping"];
+                const result = [];
+                for (const { source, destination } of mapping) {
+                  if (acmeAccount[destination]) {
+                    result.push({
+                      key: source,
+                      value: acmeAccount[destination],
+                    });
+                  }
+                }
+                return { data: result };
+              };
+        name: Create Hubspot Payload
+      - action:
+          component:
+            isPublic: true
+            key: hubspot
+            version: 103
+          key: createCompany
+        description: ''
+        inputs:
+          city:
+            type: value
+            value: ''
+          companyName:
+            type: reference
+            value: createHubspotPayload.results.0.value
+          companyPhone:
+            type: value
+            value: ''
+          debugRequest:
+            type: value
+            value: 'false'
+          description:
+            type: value
+            value: ''
+          domain:
+            type: value
+            value: ''
+          dynamicValues:
+            type: value
+            value: ''
+          fieldValues:
+            type: complex
+            value:
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.1.key
+                type: reference
+                value: createHubspotPayload.results.1.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.2.key
+                type: reference
+                value: createHubspotPayload.results.2.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.0.key
+                type: reference
+                value: createHubspotPayload.results.0.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.3.key
+                type: reference
+                value: createHubspotPayload.results.3.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.4.key
+                type: reference
+                value: createHubspotPayload.results.4.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.5.key
+                type: reference
+                value: createHubspotPayload.results.5.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.0.key
+                type: reference
+                value: createHubspotPayload.results.0.value
+          hubspotConnection:
+            type: configVar
+            value: Hubspot Connection
+          industry:
+            type: value
+            value: ''
+          state:
+            type: value
+            value: ''
+          timeout:
+            type: value
+            value: ''
+        name: Create Contact
+labels:
+  - crm
+name: Hubspot Example Integration
+requiredConfigVars:
+  - connection:
+      component:
+        isPublic: true
+        key: hubspot
+        version: 103
+      key: oauth2
+    dataType: connection
+    inputs:
+      appId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: <your App Id>
+      clientId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: <Your Client Id>
+      clientSecret:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: <your client secret>
+      developerApiKey:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: <your developer API Key>
+      scopes:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: >-
+          crm.objects.companies.read crm.objects.companies.write
+          crm.schemas.companies.read crm.schemas.companies.write
+          crm.schemas.contacts.read oauth crm.objects.contacts.read
+          crm.objects.contacts.write crm.schemas.contacts.write
+          crm.objects.custom.read crm.schemas.custom.read
+    key: Hubspot Connection
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataType: string
+    defaultValue: 'https://example.com'
+    key: Acme API Endpoint
+    orgOnly: false
+  - dataSource:
+      component:
+        isPublic: true
+        key: code
+        version: 31
+      key: runCodeJsonForm
+    dataType: jsonForm
+    defaultValue: ''
+    inputs:
+      code:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: |
+          module.exports = async (context, { connection, contextValue }) => {
+            const {
+              token: { access_token },
+            } = connection;
+
+            const response = await fetch(
+              "https://api.hubapi.com/crm-object-schemas/v3/schemas/companies",
+              { method: "GET", headers: { Authorization: `Bearer ${access_token}` } },
+            );
+            const { properties } = await response.json();
+            const hubspotAccountFields = properties
+              .map((property) => ({
+                title: property.label,
+                const: property.name,
+              }))
+              .sort((a, b) => (a.title < b.title ? -1 : 1))
+            const schema = {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  source: {
+                    type: "string",
+                    oneOf: hubspotAccountFields,
+                  },
+                  destination: {
+                    type: "string",
+                    oneOf: [
+                      {
+                        title: "Acme Account Name",
+                        const: "name",
+                      },
+                      {
+                        title: "Acme Account External ID",
+                        const: "id",
+                      },
+                      {
+                        title: "Acme Account Annual Revenue",
+                        const: "annualrevenue",
+                      },
+                      {
+                        title: "Acme Country/Region",
+                        const: "country",
+                      },
+                      {
+                        title: "Acme Number of Employees",
+                        const: "numberofemployees",
+                      },
+                      {
+                        title: "Acme Website",
+                        const: "website",
+                      },
+                    ],
+                  },
+                },
+                required: ["source", "destination"],
+              },
+            };
+            const uiSchema = {
+              type: "Control",
+              label: "Hubspot / Acme Account Field Mapper",
+              scope: "#",
+              options: {
+                layout: "Accordion",
+                detail: {
+                  type: "HorizontalLayout",
+                  elements: [
+                    {
+                      type: "Control",
+                      scope: "#/properties/source",
+                      options: {
+                        autocomplete: true,
+                      },
+                      label: "Hubspot Field",
+                    },
+                    {
+                      type: "Control",
+                      scope: "#/properties/destination",
+                      options: {
+                        autocomplete: true,
+                      },
+                      label: "Acme Field",
+                    },
+                  ],
+                },
+              },
+            };
+            // A default mapping
+            const data = [
+              {
+                source: "Id",
+                destination: "id",
+              },
+              {
+                source: "Name",
+                destination: "name",
+              },
+              {
+                source: "AnnualRevenue",
+                destination: "annualrevenue",
+              },
+              {
+                source: "CompanyCountry",
+                destination: "country",
+              },
+              {
+                source: "Website",
+                destination: "website",
+              },
+              {
+                source: "NumberOfEmployees",
+                destination: "numberofemployees",
+              },
+            ];
+            return Promise.resolve({
+              schema,
+              uiSchema,
+              data,
+            });
+          };
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Hubspot Connection
+      contextValue:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ''
+    key: Hubspot Company Field Mapping
+    orgOnly: false
