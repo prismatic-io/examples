@@ -1,13 +1,3 @@
-TypeError: Cannot read properties of undefined (reading 'forEach')
-    at file:///Users/ted/Development/prism/lib/index.js:31566:218
-    at Array.forEach (<anonymous>)
-    at SVe (file:///Users/ted/Development/prism/lib/index.js:31566:183)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-    at async aBe.run (file:///Users/ted/Development/prism/lib/index.js:31566:995)
-    at async aBe._run (file:///Users/ted/Development/prism/lib/index.js:364:139979)
-    at async M6D.runCommand (file:///Users/ted/Development/prism/lib/run.js:365:110047)
-    at async Object.Qo0 (file:///Users/ted/Development/prism/lib/run.js:365:142342)
-    at async file:///Users/ted/Development/prism/lib/run.js:365:160277
 category: ''
 configPages:
   - elements: []
