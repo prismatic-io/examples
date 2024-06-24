@@ -33,21 +33,21 @@ flows:
     name: Initial Sync
     steps:
       - action:
+          key: instanceDeploy
           component:
             isPublic: true
             key: management-triggers
-            version: 5
-          key: instanceDeploy
+            version: LATEST
         description: Do an initial sync of Hubspot data on Instance Deploy
         inputs: {}
         isTrigger: true
         name: Initial Account sync
       - action:
+          key: loopNTimes
           component:
             isPublic: true
             key: loop
-            version: 4
-          key: loopNTimes
+            version: LATEST
         description: >-
           Loop through N amount of times to get all data from Hubspot until we
           get everything
@@ -58,11 +58,11 @@ flows:
         name: Loop N Times
         steps:
           - action:
+              key: getExecutionValue
               component:
                 isPublic: true
                 key: persist-data
-                version: 22
-              key: getExecutionValue
+                version: LATEST
             description: >-
               Get the AFTER key to tell Hubspot where to start the next GET
               request for Companies
@@ -75,11 +75,11 @@ flows:
                 value: AFTER
             name: Execution - Get AFTER
           - action:
+              key: listCompanies
               component:
                 isPublic: true
                 key: hubspot
-                version: 103
-              key: listCompanies
+                version: LATEST
             description: ''
             inputs:
               additionalProperties:
@@ -118,20 +118,20 @@ flows:
                 value: ''
             name: List Companies
           - action:
+              key: branchOnExpression
               component:
                 isPublic: true
                 key: branch
-                version: 26
-              key: branchOnExpression
+                version: LATEST
             branches:
               - name: If null
                 steps:
                   - action:
+                      key: breakLoop
                       component:
                         isPublic: true
                         key: loop
-                        version: 4
-                      key: breakLoop
+                        version: LATEST
                     description: ''
                     inputs: {}
                     name: Break Loop
@@ -155,11 +155,11 @@ flows:
                           value: ''
             name: Branch on Expression
           - action:
+              key: loopOverItems
               component:
                 isPublic: true
                 key: loop
-                version: 4
-              key: loopOverItems
+                version: LATEST
             description: Loop Over results
             inputs:
               items:
@@ -168,11 +168,11 @@ flows:
             name: Loop Over results
             steps:
               - action:
+                  key: runCode
                   component:
                     isPublic: true
                     key: code
-                    version: 31
-                  key: runCode
+                    version: LATEST
                 description: Map Fields to Acme Format
                 inputs:
                   code:
@@ -213,11 +213,11 @@ flows:
                       };
                 name: Map Fields to Acme Format
               - action:
+                  key: httpPost
                   component:
                     isPublic: true
                     key: http
-                    version: 56
-                  key: httpPost
+                    version: LATEST
                 description: ''
                 inputs:
                   connection:
@@ -269,11 +269,11 @@ flows:
                     value: 'false'
                 name: POST Account to Acme
           - action:
+              key: convertToString
               component:
                 isPublic: true
                 key: change-data-format
-                version: 30
-              key: convertToString
+                version: LATEST
             description: Convert Javascript object to string
             inputs:
               value:
@@ -281,11 +281,11 @@ flows:
                 value: listCompanies.results.paging.next.after
             name: Convert To String
           - action:
+              key: saveExecutionValue
               component:
                 isPublic: true
                 key: persist-data
-                version: 22
-              key: saveExecutionValue
+                version: LATEST
             description: Save the AFTER results and continue to loop
             inputs:
               keyInput:
@@ -296,20 +296,20 @@ flows:
                 value: convertToString.results
             name: Execution - Save Value
           - action:
+              key: branchOnExpression
               component:
                 isPublic: true
                 key: branch
-                version: 26
-              key: branchOnExpression
+                version: LATEST
             branches:
               - name: If Done
                 steps:
                   - action:
+                      key: breakLoop
                       component:
                         isPublic: true
                         key: loop
-                        version: 4
-                      key: breakLoop
+                        version: LATEST
                     description: ''
                     inputs: {}
                     name: Break If Done
@@ -338,11 +338,11 @@ flows:
     name: Hubspot Account Update
     steps:
       - action:
+          key: eventTypeSubscription
           component:
             isPublic: true
             key: hubspot
-            version: 103
-          key: eventTypeSubscription
+            version: LATEST
         description: >-
           Webhook Trigger in Hubspot - Company Created/Deleted event
           subscriptions
@@ -363,11 +363,11 @@ flows:
         isTrigger: true
         name: Hubspot Account Update Trigger
       - action:
+          key: convertToString
           component:
             isPublic: true
             key: change-data-format
-            version: 30
-          key: convertToString
+            version: LATEST
         description: Convert Javascript object to String
         inputs:
           value:
@@ -375,11 +375,11 @@ flows:
             value: hubspotAccountUpdateTrigger.results.body.data.0.objectId
         name: Convert To String
       - action:
+          key: getCompany
           component:
             isPublic: true
             key: hubspot
-            version: 103
-          key: getCompany
+            version: LATEST
         description: Get the company name from results
         inputs:
           additionalProperties:
@@ -421,11 +421,11 @@ flows:
             value: ''
         name: Get Company
       - action:
+          key: runCode
           component:
             isPublic: true
             key: code
-            version: 31
-          key: runCode
+            version: LATEST
         description: Map Company fields to ACME format
         inputs:
           code:
@@ -464,11 +464,11 @@ flows:
               };
         name: Map Fields to Acme Format
       - action:
+          key: httpPost
           component:
             isPublic: true
             key: http
-            version: 56
-          key: httpPost
+            version: LATEST
         description: Update Company in Acme
         inputs:
           connection:
@@ -525,11 +525,11 @@ flows:
     name: Create Contact from ACME
     steps:
       - action:
+          key: webhook
           component:
             isPublic: true
             key: webhook-triggers
-            version: 7
-          key: webhook
+            version: LATEST
         description: Universal Webhook from ACME
         inputs:
           body:
@@ -547,11 +547,11 @@ flows:
         isTrigger: true
         name: Create Contact from ACME Trigger
       - action:
+          key: binaryToJson
           component:
             isPublic: true
             key: change-data-format
-            version: 30
-          key: binaryToJson
+            version: LATEST
         description: Convert Javascript object to JSON
         inputs:
           data:
@@ -559,11 +559,11 @@ flows:
             value: createContactFromAcmeTrigger.results.body.data
         name: JavaScript Object to JSON
       - action:
+          key: validateJsonSchema
           component:
             isPublic: true
             key: collection-tools
-            version: 28
-          key: validateJsonSchema
+            version: LATEST
         description: Validate incoming JSON meets the format we expect for Hubspot
         inputs:
           jsonInput:
@@ -605,11 +605,11 @@ flows:
               }
         name: Validate JSON Schema
       - action:
+          key: runCode
           component:
             isPublic: true
             key: code
-            version: 31
-          key: runCode
+            version: LATEST
         description: Create Hubspot Payload
         inputs:
           code:
@@ -651,11 +651,11 @@ flows:
               };
         name: Create Hubspot Payload
       - action:
+          key: createCompany
           component:
             isPublic: true
             key: hubspot
-            version: 103
-          key: createCompany
+            version: LATEST
         description: Create Company in Hubspot
         inputs:
           city:
@@ -735,11 +735,11 @@ labels:
 name: Hubspot Example Integration
 requiredConfigVars:
   - connection:
+      key: oauth2
       component:
         isPublic: true
         key: hubspot
-        version: 103
-      key: oauth2
+        version: LATEST
     dataType: connection
     description: >-
       This is your connection to Hubspot. Make sure to fill in the values for
@@ -796,11 +796,11 @@ requiredConfigVars:
     key: Acme API Endpoint
     orgOnly: false
   - dataSource:
+      key: runCodeJsonForm
       component:
         isPublic: true
         key: code
-        version: 31
-      key: runCodeJsonForm
+        version: LATEST
     dataType: jsonForm
     defaultValue: ''
     description: >-
