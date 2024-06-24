@@ -23,7 +23,7 @@ flows:
           component:
             isPublic: true
             key: webhook-triggers
-            version: 9
+            version: LATEST
           key: webhook
         description: ''
         inputs:
@@ -45,7 +45,7 @@ flows:
           component:
             isPublic: true
             key: branch
-            version: 36
+            version: LATEST
           key: branchOnValue
         branches:
           - name: Register
@@ -54,7 +54,7 @@ flows:
                   component:
                     isPublic: true
                     key: log
-                    version: 22
+                    version: LATEST
                   key: writeLog
                 description: ''
                 inputs:
@@ -73,7 +73,7 @@ flows:
                   component:
                     isPublic: true
                     key: persist-data
-                    version: 28
+                    version: LATEST
                   key: saveCrossFlowValue
                 description: ''
                 inputs:
@@ -91,7 +91,7 @@ flows:
                   component:
                     isPublic: true
                     key: log
-                    version: 22
+                    version: LATEST
                   key: writeLog
                 description: ''
                 inputs:
@@ -108,7 +108,7 @@ flows:
                   component:
                     isPublic: true
                     key: persist-data
-                    version: 28
+                    version: LATEST
                   key: removeCrossFlowValue
                 description: ''
                 inputs:
@@ -142,7 +142,7 @@ flows:
           component:
             isPublic: true
             key: webhook-triggers
-            version: 9
+            version: LATEST
           key: webhook
         description: ''
         inputs:
@@ -164,7 +164,7 @@ flows:
           component:
             isPublic: true
             key: change-data-format
-            version: 36
+            version: LATEST
           key: deserializeFormData
         description: ''
         inputs:
@@ -176,7 +176,7 @@ flows:
           component:
             isPublic: true
             key: change-data-format
-            version: 36
+            version: LATEST
           key: deserializeFromJson
         description: ''
         inputs:
@@ -188,7 +188,7 @@ flows:
           component:
             isPublic: true
             key: persist-data
-            version: 28
+            version: LATEST
           key: getCrossFlowValue
         description: ''
         inputs:
@@ -203,7 +203,7 @@ flows:
           component:
             isPublic: true
             key: http
-            version: 104
+            version: LATEST
           key: httpPost
         description: ''
         inputs:
@@ -259,7 +259,7 @@ flows:
           component:
             isPublic: true
             key: webhook-triggers
-            version: 9
+            version: LATEST
           key: webhook
         description: ''
         inputs:
@@ -281,7 +281,7 @@ flows:
           component:
             isPublic: true
             key: code
-            version: 83
+            version: LATEST
           key: runCode
         description: ''
         inputs:

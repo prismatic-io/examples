@@ -29,7 +29,7 @@ flows:
           component:
             isPublic: true
             key: webhook-triggers
-            version: 9
+            version: LATEST
           key: webhook
         description: POST a block message JSON
         inputs:
@@ -51,7 +51,7 @@ flows:
           component:
             isPublic: true
             key: slack
-            version: 99
+            version: LATEST
           key: postBlockMessage
         description: Forward block message to Slack
         inputs:
@@ -86,7 +86,7 @@ flows:
           component:
             isPublic: true
             key: webhook-triggers
-            version: 9
+            version: LATEST
           key: webhook
         description: Receive interaction from router
         inputs:
@@ -108,7 +108,7 @@ flows:
           component:
             isPublic: true
             key: change-data-format
-            version: 36
+            version: LATEST
           key: deserializeFormData
         description: Parsing URL encoded JSON (1)
         inputs:
@@ -120,7 +120,7 @@ flows:
           component:
             isPublic: true
             key: change-data-format
-            version: 36
+            version: LATEST
           key: deserializeFromJson
         description: Parsing URL encoded JSON (2)
         inputs:
@@ -132,7 +132,7 @@ flows:
           component:
             isPublic: true
             key: loop
-            version: 19
+            version: LATEST
           key: loopOverItems
         description: There could be multiple actions
         inputs:
@@ -145,7 +145,7 @@ flows:
               component:
                 isPublic: true
                 key: branch
-                version: 36
+                version: LATEST
               key: branchOnExpression
             branches:
               - name: Results Requested
@@ -154,7 +154,7 @@ flows:
                       component:
                         isPublic: true
                         key: persist-data
-                        version: 28
+                        version: LATEST
                       key: listInstanceKeys
                     description: Get all votes
                     inputs: {}
@@ -162,54 +162,221 @@ flows:
                   - action:
                       component:
                         isPublic: true
-                        key: persist-data
-                        version: 28
-                      key: getInstanceValue
-                    description: Get winner value
+                        key: loop
+                        version: LATEST
+                      key: loopOverItems
+                    description: ''
                     inputs:
-                      defaultValueInput:
-                        type: value
-                        value: ''
-                      keyInput:
+                      items:
                         type: reference
-                        value: flowListKeys.results.0
-                    name: Flow - Get Value
+                        value: flowListKeys.results
+                    name: Loop Over Items 2
+                    steps:
+                      - action:
+                          component:
+                            isPublic: true
+                            key: persist-data
+                            version: LATEST
+                          key: getInstanceValue
+                        description: Get winner value
+                        inputs:
+                          defaultValueInput:
+                            type: value
+                            value: ''
+                          keyInput:
+                            type: reference
+                            value: loopOverItems.currentItem
+                        name: Flow - Get Value
+                      - action:
+                          component:
+                            isPublic: true
+                            key: collection-tools
+                            version: LATEST
+                          key: createObject
+                        description: ''
+                        inputs:
+                          keyValueInput:
+                            type: complex
+                            value:
+                              - name:
+                                  type: value
+                                  value: name
+                                type: reference
+                                value: loopOverItems2.currentItem
+                              - name:
+                                  type: value
+                                  value: vote
+                                type: reference
+                                value: flowGetValue.results
+                        name: Create Object
                   - action:
                       component:
                         isPublic: true
-                        key: slack
-                        version: 99
-                      key: postMessage
-                    description: Send poll results to Slack
+                        key: collection-tools
+                        version: LATEST
+                      key: create
+                    description: ''
                     inputs:
-                      channelName:
-                        type: configVar
-                        value: Select Channel
-                      connection:
-                        type: configVar
-                        value: Slack Connection
-                      debug:
+                      items:
+                        type: complex
+                        value:
+                          - type: reference
+                            value: loopOverItems2.results
+                    name: Create List
+                  - action:
+                      component:
+                        isPublic: true
+                        key: code
+                        version: LATEST
+                      key: runCode
+                    description: ''
+                    inputs:
+                      code:
                         type: value
-                        value: 'false'
-                      message:
-                        type: template
-                        value: >-
-                          I only have one vote right now:
-                          {{$flowGetValue.results}} is currently the winner.
-                      messageId:
-                        type: template
-                        value: ''
-                      username:
-                        type: value
-                        value: Food-Bot
-                    name: Post Results
+                        value: >+
+                          /*
+                            Access config variables by name through the configVars object. e.g.
+                              const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                            Access previous steps' results through the stepResults object. Trigger
+                            and step names are camelCased. If the step "Get Data from API" returned
+                            {"foo": "bar", "baz": 123}, you could destructure that data with:
+                              const { foo, baz } = stepResults.getDataFromApi.results;
+
+                            You can return string, number or complex object data. e.g.
+                              return { data: { foo: "Hello", bar: 123.45, baz: true } };
+                          */
+
+
+                          module.exports = async ({ logger, configVars },
+                          stepResults) => {
+                            const votes = stepResults.createList.results;
+                            
+                            // Create a map to store the vote counts
+                            let voteCounts = new Map();
+
+                            // Count the votes
+                            for (let vote of votes) {
+                              if (voteCounts.has(vote.vote)) {
+                                voteCounts.set(vote.vote, voteCounts.get(vote.vote) + 1);
+                              } else {
+                                voteCounts.set(vote.vote, 1);
+                              }
+                            }
+
+                            // Determine the winner
+                            let winner = null;
+                            let maxVotes = 0;
+                            for (let [restaurant, count] of voteCounts.entries()) {
+                              if (count > maxVotes) {
+                                winner = restaurant;
+                                maxVotes = count;
+                              }
+                            }
+
+                            return { data: {
+                              numOfVotes: votes.length,
+                              winner: winner
+                            } };
+                          };
+
+
+
+                    name: Code Block
+                  - action:
+                      component:
+                        isPublic: true
+                        key: branch
+                        version: LATEST
+                      key: branchOnExpression
+                    branches:
+                      - name: More than 1 vote
+                        steps:
+                          - action:
+                              component:
+                                isPublic: true
+                                key: slack
+                                version: LATEST
+                              key: postMessage
+                            description: Send poll results to Slack
+                            inputs:
+                              channelName:
+                                type: configVar
+                                value: Select Channel
+                              connection:
+                                type: configVar
+                                value: Slack Connection
+                              debug:
+                                type: value
+                                value: 'false'
+                              message:
+                                type: template
+                                value: >-
+                                  Out of {{$codeBlock.results.numOfVotes}}
+                                  votes, the clear winner is
+                                  {{$codeBlock.results.winner}}!
+                              messageId:
+                                type: template
+                                value: ''
+                              username:
+                                type: value
+                                value: Food-Bot
+                            name: Post Results 2
+                      - name: Else
+                        steps:
+                          - action:
+                              component:
+                                isPublic: true
+                                key: slack
+                                version: LATEST
+                              key: postMessage
+                            description: Send poll results to Slack
+                            inputs:
+                              channelName:
+                                type: configVar
+                                value: Select Channel
+                              connection:
+                                type: configVar
+                                value: Slack Connection
+                              debug:
+                                type: value
+                                value: 'false'
+                              message:
+                                type: template
+                                value: >-
+                                  Only one vote, but right now,
+                                  {{$codeBlock.results.winner}} is the winner!
+                              messageId:
+                                type: template
+                                value: ''
+                              username:
+                                type: value
+                                value: Food-Bot
+                            name: Post Results
+                    description: ''
+                    inputs:
+                      conditions:
+                        type: complex
+                        value:
+                          - name: More than 1 vote
+                            type: complex
+                            value:
+                              - and
+                              - - greaterThan
+                                - name: ''
+                                  type: reference
+                                  value: codeBlock.results.numOfVotes
+                                - name: ''
+                                  type: value
+                                  value: '1'
+                    name: Branch on Expression 2
               - name: Else
                 steps:
                   - action:
                       component:
                         isPublic: true
                         key: persist-data
-                        version: 28
+                        version: LATEST
                       key: saveInstanceValue
                     description: Add or update vote for user
                     inputs:
@@ -224,7 +391,7 @@ flows:
                       component:
                         isPublic: true
                         key: slack
-                        version: 99
+                        version: LATEST
                       key: postMessage
                     description: Send vote update to Slack
                     inputs:
@@ -276,7 +443,7 @@ flows:
           component:
             isPublic: true
             key: management-triggers
-            version: 7
+            version: LATEST
           key: instanceDeploy
         description: The instance was deployed
         inputs: {}
@@ -286,7 +453,7 @@ flows:
           component:
             isPublic: true
             key: collection-tools
-            version: 14
+            version: LATEST
           key: createObject
         description: Information to send to router
         inputs:
@@ -315,7 +482,7 @@ flows:
           component:
             isPublic: true
             key: http
-            version: 104
+            version: LATEST
           key: httpPost
         description: Send instance info to router
         inputs:
@@ -369,7 +536,7 @@ requiredConfigVars:
       component:
         isPublic: true
         key: slack
-        version: 99
+        version: LATEST
       key: oauth2
     dataType: connection
     inputs:
@@ -379,7 +546,7 @@ requiredConfigVars:
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: 'https://slack.com/oauth/v2/authorize'
+        value: https://slack.com/oauth/v2/authorize
       clientId:
         meta:
           orgOnly: true
@@ -407,7 +574,7 @@ requiredConfigVars:
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: 'https://slack.com/api/auth.revoke'
+        value: https://slack.com/api/auth.revoke
       scopes:
         meta:
           orgOnly: true
@@ -423,14 +590,14 @@ requiredConfigVars:
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: 27343ae53e1ef5cf0f6bf1bb46ba37ac
+        value: Add your signingSecret here
       tokenUrl:
         meta:
           orgOnly: true
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: 'https://slack.com/api/oauth.v2.access'
+        value: Add your tokenUrl here
     key: Slack Connection
     onPremiseConnectionConfig: disallowed
     orgOnly: false
@@ -438,7 +605,7 @@ requiredConfigVars:
       component:
         isPublic: true
         key: slack
-        version: 99
+        version: LATEST
       key: selectChannels
     dataType: picklist
     defaultValue: ''
