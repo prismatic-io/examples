@@ -14,7 +14,8 @@ The Slack Interactive Post Template integration has three main flows:
 
 How to call the Send Message flow:
 
-```curl --location 'https://hooks.prismatic.io/trigger/SW5zdGFuY2VGbG93Q29uZmlnOjE0YWMxZmE2LTBmNGMtNDlmNC1hMTM3LWM1MWZmYWVjZTU4YQ==' \
+```
+curl --location 'https://hooks.prismatic.io/trigger/SW5zdGFuY2VGbG93Q29uZmlnOjE0YWMxZmE2LTBmNGMtNDlmNC1hMTM3LWM1MWZmYWVjZTU4YQ==' \
 --header 'Content-Type: application/json' \
 --data '{
 	"blocks": [
@@ -109,7 +110,8 @@ How to call the Send Message flow:
 			]
 		}
 	]
-}'```
+}'
+```
 
 ## Slack Interactivity Router
 
