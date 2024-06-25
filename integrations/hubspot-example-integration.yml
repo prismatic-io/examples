@@ -1,0 +1,973 @@
+category: CRM
+configPages:
+  - elements:
+      - type: configVar
+        value: Hubspot Connection
+      - type: configVar
+        value: Acme API Endpoint
+    name: Configuration
+    tagline: Configure your external connectors
+  - elements:
+      - type: configVar
+        value: Hubspot Company Field Mapping
+    name: Map Hubspot fields
+    tagline: Map fields from Hubspot to Acme
+    userLevelConfigured: false
+defaultInstanceProfile: Default Instance Profile
+definitionVersion: 7
+description: >-
+  An example integration that showcases how to sync data from Hubspot to an
+  external system, accept incoming requests from a webhook and create a company
+  in Hubspot. A field mapper provides the ability to port information from
+  Hubspot to your external system.
+documentation: >-
+  This is an example of a Hubspot integration that will sync companies to an
+  external system, send data from an external system to Hubspot to create a
+  company, and listen for changes to the company object in Hubspot and update
+  the appropriate object in the external system.
+endpointType: flow_specific
+flows:
+  - description: Initial import of Hubspot accounts
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Initial Sync
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: Do an initial sync of Hubspot data on Instance Deploy
+        inputs: {}
+        isTrigger: true
+        name: Initial Account sync
+      - action:
+          key: loopNTimes
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: >-
+          Loop through N amount of times to get all data from Hubspot until we
+          get everything
+        inputs:
+          iterationCount:
+            type: value
+            value: '20'
+        name: Loop N Times
+        steps:
+          - action:
+              key: getExecutionValue
+              component:
+                isPublic: true
+                key: persist-data
+                version: LATEST
+            description: >-
+              Get the AFTER key to tell Hubspot where to start the next GET
+              request for Companies
+            inputs:
+              defaultValueInput:
+                type: value
+                value: ''
+              keyInput:
+                type: value
+                value: AFTER
+            name: Execution - Get AFTER
+          - action:
+              key: listCompanies
+              component:
+                isPublic: true
+                key: hubspot
+                version: LATEST
+            description: ''
+            inputs:
+              additionalProperties:
+                type: complex
+                value:
+                  - type: value
+                    value: numberofemployees
+                  - type: value
+                    value: annualrevenue
+                  - type: value
+                    value: website
+                  - type: value
+                    value: name
+                  - type: value
+                    value: country
+              after:
+                type: reference
+                value: executionGetAfter.results
+              archived:
+                type: value
+                value: 'false'
+              associationsList:
+                type: complex
+                value: []
+              debugRequest:
+                type: value
+                value: 'false'
+              hubspotConnection:
+                type: configVar
+                value: Hubspot Connection
+              limit:
+                type: value
+                value: ''
+              timeout:
+                type: value
+                value: ''
+            name: List Companies
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: If null
+                steps:
+                  - action:
+                      key: breakLoop
+                      component:
+                        isPublic: true
+                        key: loop
+                        version: LATEST
+                    description: ''
+                    inputs: {}
+                    name: Break Loop
+              - name: Else
+                steps: []
+            description: 'If Start After returns null, stop the loop, otherwise continue'
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: If null
+                    type: complex
+                    value:
+                      - and
+                      - - isEmpty
+                        - name: ''
+                          type: reference
+                          value: listCompanies.results.results
+                        - name: ''
+                          type: value
+                          value: ''
+            name: Branch on Expression
+          - action:
+              key: loopOverItems
+              component:
+                isPublic: true
+                key: loop
+                version: LATEST
+            description: Loop Over results
+            inputs:
+              items:
+                type: reference
+                value: listCompanies.results.results
+            name: Loop Over results
+            steps:
+              - action:
+                  key: runCode
+                  component:
+                    isPublic: true
+                    key: code
+                    version: LATEST
+                description: Map Fields to Acme Format
+                inputs:
+                  code:
+                    type: value
+                    value: >
+                      /*
+                        Access config variables by name through the configVars object. e.g.
+                          const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                        Access previous steps' results through the stepResults object. Trigger
+                        and step names are camelCased. If the step "Get Data from API" returned
+                        {"foo": "bar", "baz": 123}, you could destructure that data with:
+                          const { foo, baz } = stepResults.getDataFromApi.results;
+
+                        You can return string, number or complex object data. e.g.
+                          return { data: { foo: "Hello", bar: 123.45, baz: true } };
+                      */
+
+
+                      module.exports = async ({ logger, configVars },
+                      stepResults) => {
+                        // Get Company properties object from previous step results
+                        const hubspotAccount = stepResults.getCompany.results.properties;
+
+                        // Get the mapping Config Variable
+                        const mapping = configVars["Hubspot Company Field Mapping"];
+
+                        // Map properties of the company to the Hubspot Company Field mapping Config Var
+                        const mappedFields = mapping.reduce(
+                          (acc, { source, destination }) => ({
+                            [destination]: hubspotAccount[source],
+                            ...acc,
+                          }),
+                          {},
+                        );
+                        // Return the mapped fields
+                        return { data: mappedFields };
+                      };
+                name: Map Fields to Acme Format
+              - action:
+                  key: httpPost
+                  component:
+                    isPublic: true
+                    key: http
+                    version: LATEST
+                description: ''
+                inputs:
+                  connection:
+                    type: configVar
+                    value: ''
+                  data:
+                    type: reference
+                    value: mapFieldsToAcmeFormat.results
+                  debugRequest:
+                    type: value
+                    value: 'true'
+                  headers:
+                    type: complex
+                    value:
+                      - name:
+                          type: value
+                          value: Content-Type
+                        type: value
+                        value: application/json
+                  ignoreSslErrors:
+                    type: value
+                    value: 'false'
+                  includeFullResponse:
+                    type: value
+                    value: 'true'
+                  maxRetries:
+                    type: value
+                    value: '0'
+                  queryParams:
+                    type: complex
+                    value: []
+                  responseType:
+                    type: value
+                    value: json
+                  retryDelayMS:
+                    type: value
+                    value: '0'
+                  retryOnAllErrors:
+                    type: value
+                    value: 'false'
+                  timeout:
+                    type: value
+                    value: ''
+                  url:
+                    type: configVar
+                    value: Acme API Endpoint
+                  useExponentialBackoff:
+                    type: value
+                    value: 'false'
+                name: POST Account to Acme
+          - action:
+              key: convertToString
+              component:
+                isPublic: true
+                key: change-data-format
+                version: LATEST
+            description: Convert Javascript object to string
+            inputs:
+              value:
+                type: reference
+                value: listCompanies.results.paging.next.after
+            name: Convert To String
+          - action:
+              key: saveExecutionValue
+              component:
+                isPublic: true
+                key: persist-data
+                version: LATEST
+            description: Save the AFTER results and continue to loop
+            inputs:
+              keyInput:
+                type: value
+                value: AFTER
+              valueInput:
+                type: reference
+                value: convertToString.results
+            name: Execution - Save Value
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: If Done
+                steps:
+                  - action:
+                      key: breakLoop
+                      component:
+                        isPublic: true
+                        key: loop
+                        version: LATEST
+                    description: ''
+                    inputs: {}
+                    name: Break If Done
+              - name: Else
+                steps: []
+            description: 'If theres no AFTER results, break the loop'
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: If Done
+                    type: complex
+                    value:
+                      - and
+                      - - isEmpty
+                        - name: ''
+                          type: reference
+                          value: executionSaveValue.results.value
+                        - name: ''
+                          type: value
+                          value: ''
+            name: Branch on AFTER
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Hubspot Account Update
+    steps:
+      - action:
+          key: eventTypeSubscription
+          component:
+            isPublic: true
+            key: hubspot
+            version: LATEST
+        description: >-
+          Webhook Trigger in Hubspot - Company Created/Deleted event
+          subscriptions
+        inputs:
+          eventTypes:
+            type: complex
+            value:
+              - type: value
+                value: company.creation
+              - type: value
+                value: company.deletion
+          hubspotConnection:
+            type: configVar
+            value: Hubspot Connection
+          overwriteWebhookSettings:
+            type: value
+            value: 'false'
+        isTrigger: true
+        name: Hubspot Account Update Trigger
+      - action:
+          key: convertToString
+          component:
+            isPublic: true
+            key: change-data-format
+            version: LATEST
+        description: Convert Javascript object to String
+        inputs:
+          value:
+            type: reference
+            value: hubspotAccountUpdateTrigger.results.body.data.0.objectId
+        name: Convert To String
+      - action:
+          key: getCompany
+          component:
+            isPublic: true
+            key: hubspot
+            version: LATEST
+        description: Get the company name from results
+        inputs:
+          additionalProperties:
+            type: complex
+            value:
+              - type: value
+                value: website
+              - type: value
+                value: numberofemployees
+              - type: value
+                value: country
+              - type: value
+                value: annualrevenue
+              - type: value
+                value: name
+          archived:
+            type: value
+            value: 'false'
+          associationsList:
+            type: complex
+            value: []
+          companyId:
+            type: reference
+            value: convertToString.results
+          companyName:
+            type: value
+            value: ''
+          debugRequest:
+            type: value
+            value: 'false'
+          domain:
+            type: value
+            value: ''
+          hubspotConnection:
+            type: configVar
+            value: Hubspot Connection
+          timeout:
+            type: value
+            value: ''
+        name: Get Company
+      - action:
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: Map Company fields to ACME format
+        inputs:
+          code:
+            type: value
+            value: |
+              /*
+                Access config variables by name through the configVars object. e.g.
+                  const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                Access previous steps' results through the stepResults object. Trigger
+                and step names are camelCased. If the step "Get Data from API" returned
+                {"foo": "bar", "baz": 123}, you could destructure that data with:
+                  const { foo, baz } = stepResults.getDataFromApi.results;
+
+                You can return string, number or complex object data. e.g.
+                  return { data: { foo: "Hello", bar: 123.45, baz: true } };
+              */
+
+              module.exports = async ({ logger, configVars }, stepResults) => {
+                // Get Company properties object from previous step results
+                const hubspotAccount = stepResults.getCompany.results.properties;
+
+                // Get the mapping Config Variable
+                const mapping = configVars["Hubspot Company Field Mapping"];
+
+                // Map properties of the company to the Hubspot Company Field mapping Config Var
+                const mappedFields = mapping.reduce(
+                  (acc, { source, destination }) => ({
+                    [destination]: hubspotAccount[source],
+                    ...acc,
+                  }),
+                  {},
+                );
+                // Return the mapped fields
+                return { data: mappedFields };
+              };
+        name: Map Fields to Acme Format
+      - action:
+          key: httpPost
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: Update Company in Acme
+        inputs:
+          connection:
+            type: configVar
+            value: ''
+          data:
+            type: reference
+            value: mapFieldsToAcmeFormat.results
+          debugRequest:
+            type: value
+            value: 'false'
+          headers:
+            type: complex
+            value:
+              - name:
+                  type: value
+                  value: Content-Type
+                type: value
+                value: application/json
+          ignoreSslErrors:
+            type: value
+            value: 'false'
+          includeFullResponse:
+            type: value
+            value: 'false'
+          maxRetries:
+            type: value
+            value: '0'
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: '0'
+          retryOnAllErrors:
+            type: value
+            value: 'false'
+          timeout:
+            type: value
+            value: ''
+          url:
+            type: configVar
+            value: Acme API Endpoint
+          useExponentialBackoff:
+            type: value
+            value: 'false'
+        name: Update Company in Acme
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create Contact from ACME
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: Universal Webhook from ACME
+        inputs:
+          body:
+            type: value
+            value: ''
+          contentType:
+            type: value
+            value: ''
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ''
+        isTrigger: true
+        name: Create Contact from ACME Trigger
+      - action:
+          key: binaryToJson
+          component:
+            isPublic: true
+            key: change-data-format
+            version: LATEST
+        description: Convert Javascript object to JSON
+        inputs:
+          data:
+            type: reference
+            value: createContactFromAcmeTrigger.results.body.data
+        name: JavaScript Object to JSON
+      - action:
+          key: validateJsonSchema
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: Validate incoming JSON meets the format we expect for Hubspot
+        inputs:
+          jsonInput:
+            type: reference
+            value: javascriptObjectToJson.results
+          jsonSchema:
+            type: value
+            value: |-
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "website": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "numberofemployees": {
+                    "type": "string"
+                  },
+                  "annualrevenue": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "website",
+                  "country",
+                  "numberofemployees",
+                  "annualrevenue",
+                  "id"
+                ]
+              }
+        name: Validate JSON Schema
+      - action:
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: Create Hubspot Payload
+        inputs:
+          code:
+            type: value
+            value: |
+              /*
+                Access config variables by name through the configVars object. e.g.
+                  const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                Access previous steps' results through the stepResults object. Trigger
+                and step names are camelCased. If the step "Get Data from API" returned
+                {"foo": "bar", "baz": 123}, you could destructure that data with:
+                  const { foo, baz } = stepResults.getDataFromApi.results;
+
+                You can return string, number or complex object data. e.g.
+                  return { data: { foo: "Hello", bar: 123.45, baz: true } };
+              */
+
+              module.exports = async ({ logger, configVars }, stepResults) => {
+                // Get the JSON from the previous step results
+                const acmeAccount =
+                  stepResults.createContactFromAcmeTrigger.results.body.data;
+
+                // Get the Hubspot Field mapper from Config Variables  
+                const mapping = configVars["Hubspot Company Field Mapping"];
+                const result = [];
+
+                // For each mapping field, add the key/value pair to data
+                for (const { source, destination } of mapping) {
+                  if (acmeAccount[destination]) {
+                    result.push({
+                      key: source,
+                      value: acmeAccount[destination],
+                    });
+                  }
+                }
+                // Return the JSON payload we want
+                return { data: result };
+              };
+        name: Create Hubspot Payload
+      - action:
+          key: createCompany
+          component:
+            isPublic: true
+            key: hubspot
+            version: LATEST
+        description: Create Company in Hubspot
+        inputs:
+          city:
+            type: value
+            value: ''
+          companyName:
+            type: reference
+            value: createHubspotPayload.results.0.value
+          companyPhone:
+            type: value
+            value: ''
+          debugRequest:
+            type: value
+            value: 'false'
+          description:
+            type: value
+            value: ''
+          domain:
+            type: value
+            value: ''
+          dynamicValues:
+            type: value
+            value: ''
+          fieldValues:
+            type: complex
+            value:
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.1.key
+                type: reference
+                value: createHubspotPayload.results.1.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.2.key
+                type: reference
+                value: createHubspotPayload.results.2.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.0.key
+                type: reference
+                value: createHubspotPayload.results.0.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.3.key
+                type: reference
+                value: createHubspotPayload.results.3.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.4.key
+                type: reference
+                value: createHubspotPayload.results.4.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.5.key
+                type: reference
+                value: createHubspotPayload.results.5.value
+              - name:
+                  type: reference
+                  value: createHubspotPayload.results.0.key
+                type: reference
+                value: createHubspotPayload.results.0.value
+          hubspotConnection:
+            type: configVar
+            value: Hubspot Connection
+          industry:
+            type: value
+            value: ''
+          state:
+            type: value
+            value: ''
+          timeout:
+            type: value
+            value: ''
+        name: Create Company
+labels:
+  - crm
+name: Hubspot Example Integration
+requiredConfigVars:
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: hubspot
+        version: LATEST
+    dataType: connection
+    description: >-
+      This is your connection to Hubspot. Make sure to fill in the values for
+      your Hubspot app to properly connect to your instance
+    inputs:
+      appId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: appId
+      clientId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: clientId
+      clientSecret:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: clientSecret
+      developerApiKey:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: apiKey
+      scopes:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: >-
+          crm.objects.companies.read crm.objects.companies.write
+          crm.schemas.companies.read crm.schemas.companies.write
+          crm.schemas.contacts.read oauth crm.objects.contacts.read
+          crm.objects.contacts.write crm.schemas.contacts.write
+          crm.objects.custom.read crm.schemas.custom.read
+    key: Hubspot Connection
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataType: string
+    defaultValue: 'https://example.com'
+    description: >-
+      This is an example connection to ACME. This will be the service we send
+      data from Hubspot to.
+    key: Acme API Endpoint
+    orgOnly: false
+  - dataSource:
+      key: runCodeJsonForm
+      component:
+        isPublic: true
+        key: code
+        version: LATEST
+    dataType: jsonForm
+    defaultValue: ''
+    description: >-
+      This is a Hubspot field mapper. It uses JSON forms to build a mapper of
+      Company Fields to ACME company fields
+    inputs:
+      code:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: |
+          module.exports = async (context, { connection, contextValue }) => {
+            /* Get the access token from the Hubspot Connection. This is required to be able to communicate to Hubspot APIs 
+            ** Connection Usage: https://prismatic.io/docs/code-component-usage/#connections
+            */
+            const {
+              token: { access_token },
+            } = connection;
+
+            /* In order to create a field mapper, we need to create a schema that represents the objects contained within a Company object 
+            ** Hubspot uses their /schemas/ endpoint to return this information, so we use the access_token from our connection to return a Company Schema 
+            ** Hubspot Schema API: https://developers.hubspot.com/docs/api/crm/crm-custom-objects#retrieve-existing-custom-objects
+            ** */
+            const response = await fetch(
+              "https://api.hubapi.com/crm-object-schemas/v3/schemas/companies",
+              { method: "GET", headers: { Authorization: `Bearer ${access_token}` } },
+            );
+            const { properties } = await response.json(); // Grab the "properties" object from the response. The properties contain the schema we want.
+            
+            /* Given the resulting schema, map each of the properties to an object that contains the property name and property label. 
+            ** Then, sort the properties by Title 
+            */
+            const hubspotAccountFields = properties
+              .map((property) => ({
+                title: property.label,
+                const: property.name,
+              }))
+              .sort((a, b) => (a.title < b.title ? -1 : 1))
+
+            /* This is a JSON schema. Here, we generate a JSON schema with the Hubspot properties we just populated. 
+            ** A schema in this case will define the underlying data to be shown in the UI 
+            ** This schema will contain an array of items, each item will contain the property name and label of a company object.
+            */  
+            const schema = {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  source: {
+                    type: "string",
+                    oneOf: hubspotAccountFields,
+                  },
+                  destination: {
+                    type: "string",
+                    oneOf: [
+                      {
+                        title: "Acme Account Name",
+                        const: "name",
+                      },
+                      {
+                        title: "Acme Account External ID",
+                        const: "id",
+                      },
+                      {
+                        title: "Acme Account Annual Revenue",
+                        const: "annualrevenue",
+                      },
+                      {
+                        title: "Acme Country/Region",
+                        const: "country",
+                      },
+                      {
+                        title: "Acme Number of Employees",
+                        const: "numberofemployees",
+                      },
+                      {
+                        title: "Acme Website",
+                        const: "website",
+                      },
+                    ],
+                  },
+                },
+                required: ["source", "destination"],
+              },
+            };
+            /* This represents the UI Schema for the JSON form we're about to create.
+            ** A UI Schema defines how this data is rendered as a form, e.g. the order of controls, their visibility, and the layout. Play around with these to see what fits!
+            ** https://jsonforms.io/docs/uischema/
+            */
+            const uiSchema = {
+              type: "Control",
+              label: "Hubspot / Acme Account Field Mapper",
+              scope: "#",
+              options: {
+                layout: "Accordion",
+                detail: {
+                  type: "HorizontalLayout",
+                  elements: [
+                    {
+                      type: "Control",
+                      scope: "#/properties/source",
+                      options: {
+                        autocomplete: true,
+                      },
+                      label: "Hubspot Field",
+                    },
+                    {
+                      type: "Control",
+                      scope: "#/properties/destination",
+                      options: {
+                        autocomplete: true,
+                      },
+                      label: "Acme Field",
+                    },
+                  ],
+                },
+              },
+            };
+            /* We create a default mapping of data so that the UI loads with default data on first load */
+            const data = [
+              {
+                source: "Id",
+                destination: "id",
+              },
+              {
+                source: "Name",
+                destination: "name",
+              },
+              {
+                source: "AnnualRevenue",
+                destination: "annualrevenue",
+              },
+              {
+                source: "CompanyCountry",
+                destination: "country",
+              },
+              {
+                source: "Website",
+                destination: "website",
+              },
+              {
+                source: "NumberOfEmployees",
+                destination: "numberofemployees",
+              },
+            ];
+            //Return your JSON Forms object
+            return Promise.resolve({
+              schema,
+              uiSchema,
+              data,
+            });
+          };
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Hubspot Connection
+      contextValue:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ''
+    key: Hubspot Company Field Mapping
+    orgOnly: false
