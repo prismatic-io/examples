@@ -672,7 +672,7 @@ requiredConfigVars:
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: 'https://example.atlassian.net'
+        value: 
       authorizeUrl:
         meta:
           orgOnly: true
@@ -687,14 +687,14 @@ requiredConfigVars:
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: clientID
+        value: 
       clientSecret:
         meta:
           orgOnly: true
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: clientSecret
+        value: 
       scopes:
         meta:
           orgOnly: true
