@@ -1,0 +1,905 @@
+category: Project Management
+configPages:
+  - elements:
+      - type: configVar
+        value: Jira Connection
+      - type: configVar
+        value: Acme API Endpoint
+    name: Configuration
+  - elements:
+      - type: configVar
+        value: Jira Issue Field Mapper
+    name: Jira Field Mapping
+    tagline: ''
+    userLevelConfigured: false
+defaultInstanceProfile: Default Instance Profile
+definitionVersion: 7
+description: >
+  This is an example Jira integration that includes functionality for:
+
+  1. Catching webhook triggers for Jira issue creation/update/deletion and posts
+  to an external system.
+
+  2. Catching requests from an external system to create an issue in Jira
+
+  3. Initial sync all Jira issues and posts issues to an external system.
+
+  This example integration includes a Jira Field Mapper datasource and Jira
+  Issue connection.
+documentation: >+
+  This is an example Jira integration that includes functionality for:
+
+
+  1. Catching webhook triggers for Jira issue creation/update/deletion and posts
+  to an external system.
+
+
+  Jira Webhooks: https://developer.atlassian.com/server/jira/platform/webhooks/
+
+
+  2. Catching requests from an external system to create an issue in Jira:
+
+
+  Create Issue:
+  https://prismatic.io/docs/components/atlassian-jira/#create-issue
+
+
+  3. Initial sync all Jira issues and posts issues to an external system.
+
+
+  List Issues: https://prismatic.io/docs/components/atlassian-jira/#list-issues
+
+
+  This example integration includes a Jira Field Mapper datasource and Jira
+  Issue connection.
+
+
+  Field Mapping:
+  https://prismatic.io/docs/quickstarts/field-mapping-json-forms-datasource/
+
+endpointType: flow_specific
+flows:
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Initial Account Sync
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ''
+        inputs: {}
+        isTrigger: true
+        name: Initial Account Sync
+      - action:
+          key: loopNTimes
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: Loop until we encounter a Break Loop
+        inputs:
+          iterationCount:
+            type: value
+            value: '1000'
+        name: Loop Until Break
+        steps:
+          - action:
+              key: getExecutionValue
+              component:
+                isPublic: true
+                key: persist-data
+                version: LATEST
+            description: ''
+            inputs:
+              defaultValueInput:
+                type: value
+                value: '0'
+              keyInput:
+                type: value
+                value: STARTAT
+            name: Execution - Get Value STARTAT
+          - action:
+              key: listIssues
+              component:
+                isPublic: true
+                key: atlassian-jira
+                version: LATEST
+            description: List all Jira Issues
+            inputs:
+              debug:
+                type: value
+                value: 'false'
+              jiraConnection:
+                type: configVar
+                value: Jira Connection
+              maxResults:
+                type: value
+                value: ''
+              startAt:
+                type: reference
+                value: executionGetValueStartat.results
+            name: List Issues
+          - action:
+              key: loopOverItems
+              component:
+                isPublic: true
+                key: loop
+                version: LATEST
+            description: ''
+            inputs:
+              items:
+                type: reference
+                value: listIssues.results.issues
+            name: Loop Over Jira issues
+            steps:
+              - action:
+                  key: runCode
+                  component:
+                    isPublic: true
+                    key: code
+                    version: LATEST
+                description: Map Jira issue fields to Acme Fields
+                inputs:
+                  code:
+                    type: value
+                    value: >
+                      /*
+                        Access config variables by name through the configVars object. e.g.
+                          const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                        Access previous steps' results through the stepResults object. Trigger
+                        and step names are camelCased. If the step "Get Data from API" returned
+                        {"foo": "bar", "baz": 123}, you could destructure that data with:
+                          const { foo, baz } = stepResults.getDataFromApi.results;
+
+                        You can return string, number or complex object data. e.g.
+                          return { data: { foo: "Hello", bar: 123.45, baz: true } };
+                      */
+
+
+                      module.exports = async ({ logger, configVars },
+                      stepResults) => {
+                        // Get Jira issue object from previous step results
+                        const jiraIssue = stepResults.loopOverJiraIssues.currentItem;
+                        
+                        // Get the mapping Config Variable
+                        const mapping = configVars["Jira Issue Field Mapper"];
+                        
+                        // Map fields of the issue to the Jira Issue Field mapping Config Var
+                        const mappedFields = mapping.reduce(
+                          (acc, { source, destination }) => ({
+
+                            [destination]: jiraIssue.fields[source],
+                            ...acc,
+                          }),
+                          {},
+                        );
+                        mappedFields.issuekey = jiraIssue.id
+                        mappedFields.projectid = jiraIssue.fields.project.id
+                        mappedFields.issuetype = jiraIssue.fields.issuetype.id
+                        
+                        // Return the mapped fields
+                        return { data: mappedFields };
+                      };
+                name: Map fields to Acme Fields
+              - action:
+                  key: httpPost
+                  component:
+                    isPublic: true
+                    key: http
+                    version: LATEST
+                description: POST Jira issues to ACME
+                inputs:
+                  connection:
+                    type: configVar
+                    value: ''
+                  data:
+                    type: reference
+                    value: mapFieldsToAcmeFields.results
+                  debugRequest:
+                    type: value
+                    value: 'false'
+                  headers:
+                    type: complex
+                    value: []
+                  ignoreSslErrors:
+                    type: value
+                    value: 'false'
+                  includeFullResponse:
+                    type: value
+                    value: 'false'
+                  maxRetries:
+                    type: value
+                    value: '0'
+                  queryParams:
+                    type: complex
+                    value: []
+                  responseType:
+                    type: value
+                    value: json
+                  retryDelayMS:
+                    type: value
+                    value: '0'
+                  retryOnAllErrors:
+                    type: value
+                    value: 'false'
+                  timeout:
+                    type: value
+                    value: ''
+                  url:
+                    type: configVar
+                    value: Acme API Endpoint
+                  useExponentialBackoff:
+                    type: value
+                    value: 'false'
+                name: POST Request
+          - action:
+              key: length
+              component:
+                isPublic: true
+                key: collection-tools
+                version: LATEST
+            description: Get the number of items returned from List Issues
+            inputs:
+              listInput:
+                type: reference
+                value: listIssues.results.issues
+            name: Check how many Jira issues returned
+          - action:
+              key: add
+              component:
+                isPublic: true
+                key: math
+                version: LATEST
+            description: Add how many issues we returned to STARTAT number
+            inputs:
+              numbers:
+                type: complex
+                value:
+                  - type: reference
+                    value: executionGetValueStartat.results
+                  - type: reference
+                    value: checkHowManyJiraIssuesReturned.results
+            name: 'Add # of Jira issues + STARTAT value'
+          - action:
+              key: saveExecutionValue
+              component:
+                isPublic: true
+                key: persist-data
+                version: LATEST
+            description: Persist STARTAT data for next loop
+            inputs:
+              keyInput:
+                type: value
+                value: STARTAT
+              valueInput:
+                type: reference
+                value: addOfJiraIssuesStartatValue.results
+            name: Execution - Save Value STARTAT
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: If end of list issues
+                steps:
+                  - action:
+                      key: breakLoop
+                      component:
+                        isPublic: true
+                        key: loop
+                        version: LATEST
+                    description: ''
+                    inputs: {}
+                    name: Stop Execution
+              - name: Else
+                steps: []
+            description: >-
+              Check if we reached the end of the list issues results, if so,
+              break out of the loop, else continue looping
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: If end of list issues
+                    type: complex
+                    value:
+                      - and
+                      - - greaterThanOrEqual
+                        - name: ''
+                          type: reference
+                          value: addOfJiraIssuesStartatValue.results
+                        - name: ''
+                          type: reference
+                          value: listIssues.results.total
+            name: Branch on Expression
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Ticket update sync from Jira
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: Catch webhook trigger from Jira
+        inputs:
+          body:
+            type: value
+            value: ''
+          contentType:
+            type: value
+            value: ''
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ''
+        isTrigger: true
+        name: Update ticket in Jira Trigger
+      - action:
+          key: getIssue
+          component:
+            isPublic: true
+            key: atlassian-jira
+            version: LATEST
+        description: Get Issue metadata from Jira
+        inputs:
+          debug:
+            type: value
+            value: 'false'
+          issueId:
+            type: reference
+            value: updateTicketInJiraTrigger.results.body.data.issue.id
+          jiraConnection:
+            type: configVar
+            value: Jira Connection
+        name: Get Issue
+      - action:
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: Map fields to Acme Format
+        inputs:
+          code:
+            type: value
+            value: |
+              /*
+                Access config variables by name through the configVars object. e.g.
+                  const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                Access previous steps' results through the stepResults object. Trigger
+                and step names are camelCased. If the step "Get Data from API" returned
+                {"foo": "bar", "baz": 123}, you could destructure that data with:
+                  const { foo, baz } = stepResults.getDataFromApi.results;
+
+                You can return string, number or complex object data. e.g.
+                  return { data: { foo: "Hello", bar: 123.45, baz: true } };
+              */
+
+              module.exports = async ({ logger, configVars }, stepResults) => {
+                // Get Jira issue object from previous step results
+                const jiraIssue = stepResults.getIssue.results;
+
+                // Get the Jira Issue mapping Config Variable
+                const mapping = configVars["Jira Issue Field Mapper"];
+
+                // Map fields of the issue to the Jira Issue Field mapping Config Var
+                const mappedFields = mapping.reduce(
+                  (acc, { source, destination }) => ({
+
+                    [destination]: jiraIssue.fields[source],
+                    ...acc,
+                  }),
+                  {},
+                );
+                mappedFields.issuekey = jiraIssue.id
+                mappedFields.projectid = jiraIssue.fields.project.id
+                mappedFields.issuetype = jiraIssue.fields.issuetype.id
+
+                // Return the mapped fields
+                return { data: mappedFields };
+              };
+        name: Map fields to Acme Format
+      - action:
+          key: httpPost
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+        description: POST Jira issue to ACME
+        inputs:
+          connection:
+            type: configVar
+            value: ''
+          data:
+            type: reference
+            value: mapFieldsToAcmeFormat.results
+          debugRequest:
+            type: value
+            value: 'false'
+          headers:
+            type: complex
+            value: []
+          ignoreSslErrors:
+            type: value
+            value: 'false'
+          includeFullResponse:
+            type: value
+            value: 'false'
+          maxRetries:
+            type: value
+            value: '0'
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: '0'
+          retryOnAllErrors:
+            type: value
+            value: 'false'
+          timeout:
+            type: value
+            value: ''
+          url:
+            type: configVar
+            value: Acme API Endpoint
+          useExponentialBackoff:
+            type: value
+            value: 'false'
+        name: POST request to ACME
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create ticket in Jira from ACME
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ''
+        inputs:
+          body:
+            type: value
+            value: ''
+          contentType:
+            type: value
+            value: ''
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ''
+        isTrigger: true
+        name: Create ticket in Jira from ACME Trigger
+      - action:
+          key: binaryToJson
+          component:
+            isPublic: true
+            key: change-data-format
+            version: LATEST
+        description: Transform Javascript Object to JSON for JSON validation
+        inputs:
+          data:
+            type: reference
+            value: createTicketInJiraFromAcmeTrigger.results.body.data
+        name: Transform object to JSON
+      - action:
+          key: validateJsonSchema
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: Validate JSON Schema
+        inputs:
+          jsonInput:
+            type: reference
+            value: transformObjectToJson.results
+          jsonSchema:
+            type: value
+            value: |-
+              {
+                "type": "object",
+                "properties": {
+                  "issuekey": {
+                    "type": "string"
+                  },
+                  "assignee": {
+                    "type": "string"
+                  },
+                  "summary": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "projectid": {
+                    "type": "string"
+                  },
+                  "issuetype": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "issuekey",
+                  "assignee",
+                  "summary",
+                  "status",
+                  "projectid",
+                  "issuetype"
+                ]
+              }
+        name: Validate JSON Schema
+      - action:
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: Create payload to Create Issue in Jira
+        inputs:
+          code:
+            type: value
+            value: |
+              /*
+                Access config variables by name through the configVars object. e.g.
+                  const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                Access previous steps' results through the stepResults object. Trigger
+                and step names are camelCased. If the step "Get Data from API" returned
+                {"foo": "bar", "baz": 123}, you could destructure that data with:
+                  const { foo, baz } = stepResults.getDataFromApi.results;
+
+                You can return string, number or complex object data. e.g.
+                  return { data: { foo: "Hello", bar: 123.45, baz: true } };
+              */
+
+              module.exports = async ({ logger, configVars }, stepResults) => {
+                // Get the JSON from the previous step results
+                const jiraPayload =
+                  stepResults.createTicketInJiraFromAcmeTrigger.results.body.data;
+
+                // Get the Jira Issue Field mapper from Config Variables  
+                const mapping = configVars["Jira Issue Field Mapper"];
+                
+                // For each mapping field, add the key/value pair to data
+                const result = [];
+                for (const { source, destination } of mapping) {
+                  if (jiraPayload[destination]) {
+                    result.push({
+                      key: source,
+                      value: jiraPayload[destination],
+                    });
+                  }
+                }
+                // Return the JSON payload we want
+                return { data: result };
+              };
+        name: Create Jira Issue payload
+      - action:
+          key: createIssue
+          component:
+            isPublic: true
+            key: atlassian-jira
+            version: LATEST
+        description: ''
+        inputs:
+          ADFdescription:
+            type: value
+            value: ''
+          assignee:
+            type: value
+            value: ''
+          debug:
+            type: value
+            value: 'false'
+          description:
+            type: reference
+            value: createJiraIssuePayload.results.2.value
+          dueDate:
+            type: value
+            value: ''
+          dynamicValues:
+            type: value
+            value: ''
+          fieldValues:
+            type: complex
+            value: []
+          fixVersions:
+            type: value
+            value: ''
+          issueType:
+            type: reference
+            value: createJiraIssuePayload.results.5.value
+          issueTypeId:
+            type: value
+            value: ''
+          jiraConnection:
+            type: configVar
+            value: Jira Connection
+          labels:
+            type: complex
+            value: []
+          priority:
+            type: value
+            value: ''
+          projectId:
+            type: reference
+            value: createJiraIssuePayload.results.4.value
+          reporter:
+            type: value
+            value: ''
+          summary:
+            type: reference
+            value: createJiraIssuePayload.results.1.value
+          versions:
+            type: value
+            value: ''
+        name: Create Issue
+labels:
+  - project-management
+name: Jira Example Integration
+requiredConfigVars:
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: atlassian-jira
+        version: LATEST
+    dataType: connection
+    inputs:
+      apiSiteOverride:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: 'https://example.atlassian.net'
+      authorizeUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: >-
+          https://auth.atlassian.com/authorize?audience=api.atlassian.com&prompt=consent
+      clientId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: clientID
+      clientSecret:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: clientSecret
+      scopes:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: >-
+          read:jira-work manage:jira-project manage:jira-configuration
+          read:jira-user write:jira-work manage:jira-webhook
+          manage:jira-data-provider read:servicedesk-request
+          manage:servicedesk-customer write:servicedesk-request
+          read:servicemanagement-insight-objects read:issue:jira
+          write:issue:jira delete:issue:jira read:comment:jira
+          write:comment:jira read:issue-link:jira write:issue-link:jira
+          delete:issue-link:jira read:issue-link-type:jira
+          write:issue-link-type:jira read:issue.transition:jira read:user:jira
+          read:project:jira write:project:jira delete:project:jira
+      tokenUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: 'https://auth.atlassian.com/oauth/token'
+      version:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: '3'
+    key: Jira Connection
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataType: string
+    defaultValue: 'https://example.com'
+    key: Acme API Endpoint
+    orgOnly: false
+  - dataSource:
+      key: runCodeJsonForm
+      component:
+        isPublic: true
+        key: code
+        version: LATEST
+    dataType: jsonForm
+    defaultValue: ''
+    inputs:
+      code:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: |-
+          module.exports = async (context, { connection, contextValue }) => {
+            // Get the auth from your Jira Connection
+            const {
+              token: { access_token },
+            } = connection;
+
+            // Jira's Oauth APIs requires an Id accessed through Oauth endpoint
+            const idResponse = await fetch(
+              "https://api.atlassian.com/oauth/token/accessible-resources",
+              {
+                headers: {
+                  Authorization: `Bearer ${access_token}`,
+                  Accept: "application/json",
+                },
+              },
+            );
+            const id = await idResponse.json();
+
+            // Get the fields from Jira issues using the auth from above
+            const fieldResponse = await fetch(
+              `https://api.atlassian.com/ex/jira/${Object.values(id)[0].id}/rest/api/3/field`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${access_token}`,
+                  Accept: "application/json",
+                },
+              },
+            );
+            const fields  = await fieldResponse.json();
+
+            // Map the title and const fields
+            const fieldMappings = fields.map(field => ({title: field.name, const: field.id})).sort((a,b) => a.title < b.title ? -1 : 1)
+            
+            const schema = {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  source: {
+                    type: "string",
+                    oneOf: fieldMappings,
+                  },
+                  destination: {
+                    type: "string",
+                    oneOf: [
+                      {
+                        title: "Acme Project Id",
+                        const: "projectid",
+                      },
+                      {
+                        title: "Acme Issue Key",
+                        const: "issuekey",
+                      },
+                      {
+                        title: "Acme Issue Type",
+                        const: "issuetype",
+                      },
+                      {
+                        title: "Acme Issue Summary",
+                        const: "summary",
+                      },
+                      {
+                        title: "Acme Issue Status",
+                        const: "status",
+                      },
+                      {
+                        title: "Acme Issue Assignee",
+                        const: "assignee",
+                      },
+                    ],
+                  },
+                },
+                required: ["source", "destination"],
+              },
+            };
+            const uiSchema = {
+              type: "Control",
+              label: "Jira / Acme Account Field Mapper",
+              scope: "#",
+              options: {
+                layout: "Accordion",
+                detail: {
+                  type: "HorizontalLayout",
+                  elements: [
+                    {
+                      type: "Control",
+                      scope: "#/properties/source",
+                      options: {
+                        autocomplete: true,
+                      },
+                      label: "Jira Field",
+                    },
+                    {
+                      type: "Control",
+                      scope: "#/properties/destination",
+                      options: {
+                        autocomplete: true,
+                      },
+                      label: "Acme Field",
+                    },
+                  ],
+                },
+              },
+            };
+            // A default mapping
+            const data = [
+              {
+                source: "projectid",
+                destination: "projectid",
+              },
+              {
+                source: "issuekey",
+                destination: "issuekey",
+              },
+              {
+                source: "issuetype",
+                destination: "issuetype",
+              },
+              {
+                source: "summary",
+                destination: "summary",
+              },
+              {
+                source: "status",
+                destination: "status",
+              },
+              {
+                source: "assignee",
+                destination: "assignee",
+              },
+            ];
+            return Promise.resolve({
+              schema,
+              uiSchema,
+              data,
+            });
+          };
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Jira Connection
+      contextValue:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ''
+    key: Jira Issue Field Mapper
+    orgOnly: false
