@@ -730,6 +730,81 @@ flows:
             type: value
             value: ''
         name: Create Company
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Setup Webhooks
+    steps:
+      - action:
+          key: instanceDeploy
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ''
+        inputs: {}
+        isTrigger: true
+        name: Setup Webhooks Trigger
+      - action:
+          key: createWebhook
+          component:
+            isPublic: true
+            key: hubspot
+            version: LATEST
+        description: ''
+        inputs:
+          active:
+            type: value
+            value: 'true'
+          debugRequest:
+            type: value
+            value: 'false'
+          eventType:
+            type: value
+            value: company.creation
+          hubspotConnection:
+            type: configVar
+            value: Hubspot Connection
+          propertyWebhookName:
+            type: value
+            value: ''
+          timeout:
+            type: value
+            value: ''
+        name: Create Webhook
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Remove Webhooks
+    steps:
+      - action:
+          key: instanceRemove
+          component:
+            isPublic: true
+            key: management-triggers
+            version: LATEST
+        description: ''
+        inputs: {}
+        isTrigger: true
+        name: Remove Webhooks Trigger
+      - action:
+          key: deleteAllWebhooks
+          component:
+            isPublic: true
+            key: hubspot
+            version: LATEST
+        description: ''
+        inputs:
+          debugRequest:
+            type: value
+            value: 'false'
+          hubspotConnection:
+            type: configVar
+            value: Hubspot Connection
+          timeout:
+            type: value
+            value: ''
+        name: Delete all Instanced Webhooks
 labels:
   - crm
 name: Hubspot Example Integration
@@ -751,28 +826,28 @@ requiredConfigVars:
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: appId
+        value: 
       clientId:
         meta:
           orgOnly: true
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: clientId
+        value: 
       clientSecret:
         meta:
           orgOnly: true
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: clientSecret
+        value: 
       developerApiKey:
         meta:
           orgOnly: true
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: apiKey
+        value: 
       scopes:
         meta:
           orgOnly: true
