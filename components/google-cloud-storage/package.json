@@ -10,6 +10,7 @@
     "format": "npm run lint-fix && prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "check-format": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "build": "webpack",
+    "publish": "webpack && prism components:publish",
     "test": "echo 'no tests'",
     "build:testapp": "npm run build"
   },

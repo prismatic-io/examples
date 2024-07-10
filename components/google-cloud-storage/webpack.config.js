@@ -27,6 +27,7 @@ module.exports = {
   },
   optimization: {
     usedExports: true,
+    minimize: false
   },
   entry: "./src/index.ts",
   output: {

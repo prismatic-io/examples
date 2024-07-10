@@ -34,3 +34,13 @@ export const recursive = input({
   default: "true",
   clean: util.types.toBool,
 });
+
+export const returnBuffer = input({
+  label: "Always Return Buffer",
+  type: "boolean",
+  required: true,
+  default: "false",
+  comments:
+    "Always treat the file as a binary file with content type 'application/octet-stream', even if it is a text file. This is helpful if you are processing non-UTF-8 text files, as the runner assumes text files are UTF-8.",
+  clean: util.types.toBool,
+});

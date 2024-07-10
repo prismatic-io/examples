@@ -12,7 +12,8 @@
     "format": "npm run lint-fix && prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "check-format": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
     "build": "npm run lint-fix && webpack",
-    "test": "jest --maxWorkers=4"
+    "test": "jest --maxWorkers=4",
+    "publish": "npm run lint --fix && npm run build && prism components:publish"
   },
   "dependencies": {
     "@prismatic-io/spectral": "8.1.6",

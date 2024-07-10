@@ -1,8 +1,9 @@
 import { basename } from "path";
 import * as mime from "mime-types";
 import { action, util, input } from "@prismatic-io/spectral";
-import { connection, debugInput } from "./inputs";
+import { connection, debugInput, returnBuffer } from "./inputs";
 import { getSftpClient } from "./client";
+import { promises } from "fs";
 
 const inputPath = input({
   label: "Path",
@@ -37,16 +38,43 @@ const readFile = action({
   inputs: {
     connection,
     inputPath,
+    returnBuffer,
     debug: debugInput,
-    returnBuffer: input({
-      label: "Always Return Buffer",
-      type: "boolean",
-      required: true,
-      default: "false",
-      comments:
-        "Always treat the file as a binary file with content type 'application/octet-stream', even if it is a text file. This is helpful if you are processing non-UTF-8 text files, as the runner assumes text files are UTF-8.",
-      clean: util.types.toBool,
-    }),
+  },
+  examplePayload: {
+    data: "Sample file contents",
+    contentType: "text/plain",
+  },
+});
+
+const fastGet = action({
+  display: {
+    label: "Fast Get",
+    description: "Read a file from SFTP",
+  },
+  perform: async (context, { connection, inputPath, debug }) => {
+    const sftp = await getSftpClient(connection, debug);
+
+    try {
+      const fileName = basename(inputPath);
+      const localPath = `/tmp/${fileName}`;
+      await sftp.fastGet(inputPath, localPath);
+
+      return {
+        data: await promises.readFile(localPath),
+        contentType: returnBuffer
+          ? mime.types.bin
+          : mime.lookup(fileName) || mime.types.bin,
+      };
+    } finally {
+      await sftp.end();
+    }
+  },
+  inputs: {
+    connection,
+    inputPath,
+    returnBuffer,
+    debug: debugInput,
   },
   examplePayload: {
     data: "Sample file contents",
@@ -91,4 +119,4 @@ const statFile = action({
   },
 });
 
-export default { readFile, statFile };
+export default { readFile, statFile, fastGet };

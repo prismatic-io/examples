@@ -3035,24 +3035,6 @@
     uuid "8.3.2"
     valid-url "1.0.9"
 
-"@prismatic-io/spectral@7.8.2":
-  version "7.8.2"
-  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-7.8.2.tgz#776323f6fb2d6c65e6c2a682965c82d6ca4a75bc"
-  integrity sha512-Gj4R+bNMLzjwB+VHpiXR8qz/QA8NBvDEdnH8eTEdMjpRkSBJq9Ar72pWCLeICRR5NtUDPY9Kn8zrehFtEm520w==
-  dependencies:
-    "@jsonforms/core" "3.0.0"
-    axios "0.27.2"
-    axios-retry "3.2.5"
-    date-fns "2.30.0"
-    form-data "4.0.0"
-    jest-mock "27.0.3"
-    safe-stable-stringify "2.3.1"
-    serialize-error "8.1.0"
-    soap "1.0.0"
-    url-join "5.0.0"
-    uuid "8.3.2"
-    valid-url "1.0.9"
-
 "@prismatic-io/spectral@8.0.3":
   version "8.0.3"
   resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-8.0.3.tgz#094a3e291410ec1c9b7effd8995b47c512f47156"
@@ -3096,6 +3078,26 @@
   version "8.1.6"
   resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-8.1.6.tgz#11817cbe8f3dbf381c7ad0cf3ba0ef884e850d8f"
   integrity sha512-6OALG0Lg6S8SI3mxBKXAmgNwBntKq6kNJ3zDe2rjGaIBMbReZ2qrLy/rNjPm/4to6ornL6XfqyJU5aFt5DrYsg==
+  dependencies:
+    "@jsonforms/core" "3.0.0"
+    axios "1.6.2"
+    axios-retry "3.9.1"
+    date-fns "2.30.0"
+    form-data "4.0.0"
+    jest-mock "29.7.0"
+    lodash "4.17.21"
+    object-sizeof "^2.6.4"
+    safe-stable-stringify "2.3.1"
+    serialize-error "8.1.0"
+    url-join "5.0.0"
+    uuid "8.3.2"
+    valid-url "1.0.9"
+    yaml "2.3.4"
+
+"@prismatic-io/spectral@8.1.7":
+  version "8.1.7"
+  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-8.1.7.tgz#f9d5598189059a704f93f18c3bc6d75f276bda4e"
+  integrity sha512-HB0MnEYA/vAxXPtwbnlHgkSrDtBTw3LXJXMwpGhaKrqYi2XMlx25mADsdJbggyHL/ymdzHyC9JcYbriMFiGx3w==
   dependencies:
     "@jsonforms/core" "3.0.0"
     axios "1.6.2"
@@ -7380,7 +7382,7 @@ eslint-plugin-prettier@5.0.0:
     prettier-linter-helpers "^1.0.0"
     synckit "^0.8.5"
 
-eslint-plugin-prettier@5.1.3., eslint-plugin-prettier@^5.0.1:
+eslint-plugin-prettier@5.1.3, eslint-plugin-prettier@^5.0.1:
   version "5.1.3"
   resolved "https://registry.yarnpkg.com/eslint-plugin-prettier/-/eslint-plugin-prettier-5.1.3.tgz#17cfade9e732cef32b5f5be53bd4e07afd8e67e1"
   integrity sha512-C9GCVAs4Eq7ZC/XFQHITLiHJxQngdtraXaM+LoUFoFp/lHNl2Zn8f3WQbe9HvTBBQ9YnKFB0/2Ajdqwo5D1EAw==

@@ -9,13 +9,13 @@ import {
 import { createOauthClient } from "./client";
 import { Channel } from "@slack/web-api/dist/response/ConversationsListResponse";
 import { Member } from "@slack/web-api/dist/response/UsersListResponse";
-import { generateChannelTypesString } from "./utils";
+import { generateChannelTypesString, getChannelDisplayName } from "./utils";
 
 const selectChannels = dataSource({
   display: {
     label: "Select Channel",
     description:
-      "Select a Slack channel from a dropdown menu (up to 10,000 channels)",
+      "Select a Slack channel from a dropdown menu (up to 10,000 channels). To select Private Channels, you must access the API as a User and use the 'user_scope' configuration.",
   },
   inputs: {
     connection: connectionInput,
@@ -59,9 +59,7 @@ const selectChannels = dataSource({
       .sort((a, b) => (a.name < b.name ? -1 : 1))
       .map<Element>((channel) => ({
         key: channel.id,
-        label: params.showIdInDropdown
-          ? `#${channel.name} (ID: ${channel.id})`
-          : `#${channel.name}`,
+        label: getChannelDisplayName(params.showIdInDropdown, channel),
       }));
 
     return { result: objects };

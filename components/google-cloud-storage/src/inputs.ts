@@ -166,3 +166,13 @@ export const expirationTime = input({
   default: "3600",
   clean: (value) => util.types.toInt(value, 3600),
 });
+
+export const fileMetadata = input({
+  label: "File Metadata",
+  type: "boolean",
+  required: false,
+  comments:
+    "If true, the metadata of the file will be returned after saving the file. Get Access to the bucket is required.",
+  default: "true",
+  clean: util.types.toBool,
+});
