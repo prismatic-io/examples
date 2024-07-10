@@ -1,0 +1,709 @@
+category: ''
+configPages:
+  - elements:
+      - type: configVar
+        value: Databricks
+      - type: configVar
+        value: AWS S3
+      - type: configVar
+        value: SFTP Connection
+      - type: configVar
+        value: Google Sheets Connection
+    name: Configuration
+    tagline: ''
+  - elements:
+      - type: configVar
+        value: AWS Region
+      - type: configVar
+        value: Select Databricks S3 Bucket
+      - type: configVar
+        value: Databricks SQL Warehouse
+    name: S3 Bucket
+    tagline: ''
+    userLevelConfigured: false
+  - elements:
+      - type: configVar
+        value: Select Spreadsheet
+    name: Google Sheets
+    tagline: ''
+    userLevelConfigured: false
+defaultInstanceProfile: Default Instance Profile
+definitionVersion: 7
+description: ''
+documentation: >-
+  An example that demonstrates how to subscribe to events in an Amazon S3
+  bucket.
+endpointType: flow_specific
+flows:
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Send CSV to Databricks
+    steps:
+      - action:
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+          key: webhook
+        description: With filename and tablename
+        inputs:
+          body:
+            type: value
+            value: ''
+          contentType:
+            type: value
+            value: ''
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ''
+        isTrigger: true
+        name: Receive CSV data
+      - action:
+          component:
+            isPublic: true
+            key: aws-s3
+            version: LATEST
+          key: listObjects
+        description: ''
+        inputs:
+          accessKey:
+            type: configVar
+            value: AWS S3
+          awsRegion:
+            type: configVar
+            value: AWS Region
+          bucket:
+            type: configVar
+            value: Select Databricks S3 Bucket
+          continuationToken:
+            type: value
+            value: ''
+          dynamicAccessKeyId:
+            type: value
+            value: ''
+          dynamicSecretAccessKey:
+            type: value
+            value: ''
+          dynamicSessionToken:
+            type: value
+            value: ''
+          includeMetadata:
+            type: value
+            value: 'false'
+          maxKeys:
+            type: value
+            value: ''
+          prefix:
+            type: value
+            value: unity-catalog/
+        name: List Objects
+      - action:
+          component:
+            isPublic: true
+            key: text-manipulation
+            version: LATEST
+          key: split
+        description: Determine Databricks Data Ingestion Location
+        inputs:
+          separator:
+            type: value
+            value: /
+          text:
+            type: reference
+            value: listObjects.results.1
+        name: Split String
+      - action:
+          component:
+            isPublic: true
+            key: text-manipulation
+            version: LATEST
+          key: join
+        description: Create full S3 file path
+        inputs:
+          separator:
+            type: value
+            value: ''
+          strings:
+            type: complex
+            value:
+              - type: template
+                value: >-
+                  s3://{{#Select Databricks S3
+                  Bucket}}/unity-catalog/{{$splitString.results.1}}/{{$receiveCsvData.results.queryParameters.filename}}
+        name: Join
+      - action:
+          component:
+            isPublic: true
+            key: aws-s3
+            version: LATEST
+          key: putObject
+        description: Write file into S3
+        inputs:
+          accessKey:
+            type: configVar
+            value: AWS S3
+          acl:
+            type: value
+            value: ''
+          awsRegion:
+            type: configVar
+            value: AWS Region
+          bucket:
+            type: configVar
+            value: Select Databricks S3 Bucket
+          dynamicAccessKeyId:
+            type: value
+            value: ''
+          dynamicSecretAccessKey:
+            type: value
+            value: ''
+          dynamicSessionToken:
+            type: value
+            value: ''
+          fileContents:
+            type: reference
+            value: receiveCsvData.results.body.data
+          objectKey:
+            type: template
+            value: >-
+              unity-catalog/{{$splitString.results.1}}/{{$receiveCsvData.results.queryParameters.filename}}
+          tagging:
+            type: complex
+            value: []
+        name: Put Object
+      - action:
+          component:
+            isPublic: true
+            key: databricks
+            version: LATEST
+          key: runSql
+        description: Direct Databricks to create a table with the file contents
+        inputs:
+          connection:
+            type: configVar
+            value: Databricks
+          debug:
+            type: value
+            value: 'false'
+          sqlParameters:
+            type: value
+            value: ''
+          sqlStatement:
+            type: template
+            value: >-
+              CREATE TABLE IF NOT EXISTS
+              {{$receiveCsvData.results.queryParameters.tablename}}
+               USING csv
+              LOCATION '{{$join.results}}'
+          warehouseId:
+            type: configVar
+            value: Databricks SQL Warehouse
+        name: 'SQL: Execute an SQL Statement'
+      - action:
+          component:
+            isPublic: true
+            key: aws-s3
+            version: LATEST
+          key: deleteObject
+        description: Remove the CSV from S3
+        inputs:
+          accessKey:
+            type: configVar
+            value: AWS S3
+          awsRegion:
+            type: configVar
+            value: AWS Region
+          bucket:
+            type: configVar
+            value: Select Databricks S3 Bucket
+          dynamicAccessKeyId:
+            type: value
+            value: ''
+          dynamicSecretAccessKey:
+            type: value
+            value: ''
+          dynamicSessionToken:
+            type: value
+            value: ''
+          objectKey:
+            type: template
+            value: >-
+              unity-catalog/{{$splitString.results.1}}/{{$receiveCsvData.results.queryParameters.filename}}
+        name: Delete Object
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Get CSV from SFTP
+    steps:
+      - action:
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+          key: webhook
+        description: Receive change notification from SFTP server
+        inputs:
+          body:
+            type: value
+            value: ''
+          contentType:
+            type: value
+            value: ''
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ''
+        isTrigger: true
+        name: Get CSV from SFTP Trigger
+      - action:
+          component:
+            isPublic: true
+            key: sftp
+            version: LATEST
+          key: readFile
+        description: ''
+        inputs:
+          connection:
+            type: configVar
+            value: SFTP Connection
+          debug:
+            type: value
+            value: 'false'
+          inputPath:
+            type: reference
+            value: getCsvFromSftpTrigger.results.body.data.path
+          returnBuffer:
+            type: value
+            value: 'false'
+        name: Read File
+      - action:
+          component:
+            isPublic: true
+            key: csv
+            version: LATEST
+          key: parse
+        description: ''
+        inputs:
+          csv:
+            type: reference
+            value: readFile.results
+          delimiter:
+            type: value
+            value: ','
+        name: Parse
+      - action:
+          component:
+            isPublic: true
+            key: text-manipulation
+            version: LATEST
+          key: split
+        description: Generate tablename from filename
+        inputs:
+          separator:
+            type: value
+            value: .
+          text:
+            type: reference
+            value: getCsvFromSftpTrigger.results.body.data.filename
+        name: Split String
+      - action:
+          component:
+            isPublic: true
+            key: http
+            version: LATEST
+          key: httpPost
+        description: Send CSV to sibling flow
+        inputs:
+          connection:
+            type: configVar
+            value: ''
+          data:
+            type: reference
+            value: readFile.results.data
+          debugRequest:
+            type: value
+            value: 'false'
+          headers:
+            type: complex
+            value:
+              - name:
+                  type: value
+                  value: filename
+                type: reference
+                value: getCsvFromSftpTrigger.results.body.data.filename
+              - name:
+                  type: value
+                  value: tablename
+                type: reference
+                value: splitString.results.0
+          ignoreSslErrors:
+            type: value
+            value: 'false'
+          includeFullResponse:
+            type: value
+            value: 'false'
+          maxRetries:
+            type: value
+            value: '0'
+          queryParams:
+            type: complex
+            value: []
+          responseType:
+            type: value
+            value: json
+          retryDelayMS:
+            type: value
+            value: '0'
+          retryOnAllErrors:
+            type: value
+            value: 'false'
+          timeout:
+            type: value
+            value: ''
+          url:
+            type: reference
+            value: getCsvFromSftpTrigger.results.webhookUrls.Send CSV to Databricks
+          useExponentialBackoff:
+            type: value
+            value: 'false'
+        name: POST Request
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Sync Google Sheet Daily
+    steps:
+      - action:
+          component:
+            isPublic: true
+            key: schedule-triggers
+            version: LATEST
+          key: schedule
+        description: Sync Sheets Daily
+        inputs: {}
+        isTrigger: true
+        name: Google Sheets Trigger
+        schedule:
+          meta:
+            scheduleType: day
+            timeZone: ''
+          type: value
+          value: 00 00 */1 * *
+      - action:
+          component:
+            isPublic: true
+            key: google-sheets
+            version: LATEST
+          key: listSheets
+        description: ''
+        inputs:
+          connection:
+            type: configVar
+            value: Google Sheets Connection
+          spreadsheetId:
+            type: configVar
+            value: Select Spreadsheet
+        name: List Worksheets
+      - action:
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+          key: loopOverItems
+        description: Loop through the worksheets in the configured sheet
+        inputs:
+          items:
+            type: reference
+            value: listWorksheets.results
+        name: Loop Over Items
+        steps:
+          - action:
+              component:
+                isPublic: true
+                key: google-sheets
+                version: LATEST
+              key: getRows
+            description: ''
+            inputs:
+              connection:
+                type: configVar
+                value: Google Sheets Connection
+              limit:
+                type: value
+                value: ''
+              offset:
+                type: value
+                value: ''
+              spreadsheetId:
+                type: reference
+                value: loopOverItems.currentItem.spreadsheetId
+              title:
+                type: reference
+                value: loopOverItems.currentItem.title
+            name: Get Rows
+          - action:
+              component:
+                isPublic: true
+                key: csv
+                version: LATEST
+              key: generateFromObject
+            description: ''
+            inputs:
+              delimiter:
+                type: value
+                value: ','
+              includeHeader:
+                type: value
+                value: 'true'
+              inputArray:
+                type: reference
+                value: getRows.results
+            name: Generate CSV From Array
+          - action:
+              component:
+                isPublic: true
+                key: customHttp
+                version: LATEST
+              key: httpPost
+            description: Send CSV, filename, and tablename to sibling flow
+            inputs:
+              connection:
+                type: configVar
+                value: ''
+              data:
+                type: reference
+                value: generateCsvFromArray.results
+              debugRequest:
+                type: value
+                value: 'false'
+              headers:
+                type: complex
+                value: []
+              ignoreSslErrors:
+                type: value
+                value: 'false'
+              includeFullResponse:
+                type: value
+                value: 'false'
+              maxRetries:
+                type: value
+                value: '0'
+              queryParams:
+                type: complex
+                value:
+                  - name:
+                      type: value
+                      value: filename
+                    type: template
+                    value: '{{$loopOverItems.currentItem.title}}.csv'
+                  - name:
+                      type: value
+                      value: tablename
+                    type: reference
+                    value: loopOverItems.currentItem.title
+              responseType:
+                type: value
+                value: json
+              retryDelayMS:
+                type: value
+                value: '0'
+              retryOnAllErrors:
+                type: value
+                value: 'false'
+              timeout:
+                type: value
+                value: ''
+              url:
+                type: reference
+                value: googleSheetsTrigger.results.webhookUrls.Send CSV to Databricks
+              useExponentialBackoff:
+                type: value
+                value: 'false'
+            name: POST Request
+name: Send CSV to Databricks Example
+requiredConfigVars:
+  - connection:
+      component:
+        isPublic: true
+        key: databricks
+        version: LATEST
+      key: personalAccessToken
+    dataType: connection
+    inputs:
+      apiKey:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: Add your apiKey here
+      host:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: Add your host here
+    key: Databricks
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - connection:
+      component:
+        isPublic: true
+        key: aws-s3
+        version: LATEST
+      key: apiKeySecret
+    dataType: connection
+    inputs:
+      accessKeyId:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: Add your accessKeyId here
+      secretAccessKey:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: Add your secretAccessKey here
+    key: AWS S3
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataSource:
+      component:
+        isPublic: true
+        key: aws-s3
+        version: LATEST
+      key: selectBucket
+    dataType: picklist
+    defaultValue: ''
+    inputs:
+      accessKey:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: AWS S3
+      dynamicAccessKeyId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ''
+      dynamicSecretAccessKey:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ''
+      dynamicSessionToken:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ''
+    key: Select Databricks S3 Bucket
+    orgOnly: false
+  - dataSource:
+      component:
+        isPublic: true
+        key: databricks
+        version: LATEST
+      key: selectWarehouse
+    dataType: picklist
+    defaultValue: ''
+    inputs:
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Databricks
+    key: Databricks SQL Warehouse
+    orgOnly: false
+  - dataSource:
+      component:
+        isPublic: true
+        key: aws-s3
+        version: LATEST
+      key: selectRegion
+    dataType: picklist
+    defaultValue: ''
+    key: AWS Region
+    orgOnly: false
+  - connection:
+      component:
+        isPublic: true
+        key: sftp
+        version: LATEST
+      key: basic
+    dataType: connection
+    inputs:
+      host:
+        type: value
+        value: Add your host here
+      password:
+        type: value
+        value: Add your password here
+      port:
+        type: value
+        value: '22'
+      timeout:
+        type: value
+        value: '3000'
+      username:
+        type: value
+        value: Add your username here
+    key: SFTP Connection
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - connection:
+      component:
+        isPublic: true
+        key: google-sheets
+        version: LATEST
+      key: oauth2
+    dataType: connection
+    inputs:
+      clientId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: Add your clientId here
+      clientSecret:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: Add your clientSecret here
+      scopes:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: https://www.googleapis.com/auth/spreadsheets
+    key: Google Sheets Connection
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataType: string
+    defaultValue: ''
+    key: Select Spreadsheet
+    orgOnly: false
+
