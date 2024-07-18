@@ -1,6 +1,13 @@
 # Prismatic Example Integration: Slack Interactive Post Template
 
-This repository contains an example integration for Prismatic that consists of two parts: the main Slack integration called "Slack Interactive Post Template" and a Slack Webhook Router integration.
+This repository contains an example integration for Prismatic that consists of two parts: the main Slack integration called "Slack Interactive Post Template" and a Slack Webhook Router integration. These integrations require you to have already created your Slack Oauth App using the instructions here: https://prismatic.io/docs/components/slack/
+
+## Setup Instructions
+
+1. Create a "System" customer in your account as a place to deploy Router integrations.
+2. Deploy the Slack Router Integration to your "System" customer and make note of the webhook URLs for the Registration flow. You'll need those for deploying the Slack Interactive Post integration.
+3. Import the Slack Interactive Post integration and update the oauth credentials to match your Slack App's credentials
+4. Update Post Request step of the Registration flow with the Registration webhook URL saved in step 2 
 
 ## Slack Interactive Post Template
 
