@@ -21,10 +21,26 @@ export const configPages = {
           component: "slack",
           key: "oauth2",
           values: {
-            clientId: { value: SLACK_CLIENT_ID },
-            clientSecret: { value: SLACK_CLIENT_SECRET },
-            signingSecret: { value: SLACK_SIGNING_SECRET },
-            scopes: { value: "chat:write chat:write.public channels:read" },
+            clientId: {
+              value: SLACK_CLIENT_ID,
+              permissionAndVisibilityType: "organization",
+              visibleToOrgDeployer: false,
+            },
+            clientSecret: {
+              value: SLACK_CLIENT_SECRET,
+              permissionAndVisibilityType: "organization",
+              visibleToOrgDeployer: false,
+            },
+            signingSecret: {
+              value: SLACK_SIGNING_SECRET,
+              permissionAndVisibilityType: "organization",
+              visibleToOrgDeployer: false,
+            },
+            scopes: {
+              value: "chat:write chat:write.public channels:read",
+              permissionAndVisibilityType: "organization",
+              visibleToOrgDeployer: false,
+            },
           },
         },
       }),
