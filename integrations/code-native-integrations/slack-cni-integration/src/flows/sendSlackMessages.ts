@@ -23,7 +23,6 @@
  */
 
 import { HttpResponse, flow, util } from "@prismatic-io/spectral";
-import { configPages } from "../configPages";
 import { XMLParser } from "fast-xml-parser";
 import { createSlackClient } from "../slackClient";
 import axios from "axios";
@@ -44,7 +43,7 @@ interface AccountNotification {
   };
 }
 
-const sendMessagesFlow = flow<typeof configPages>({
+const sendMessagesFlow = flow({
   name: "Send Slack Message on Account Received",
   stableKey: "send-slack-messages",
   description: "Send a message to a Slack channel when an account is received",
