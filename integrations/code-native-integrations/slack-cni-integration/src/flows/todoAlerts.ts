@@ -7,7 +7,6 @@
  */
 
 import { flow } from "@prismatic-io/spectral";
-import { configPages } from "../configPages";
 import axios from "axios";
 import { createSlackClient } from "../slackClient";
 
@@ -17,8 +16,7 @@ interface TodoItem {
   task: string;
 }
 
-// <typeof configPages> provides your flow with type hinting and access to config variables defined in configPages
-export const todoAlertsFlow = flow<typeof configPages>({
+export const todoAlertsFlow = flow({
   name: "Send TODO messages to Slack",
   stableKey: "slack-todo-alerts-flow",
   description: "Fetch TODO items from Acme and send to Slack",
@@ -31,16 +29,20 @@ export const todoAlertsFlow = flow<typeof configPages>({
     // Config variables are accessed using the context object
     const { logger, configVars } = context;
 
+    // Make an HTTP request to the Acme API using the config variable
     const { data: todoItems } = await axios.get<TodoItem[]>(
       configVars["Acme API Endpoint"]
     );
 
+    // Create an HTTP Slack client using the Slack OAuth connection
     const slackClient = createSlackClient(configVars["Slack OAuth Connection"]);
 
+    // Loop over the todo items
     for (const item of todoItems) {
       if (item.completed) {
         logger.info(`Skipping completed item ${item.id}`);
       } else {
+        // Send a message to the Slack channel for each incomplete item
         logger.info(`Sending message for item ${item.id}`);
         try {
           await slackClient.post("chat.postMessage", {
@@ -53,6 +55,7 @@ export const todoAlertsFlow = flow<typeof configPages>({
       }
     }
 
+    // Asynchronously-invoked flows should simply return null
     return { data: null };
   },
 });

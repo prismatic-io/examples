@@ -22,12 +22,9 @@
  *
  */
 
-import { Connection, HttpResponse, flow, util } from "@prismatic-io/spectral";
-import { ConfigPages } from "../configPages";
+import { HttpResponse, flow, util } from "@prismatic-io/spectral";
 import { XMLParser } from "fast-xml-parser";
-import { createSlackClient } from "../slackClient";
 import axios from "axios";
-import { Components } from "../components";
 
 interface AccountNotification {
   notification: {
@@ -45,7 +42,7 @@ interface AccountNotification {
   };
 }
 
-const sendMessagesFlow = flow<ConfigPages, Components>({
+const sendMessagesFlow = flow({
   name: "Send Slack Message on Account Received",
   stableKey: "send-slack-messages",
   description: "Send a message to a Slack channel when an account is received",
@@ -69,9 +66,6 @@ const sendMessagesFlow = flow<ConfigPages, Components>({
   },
   onExecution: async (context, params) => {
     const { configVars } = context;
-    const slackClient = createSlackClient(
-      configVars["Slack OAuth Connection"] as Connection
-    );
 
     // The parsed XML payload is available in the params object
     const data = params.onTrigger.results.body.data as AccountNotification;
@@ -83,9 +77,10 @@ const sendMessagesFlow = flow<ConfigPages, Components>({
       `Company: ${data.notification.account.company.name}\n` +
       `Location: ${data.notification.account.company.city}, ${data.notification.account.company.state}\n`;
 
-    await slackClient.post("chat.postMessage", {
-      channel: configVars["Select Slack Channel"],
-      text: message,
+    await context.components.slack.postMessage({
+      channelName: util.types.toString(configVars["Select Slack Channel"]),
+      connection: configVars["Slack OAuth Connection"],
+      message,
     });
 
     return { data: null };

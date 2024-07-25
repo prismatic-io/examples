@@ -6,11 +6,8 @@
  * https://prismatic.io/docs/getting-started/first-integration/build-first-integration/
  */
 
-import { Connection, flow } from "@prismatic-io/spectral";
-import { ConfigPages } from "../configPages";
+import { flow, util } from "@prismatic-io/spectral";
 import axios from "axios";
-import { createSlackClient } from "../slackClient";
-import { Components } from "../components";
 
 interface TodoItem {
   id: number;
@@ -18,7 +15,7 @@ interface TodoItem {
   task: string;
 }
 
-export const todoAlertsFlow = flow<ConfigPages, Components>({
+export const todoAlertsFlow = flow({
   name: "Send TODO messages to Slack",
   stableKey: "todo-alerts-flow",
   description: "Fetch TODO items from Acme and send to Slack",
@@ -31,19 +28,18 @@ export const todoAlertsFlow = flow<ConfigPages, Components>({
       configVars["Acme API Endpoint"]
     );
 
-    const slackClient = createSlackClient(
-      configVars["Slack OAuth Connection"] as Connection
-    );
-
     for (const item of todoItems) {
       if (item.completed) {
         logger.info(`Skipping completed item ${item.id}`);
       } else {
         logger.info(`Sending message for item ${item.id}`);
         try {
-          await slackClient.post("chat.postMessage", {
-            channel: configVars["Select Slack Channel"],
-            text: `Incomplete task: ${item.task}`,
+          await context.components.slack.postMessage({
+            channelName: util.types.toString(
+              configVars["Select Slack Channel"]
+            ),
+            connection: configVars["Slack OAuth Connection"],
+            message: `Incomplete task: ${item.task}`,
           });
         } catch (e) {
           throw new Error(`Failed to send message for item ${item.id}: ${e}`);

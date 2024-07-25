@@ -1,20 +1,46 @@
-import { configPage, configVar, reference } from "@prismatic-io/spectral";
-import { Components } from "./components";
+import {
+  configPage,
+  configVar,
+  connectionConfigVar,
+  dataSourceConfigVar,
+} from "@prismatic-io/spectral";
+import {
+  SLACK_CLIENT_ID,
+  SLACK_CLIENT_SECRET,
+  SLACK_SIGNING_SECRET,
+} from "./slackConfig";
 
 export const configPages = {
   Connections: configPage({
     tagline: "Authenticate with Slack",
     elements: {
-      "Slack OAuth Connection": reference<Components>().connection({
-        stableKey: "slack-connection",
+      "Slack OAuth Connection": connectionConfigVar({
+        stableKey: "slack-oauth-connection",
+        dataType: "connection",
         connection: {
           component: "slack",
           key: "oauth2",
           values: {
-            clientId: { value: "REPLACE_ME_WITH_CLIENT_ID" },
-            clientSecret: { value: "REPLACE_ME_WITH_CLIENT_SECRET" },
-            signingSecret: { value: "REPLACE_ME_WITH_SIGNING_SECRET" },
-            scopes: { value: "chat:write chat:write.public channels:read" },
+            clientId: {
+              value: SLACK_CLIENT_ID,
+              permissionAndVisibilityType: "organization",
+              visibleToOrgDeployer: false,
+            },
+            clientSecret: {
+              value: SLACK_CLIENT_SECRET,
+              permissionAndVisibilityType: "organization",
+              visibleToOrgDeployer: false,
+            },
+            signingSecret: {
+              value: SLACK_SIGNING_SECRET,
+              permissionAndVisibilityType: "organization",
+              visibleToOrgDeployer: false,
+            },
+            scopes: {
+              value: "chat:write chat:write.public channels:read",
+              permissionAndVisibilityType: "organization",
+              visibleToOrgDeployer: false,
+            },
           },
         },
       }),
@@ -23,15 +49,14 @@ export const configPages = {
   "Slack Config": configPage({
     tagline: "Select a Slack channel from a dropdown menu",
     elements: {
-      "Select Slack Channel": reference<Components>().dataSource({
-        stableKey: "slack-channel",
-        dataSourceType: "picklist",
+      "Select Slack Channel": dataSourceConfigVar({
+        stableKey: "select-slack-channel",
         dataSource: {
           component: "slack",
           key: "selectChannels",
           values: {
             connection: { configVar: "Slack OAuth Connection" },
-            includePublicChannels: { value: "true" },
+            includePublicChannels: { value: true },
           },
         },
       }),
@@ -55,5 +80,3 @@ export const configPages = {
     },
   }),
 };
-
-export type ConfigPages = typeof configPages;

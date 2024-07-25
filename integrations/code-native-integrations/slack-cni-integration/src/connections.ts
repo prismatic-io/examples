@@ -1,8 +1,13 @@
 import { OAuth2Type, connectionConfigVar } from "@prismatic-io/spectral";
+import {
+  SLACK_CLIENT_ID,
+  SLACK_CLIENT_SECRET,
+  SLACK_SIGNING_SECRET,
+} from "./slackConfig";
 
 export const slackConnectionConfigVar = connectionConfigVar({
   stableKey: "slack-oauth-connection",
-  label: "Slack OAuth Connection Label",
+  dataType: "connection",
   oauth2Type: OAuth2Type.AuthorizationCode,
   inputs: {
     authorizeUrl: {
@@ -48,7 +53,7 @@ export const slackConnectionConfigVar = connectionConfigVar({
       required: true,
       shown: false,
       comments: "Client Identifier of your app for the API",
-      default: "REPLACE_ME_WITH_YOUR_CLIENT_ID",
+      default: SLACK_CLIENT_ID,
     },
     clientSecret: {
       label: "Client Secret",
@@ -57,14 +62,14 @@ export const slackConnectionConfigVar = connectionConfigVar({
       required: true,
       shown: false,
       comments: "Client Secret of your app for the API",
-      default: "REPLACE_ME_WITH_YOUR_CLIENT_SECRET",
+      default: SLACK_CLIENT_SECRET,
     },
     signingSecret: {
       label: "Signing Secret",
       type: "password",
       required: true,
       shown: false,
-      default: "REPLACE_ME_WITH_YOUR_SIGNING_SECRET",
+      default: SLACK_SIGNING_SECRET,
     },
   },
 });

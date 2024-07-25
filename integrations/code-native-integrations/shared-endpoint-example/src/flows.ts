@@ -1,6 +1,5 @@
 import axios from "axios";
 import { flow } from "@prismatic-io/spectral";
-import type { ConfigPages } from "./configPages";
 
 const flowMapper = {
   create_opportunity: "Create Opportunity",
@@ -26,7 +25,7 @@ interface UpdateOpportunityPayload {
 
 type Payload = CreateOpportunityPayload | UpdateOpportunityPayload;
 
-export const myPreprocessFlow = flow<ConfigPages>({
+export const myPreprocessFlow = flow({
   name: "My Preprocess Flow",
   stableKey: "my-preprocess-flow",
   preprocessFlowConfig: { flowNameField: "myFlowName" },
@@ -43,7 +42,7 @@ export const myPreprocessFlow = flow<ConfigPages>({
   },
 });
 
-export const createOpportunity = flow<ConfigPages>({
+export const createOpportunity = flow({
   name: "Create Opportunity",
   stableKey: "create-opportunity",
   description: "This flow creates an opportunity",
@@ -64,7 +63,7 @@ export const createOpportunity = flow<ConfigPages>({
   },
 });
 
-export const updateOpportunity = flow<ConfigPages>({
+export const updateOpportunity = flow({
   name: "Update Opportunity",
   stableKey: "update-opportunity",
   description: "This flow updates an opportunity",
