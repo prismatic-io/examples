@@ -1,0 +1,11 @@
+{
+  "name": "@prismatic-io/asana-helper",
+  "version": "1.0.0",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prismatic-io/spectral": "8.1.7"
+  }
+}
