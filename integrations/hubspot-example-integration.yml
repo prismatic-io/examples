@@ -826,28 +826,28 @@ requiredConfigVars:
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: 
+        value: ''
       clientId:
         meta:
           orgOnly: true
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: 
+        value: ''
       clientSecret:
         meta:
           orgOnly: true
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: 
+        value: ''
       developerApiKey:
         meta:
           orgOnly: true
           visibleToCustomerDeployer: false
           visibleToOrgDeployer: false
         type: value
-        value: 
+        value: ''
       scopes:
         meta:
           orgOnly: true
@@ -861,7 +861,6 @@ requiredConfigVars:
           crm.objects.contacts.write crm.schemas.contacts.write
           crm.objects.custom.read crm.schemas.custom.read
     key: Hubspot Connection
-    onPremiseConnectionConfig: disallowed
     orgOnly: false
   - dataType: string
     defaultValue: 'https://example.com'
