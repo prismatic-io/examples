@@ -3116,6 +3116,29 @@
     valid-url "1.0.9"
     yaml "2.3.4"
 
+"@prismatic-io/spectral@9.0.5":
+  version "9.0.5"
+  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-9.0.5.tgz#aba8e4dc47fd92e58bdb0e7c8c7ef07702866648"
+  integrity sha512-t8xE/nBWWT5l4rCXaQYwUc0pRO8JDaFs3FmimKwnNvVwEPvHMs51j+vwfo7A7SHj8eltVHM8K8wqSbgAx02rTg==
+  dependencies:
+    "@jsonforms/core" "3.0.0"
+    axios "1.6.2"
+    axios-retry "3.9.1"
+    date-fns "2.30.0"
+    ejs "^3.1.10"
+    form-data "4.0.0"
+    fs-extra "^11.2.0"
+    jest-mock "29.7.0"
+    lodash "4.17.21"
+    object-sizeof "^2.6.4"
+    prettier "2.6.2"
+    safe-stable-stringify "2.3.1"
+    serialize-error "8.1.0"
+    url-join "5.0.0"
+    uuid "8.3.2"
+    valid-url "1.0.9"
+    yaml "2.3.4"
+
 "@prismatic-io/spectral@^1.0.3":
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-1.0.7.tgz#e5dfc720bd24437cac47ecd5f706906c91ad8459"
@@ -12295,6 +12318,11 @@ prettier@2.0.5:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.0.5.tgz#d6d56282455243f2f92cc1716692c08aa31522d4"
   integrity sha512-7PtVymN48hGcO4fGjybyBSIWDsLU4H4XlvOHfq91pz9kkGlonzwTfYkaIEwiRg/dAJF9YlbsduBAgtYLi+8cFg==
+
+prettier@2.6.2:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.6.2.tgz#e26d71a18a74c3d0f0597f55f01fb6c06c206032"
+  integrity sha512-PkUpF+qoXTqhOeWL9fu7As8LXsIUZ1WYaJiY/a7McAQzxjk82OF0tibkFXVCDImZtWxbvojFjerkiLb0/q8mew==
 
 prettier@^2.2.1:
   version "2.8.8"
