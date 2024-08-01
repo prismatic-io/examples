@@ -1,0 +1,29 @@
+{
+  "name": "backup-integrations-and-instances",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "backup": "ts-node src/index.ts backup",
+    "restore": "ts-node src/index.ts restore"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cli-progress": "^3.12.0",
+    "fetch-retry": "6.0.0",
+    "graphql": "^16.8.1",
+    "graphql-request": "^6.1.0",
+    "isomorphic-fetch": "^3.0.0",
+    "slugify": "^1.6.6",
+    "url-join": "^5.0.0",
+    "yaml": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/cli-progress": "^3.11.5",
+    "@types/isomorphic-fetch": "^0.0.39",
+    "@types/node": "^20.4.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}
