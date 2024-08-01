@@ -34,6 +34,7 @@ const instanceQuery = gql`
     ) {
       nodes {
         id
+        name
         customer {
           id
           name
@@ -46,6 +47,8 @@ const instanceQuery = gql`
             requiredConfigVariable {
               key
             }
+            authorizeUrl
+            refreshAt
             value
             scheduleType
             timeZone

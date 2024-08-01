@@ -86,6 +86,14 @@ async function exportData() {
     integrationProgressBar.increment();
   }
 
+  fs.writeFileSync(
+    path.join(backupDirectory, "metadata.json"),
+    JSON.stringify({
+      integrationCount: integrationProgressBar.getTotal(),
+      instanceCount: instanceProgressBar.getTotal(),
+    })
+  );
+
   multibar.stop();
 }
 
