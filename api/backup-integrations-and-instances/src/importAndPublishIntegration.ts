@@ -20,11 +20,11 @@ interface ImportIntegrationResponse {
     integration: {
       id: string;
     };
+    errors: {
+      field: string;
+      messages: string;
+    }[];
   };
-  errors: {
-    field: string;
-    messages: string;
-  }[];
 }
 
 const publishIntegrationMutation = gql`
@@ -67,6 +67,18 @@ const importIntegration = async ({
       definition,
     }
   );
+
+  if (importResponse.importIntegration.errors.length > 0) {
+    for (const error of importResponse.importIntegration.errors) {
+      console.error(`Error in field "${error.field}".`);
+      for (const message of error.messages)
+        console.error(`\tError: ${message}`);
+    }
+    throw new Error(
+      "Unable to import integration. Please check that all required private components have been published to your tenant."
+    );
+  }
+
   const { id: integrationId } = importResponse.importIntegration.integration;
 
   // Publish integration
