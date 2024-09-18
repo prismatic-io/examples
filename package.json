@@ -8,6 +8,11 @@
       "components/packages/*",
       "integrations/code-native-integrations/*",
       "packages/*"
+    ],
+    "nohoist": [
+      "**/webpack",
+      "**/typescript",
+      "**/@prismatic-io/spectral"
     ]
   },
   "devDependencies": {

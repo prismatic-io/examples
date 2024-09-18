@@ -3116,6 +3116,29 @@
     valid-url "1.0.9"
     yaml "2.3.4"
 
+"@prismatic-io/spectral@9.1.1":
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-9.1.1.tgz#2ccca181952f0ee3196be6b015c45425cf5ca3b2"
+  integrity sha512-Hqt3e2c8IqH56H95LEkfsLVZGMDyIV6nUf7zA8wIEH1SEWzGHzLFd+PhcGCD6m4avEmux2Jp0sJf6wS94js7Rg==
+  dependencies:
+    "@jsonforms/core" "3.0.0"
+    axios "1.7.4"
+    axios-retry "3.9.1"
+    date-fns "2.30.0"
+    ejs "^3.1.10"
+    form-data "4.0.0"
+    fs-extra "^11.2.0"
+    jest-mock "29.7.0"
+    lodash "4.17.21"
+    object-sizeof "^2.6.4"
+    prettier "2.6.2"
+    safe-stable-stringify "2.3.1"
+    serialize-error "8.1.0"
+    url-join "5.0.0"
+    uuid "8.3.2"
+    valid-url "1.0.9"
+    yaml "2.3.4"
+
 "@prismatic-io/spectral@^1.0.3":
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@prismatic-io/spectral/-/spectral-1.0.7.tgz#e5dfc720bd24437cac47ecd5f706906c91ad8459"
@@ -4498,10 +4521,24 @@
   dependencies:
     "@types/ssh2" "*"
 
+"@types/ssh2-sftp-client@^9.0.4":
+  version "9.0.4"
+  resolved "https://registry.yarnpkg.com/@types/ssh2-sftp-client/-/ssh2-sftp-client-9.0.4.tgz#203c2281b84635797d85fa78f684e00169d5f758"
+  integrity sha512-gnIn56MTB9W3A3hPL/1sHI23t8YwcE3eVYa1O2XjT9vaqimFdtNHxyQiy5Y78+ociQTKazMSD8YyMEO4QjNMrg==
+  dependencies:
+    "@types/ssh2" "^1.0.0"
+
 "@types/ssh2@*":
   version "1.15.0"
   resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.15.0.tgz#ef698a2fe05696d898e0f9398384ad370cd35317"
   integrity sha512-YcT8jP5F8NzWeevWvcyrrLB3zcneVjzYY9ZDSMAMboI+2zR1qYWFhwsyOFVzT7Jorn67vqxC0FRiw8YyG9P1ww==
+  dependencies:
+    "@types/node" "^18.11.18"
+
+"@types/ssh2@^1.0.0":
+  version "1.15.1"
+  resolved "https://registry.yarnpkg.com/@types/ssh2/-/ssh2-1.15.1.tgz#4db4b6864abca09eb299fe5354fa591add412223"
+  integrity sha512-ZIbEqKAsi5gj35y4P4vkJYly642wIbY6PqoN0xiyQGshKUGXR9WQjF/iF9mXBQ8uBKy3ezfsCkcoHKhd0BzuDA==
   dependencies:
     "@types/node" "^18.11.18"
 
@@ -5570,6 +5607,15 @@ axios@1.6.8, axios@^1.6.5, axios@^1.6.8:
   version "1.6.8"
   resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.8.tgz#66d294951f5d988a00e87a0ffb955316a619ea66"
   integrity sha512-v/ZHtJDU39mDpyBoFVkETcd/uNdxrWRrg3bKpOKzXFA6Bvqopts6ALSMU3y6ijYxbw2B+wPrIv46egTzJXCLGQ==
+  dependencies:
+    follow-redirects "^1.15.6"
+    form-data "^4.0.0"
+    proxy-from-env "^1.1.0"
+
+axios@1.7.4:
+  version "1.7.4"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.7.4.tgz#4c8ded1b43683c8dd362973c393f3ede24052aa2"
+  integrity sha512-DukmaFRnY6AzAALSH4J2M3k6PkaC+MfaAGdEERRWcC9q3/TWQwLpHR8ZRLKTdQ3aBDL64EdluRDjJqKw+BPZEw==
   dependencies:
     follow-redirects "^1.15.6"
     form-data "^4.0.0"
@@ -11717,7 +11763,7 @@ node-int64@^0.4.0:
   resolved "https://registry.yarnpkg.com/node-int64/-/node-int64-0.4.0.tgz#87a9065cdb355d3182d8f94ce11188b825c68a3b"
   integrity sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==
 
-node-loader@2.0.0:
+node-loader@2.0.0, node-loader@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/node-loader/-/node-loader-2.0.0.tgz#9109a6d828703fd3e0aa03c1baec12a798071562"
   integrity sha512-I5VN34NO4/5UYJaUBtkrODPWxbobrE4hgDqPrjB25yPkonFhCmZ146vTH+Zg417E9Iwoh1l/MbRs1apc5J295Q==
@@ -12288,6 +12334,11 @@ prettier@2.0.5:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.0.5.tgz#d6d56282455243f2f92cc1716692c08aa31522d4"
   integrity sha512-7PtVymN48hGcO4fGjybyBSIWDsLU4H4XlvOHfq91pz9kkGlonzwTfYkaIEwiRg/dAJF9YlbsduBAgtYLi+8cFg==
+
+prettier@2.6.2:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.6.2.tgz#e26d71a18a74c3d0f0597f55f01fb6c06c206032"
+  integrity sha512-PkUpF+qoXTqhOeWL9fu7As8LXsIUZ1WYaJiY/a7McAQzxjk82OF0tibkFXVCDImZtWxbvojFjerkiLb0/q8mew==
 
 prettier@^2.2.1:
   version "2.8.8"
@@ -13353,7 +13404,16 @@ ssh2-sftp-client@9.1.0:
     promise-retry "^2.0.1"
     ssh2 "^1.12.0"
 
-ssh2@^1.12.0:
+ssh2-sftp-client@^11.0.0:
+  version "11.0.0"
+  resolved "https://registry.yarnpkg.com/ssh2-sftp-client/-/ssh2-sftp-client-11.0.0.tgz#86909d9b02ab09cb47ec45a1c287c97dafd44b3d"
+  integrity sha512-lOjgNYtioYquhtgyHwPryFNhllkuENjvCKkUXo18w/Q4UpEffCnEUBfiOTlwFdKIhG1rhrOGnA6DeKPSF2CP6w==
+  dependencies:
+    concat-stream "^2.0.0"
+    promise-retry "^2.0.1"
+    ssh2 "^1.15.0"
+
+ssh2@^1.12.0, ssh2@^1.15.0:
   version "1.15.0"
   resolved "https://registry.yarnpkg.com/ssh2/-/ssh2-1.15.0.tgz#2f998455036a7f89e0df5847efb5421748d9871b"
   integrity sha512-C0PHgX4h6lBxYx7hcXwu3QWdh4tg6tZZsTfXcdvc5caW/EMxaB4H9dWsl7qk+F7LAW762hp8VbXOX7x4xUYvEw==
@@ -14308,6 +14368,11 @@ typescript@5.5.3:
   version "5.5.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.5.3.tgz#e1b0a3c394190838a0b168e771b0ad56a0af0faa"
   integrity sha512-/hreyEujaB0w76zKo6717l3L0o/qEUtRgdvUBvlkhoWeOVMjMuHNHk0BRBzikzuGDqNmPQbg5ifMEqsHLiIUcQ==
+
+typescript@5.5.4:
+  version "5.5.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.5.4.tgz#d9852d6c82bad2d2eda4fd74a5762a8f5909e9ba"
+  integrity sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==
 
 typescript@^3.8.3:
   version "3.9.10"
