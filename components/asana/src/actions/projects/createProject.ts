@@ -9,12 +9,12 @@ import {
   name,
   notes,
   owner,
-  isPublic,
   startOn,
   team,
   workspaceId,
   connectionInput,
   htmlNotes,
+  privacySetting,
 } from "../../inputs";
 import { PROJECT_OPT_FIELDS } from "../../util";
 
@@ -36,10 +36,10 @@ export const createProjects = action({
         name: params.name,
         notes: params.notes,
         owner: params.owner,
-        public: params.isPublic,
         start_on: params.startOn,
         team: params.team,
         html_notes: params.htmlNotes || undefined,
+        privacy_setting: params.privacySetting,
       },
     };
 
@@ -59,6 +59,7 @@ export const createProjects = action({
     owner,
     projectColor,
     defaultView,
+    privacySetting,
     dueOn,
     archived,
     followers,
@@ -66,7 +67,6 @@ export const createProjects = action({
     htmlNotes,
     notes,
     startOn,
-    isPublic,
     workspaceId: {
       ...workspaceId,
       required: false,
@@ -86,7 +86,6 @@ export const createProjects = action({
         owner: { gid: "1202178852626547", resource_type: "user" },
         due_on: null,
         current_status: null,
-        public: false,
         name: "My Cool Project",
         notes: "Some notes on my project",
         archived: false,

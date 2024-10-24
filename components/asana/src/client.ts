@@ -1,7 +1,12 @@
 import { Connection, ConnectionError } from "@prismatic-io/spectral";
-import { createClient } from "@prismatic-io/spectral/dist/clients/http";
+import {
+  createClient,
+  HttpClient,
+} from "@prismatic-io/spectral/dist/clients/http";
 
-export const createAsanaClient = async (asanaConnection: Connection) => {
+export const createAsanaClient = async (
+  asanaConnection: Connection
+): Promise<HttpClient> => {
   const asanaClient = createClient({
     baseUrl: "https://app.asana.com/api/1.0",
     headers: {

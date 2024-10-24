@@ -46,7 +46,6 @@ export const listProjects = action({
           notes:
             "Asana helps you plan your 1:1s in advance, stay focused during the conversation, and track notes and action items.",
           owner: { gid: "1202178852626547", resource_type: "user" },
-          public: false,
           resource_type: "project",
           start_on: "2022-04-25",
           team: { gid: "1202178854270529", resource_type: "team" },

@@ -50,7 +50,12 @@ describe("Connect to server with SSH key", () => {
       path: "/",
       debug: false,
     });
-    expect(result?.data).toEqual(["docker-mods", "init", "keygen.sh"]);
+    expect(result?.data).toEqual([
+      "build_version",
+      "docker-mods",
+      "init",
+      "keygen.sh",
+    ]);
   });
   test("Connect to a system using SSH key without passphrase", async () => {
     const result = await harness.action("listDirectory", {
@@ -58,6 +63,11 @@ describe("Connect to server with SSH key", () => {
       path: "/",
       debug: false,
     });
-    expect(result?.data).toEqual(["docker-mods", "init", "keygen.sh"]);
+    expect(result?.data).toEqual([
+      "build_version",
+      "docker-mods",
+      "init",
+      "keygen.sh",
+    ]);
   });
 });

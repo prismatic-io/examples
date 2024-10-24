@@ -719,3 +719,26 @@ export const listAllNestedSubtasks = input({
   default: "false",
   clean: util.types.toBool,
 });
+
+export const privacySetting = input({
+  label: "Privacy Setting",
+  type: "string",
+  comments:
+    "The privacy setting of the project. Note: Administrators in your organization may restrict these values.",
+  required: false,
+  model: [
+    {
+      label: "Public To Workspace",
+      value: "public_to_workspace",
+    },
+    {
+      label: "Private To Team",
+      value: "private_to_team",
+    },
+    {
+      label: "Private",
+      value: "private",
+    },
+  ],
+  clean: util.types.toString,
+});

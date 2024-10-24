@@ -35,7 +35,6 @@ export const getProject = action({
         name: "My new project name",
         notes: "My new project notes",
         owner: { gid: "1202178852626547", resource_type: "user" },
-        public: true,
         resource_type: "project",
         start_on: null,
         team: { gid: "1202178854270529", resource_type: "team" },

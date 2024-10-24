@@ -1,6 +1,8 @@
 import { dataSource, Element, input, util } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../client";
-import { connectionInput } from "../inputs";
+import { connectionInput, teamId, workspaceId } from "../inputs";
+import { cleanString, fetchMoreData } from "../util";
+import { DataSource } from "../types/Project";
 
 const selectProject = dataSource({
   display: {
@@ -9,23 +11,23 @@ const selectProject = dataSource({
   },
   inputs: {
     connection: connectionInput,
-    workspace: input({ label: "Workspace", required: false, type: "string" }),
-    team: input({ label: "Team", required: false, type: "string" }),
+    workspace: { ...workspaceId, required: false, clean: cleanString },
+    team: { ...teamId, required: false, clean: cleanString },
   },
-  perform: async (context, params) => {
-    const client = await createAsanaClient(params.connection);
-    const {
-      data: { data },
-    } = await client.get<{
-      data: { gid: string; name: string }[];
-    }>("/projects", {
-      params: {
-        ...(params.workspace
-          ? { workspace: util.types.toString(params.workspace) }
-          : {}),
-        ...(params.team ? { team: util.types.toString(params.team) } : {}),
-      },
-    });
+  perform: async (context, { connection, team, workspace }) => {
+    const client = await createAsanaClient(connection);
+    const canPaginate = workspace || team ? true : false;
+    const data = await fetchMoreData<DataSource>(
+      client,
+      "/projects",
+      [],
+      canPaginate,
+      {
+        workspace,
+        team,
+        limit: canPaginate ? 100 : undefined,
+      }
+    );
 
     const result = data.map<Element>(({ gid, name }) => ({
       label: name,

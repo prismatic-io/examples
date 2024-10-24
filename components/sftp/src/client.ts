@@ -27,6 +27,21 @@ export const getAuthParams = (connection: Connection) => {
 export const getSftpClient = async (connection: Connection, debug: boolean) => {
   const sftp = new Client();
 
+  sftp.on("keyboard-interactive", function (
+    _name,
+    _instructions,
+    _instructionsLang,
+    _prompts,
+    finish
+  ) {
+    if (debug) {
+      console.debug(
+        "This SFTP server requires keyboard-interactive login. Falling back to keyboard-interactive."
+      );
+    }
+    finish([connection.fields.password]);
+  });
+
   const { host, port, timeout } = connection.fields;
 
   try {
@@ -34,6 +49,7 @@ export const getSftpClient = async (connection: Connection, debug: boolean) => {
       host: util.types.toString(host),
       port: util.types.toInt(port),
       readyTimeout: util.types.toInt(timeout) || 3000,
+      tryKeyboard: true,
       debug: (msg) => {
         if (debug) {
           console.debug(msg);

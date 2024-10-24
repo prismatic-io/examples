@@ -1,5 +1,4 @@
 import { action, input, util } from "@prismatic-io/spectral";
-import axios from "axios";
 import { createAsanaClient } from "../client";
 import {
   connectionInput,
@@ -125,9 +124,9 @@ const createWebhook = action({
       });
       return { data };
     } catch (err) {
-      if (axios.isAxiosError(err)) {
+      if (err) {
         if (
-          err.response?.data?.errors?.[0]?.message?.includes(
+          err?.response.data?.errors?.[0]?.message?.includes(
             "Duplicated webhook"
           )
         ) {

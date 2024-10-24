@@ -17,7 +17,8 @@ export const googleOAuthConnection = oauth2Connection({
       type: "string",
       required: true,
       shown: false,
-      default: "https://accounts.google.com/o/oauth2/auth",
+      default:
+        "https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&prompt=consent",
     },
     tokenUrl: {
       label: "Token URL",

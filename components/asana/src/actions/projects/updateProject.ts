@@ -10,11 +10,11 @@ import {
   notes,
   projectId,
   owner,
-  isPublic,
   startOn,
   team,
   connectionInput,
   htmlNotes,
+  privacySetting,
 } from "../../inputs";
 
 export const updateProject = action({
@@ -34,10 +34,10 @@ export const updateProject = action({
         name: params.name,
         notes: params.notes,
         owner: params.owner || undefined,
-        public: params.isPublic,
         start_on: params.startOn,
         team: params.team || undefined,
         html_notes: params.htmlNotes || undefined,
+        privacy_setting: params.privacySetting,
       },
     };
     const { data } = await client.put(
@@ -51,6 +51,7 @@ export const updateProject = action({
     projectId,
     projectColor,
     defaultView: { ...defaultView, required: false, default: "" },
+    privacySetting,
     dueOn,
     archived,
     followers,
@@ -58,7 +59,6 @@ export const updateProject = action({
     notes,
     htmlNotes,
     owner: { ...owner, required: false },
-    isPublic,
     startOn,
     team,
   },
@@ -73,7 +73,6 @@ export const updateProject = action({
         due_on: null,
         current_status_update: null,
         current_status: null,
-        public: true,
         name: "My new project name",
         notes: "My new project notes\n",
         archived: false,

@@ -19,7 +19,7 @@ export const addUserToProject = action({
       {
         params: {
           opt_fields:
-            "layout,team,workspace,html_notes,notes,color,custom_field_settings,custom_fields,followers,members,public,archived,modified_at,created_at,start_on,due_on,current_status,owner,name,resource_type,gid",
+            "layout,team,workspace,html_notes,notes,color,custom_field_settings,custom_fields,followers,members,privacy_setting,archived,modified_at,created_at,start_on,due_on,current_status,owner,name,resource_type,gid",
         },
       }
     );
@@ -41,7 +41,6 @@ export const addUserToProject = action({
         owner: { gid: "1202178852626547", resource_type: "user" },
         due_on: null,
         current_status: null,
-        public: true,
         name: "My new project name",
         notes: "My new project notes",
         html_notes: "<body>My new project notes</body>",

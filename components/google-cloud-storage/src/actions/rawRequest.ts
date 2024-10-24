@@ -1,6 +1,6 @@
-import { action, util } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { connectionInput } from "../inputs";
-import { googleStorageClient, getAccessToken } from "../client";
+import { googleStorageClient } from "../client";
 import {
   handleErrors,
   inputs as httpClientInputs,
@@ -23,28 +23,17 @@ const rawRequest = action({
     },
   },
   perform: async (context, { connection, ...httpClientInputs }) => {
-    const accessToken = getAccessToken({ connection });
+    const accessToken = await googleStorageClient(
+      connection
+    ).authClient.getAccessToken();
 
-    if (accessToken) {
-      const { data } = await sendRawRequest(
-        "https://storage.googleapis.com",
-        httpClientInputs,
-        { Authorization: `Bearer ${accessToken}` }
-      );
-      return { data };
-    } else {
-      try {
-        const { data } = await sendRawRequest(
-          "https://storage.googleapis.com",
-          httpClientInputs
-        );
-        return { data };
-      } catch (error) {
-        const handled = handleErrors(error);
-        const serialized = JSON.stringify(handled);
-        throw new Error(serialized);
-      }
-    }
+    const { data } = await sendRawRequest(
+      "https://storage.googleapis.com",
+      httpClientInputs,
+      { Authorization: `Bearer ${accessToken}` }
+    );
+
+    return { data };
   },
 });
 

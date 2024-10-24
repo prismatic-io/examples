@@ -12,9 +12,11 @@ import { deleteBucket } from "./actions/deleteBucket";
 import { getBucket } from "./actions/getBucket";
 import { generatePresignedUrl } from "./actions/generatePresignedUrl";
 import rawRequest from "./actions/rawRequest";
+import multipartUpload from "./actions/multipartUpload";
 
 import connections from "./connections";
 import dataSources from "./dataSources";
+import { handleErrors } from "@prismatic-io/spectral/dist/clients/http";
 
 export default component({
   key: "google-cloud-storage",
@@ -42,7 +44,9 @@ export default component({
     deleteBucket,
     rawRequest,
     generatePresignedUrl,
+    ...multipartUpload,
   },
+  hooks: { error: handleErrors },
   connections,
   dataSources,
 });

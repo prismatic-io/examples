@@ -1,4 +1,6 @@
 import { input, util } from "@prismatic-io/spectral";
+import { completeMultipartUploadExampleInput } from "./exampleInputs";
+import { cleanUploads } from "./util";
 
 export const project = input({
   label: "GCP Project ID",
@@ -39,6 +41,7 @@ export const destinationBucketName = input({
   comments:
     "A Google Cloud Storage 'bucket' is a container where files are stored. The destination bucket indicates the bucket containing the file you want to copy. If you are copying files within a single bucket, list the same bucket as the source and destination bucket.",
   example: "my-destination-bucket",
+  clean: util.types.toString,
 });
 
 export const fileContents = input({
@@ -49,6 +52,7 @@ export const fileContents = input({
   comments:
     "The contents to write to a file. This can be a string of text, it can be binary data (like an image or PDF) that was generated in a previous step.",
   example: "My File Contents",
+  clean: util.types.toData,
 });
 
 export const fileName = input({
@@ -60,6 +64,17 @@ export const fileName = input({
     "A file is saved in a 'bucket'. This represents the file's path without a leading /",
   example: "path/to/file.txt",
   clean: util.types.toString,
+});
+
+export const partNumber = input({
+  label: "Part Number",
+  type: "string",
+  required: true,
+  comments:
+    "Uniquely identifies the position of the part within the larger multipart upload. partNumber is an integer with a mimimum value of 1 and a maximum value of 10,000.",
+  example: "1",
+  placeholder: "1",
+  clean: util.types.toNumber,
 });
 
 export const sourceFileName = input({
@@ -80,6 +95,28 @@ export const destinationFileName = input({
   comments:
     "This represents the destination file's path. Do not include a leading /.",
   example: "path/to/destination/file.txt",
+});
+
+export const uploadId = input({
+  label: "Upload ID",
+  type: "string",
+  required: true,
+  comments:
+    "Indicates the multipart upload that this part is associated with. This is returned when the multipart upload is initiated.",
+  example: "VXBsb2FkIElEIGZvciBlbHZpbmcncyBteS1tb3ZpZS5tMnRzIHVwbG9hZA",
+  placeholder: "VXBsb2FkIElEIGZvciBlbHZpbmcncyBteS1tb3ZpZS5tMnRzIHVwbG9hZA",
+  clean: util.types.toString,
+});
+
+export const contentType = input({
+  label: "Content Type",
+  type: "string",
+  required: true,
+  comments:
+    "The content type of the file. This is used to determine how the file should be handled by the browser.",
+  example: "image/png",
+  placeholder: "image/png",
+  clean: util.types.toString,
 });
 
 export const prefix = input({
@@ -175,4 +212,15 @@ export const fileMetadata = input({
     "If true, the metadata of the file will be returned after saving the file. Get Access to the bucket is required.",
   default: "true",
   clean: util.types.toBool,
+});
+
+export const partUploads = input({
+  label: "Part Uploads",
+  type: "code",
+  language: "json",
+  required: true,
+  comments:
+    "A JSON array of part uploads. Each part upload should have a partNumber and a etag property. IMPORTANT: If one of the parts specified in the request is less than 5 MiB and is not the final part in the upload, you get a 400 Bad Request status code and the body of the error response has InvalidArgument in the Code element.",
+  example: JSON.stringify([completeMultipartUploadExampleInput], null, 2),
+  clean: cleanUploads,
 });
