@@ -5,6 +5,7 @@ configPages:
         value: Prismatic Connection
     name: Configuration
     tagline: ""
+defaultInstanceProfile: Default Instance Profile
 definitionVersion: 7
 description: ""
 documentation: >-
@@ -129,56 +130,20 @@ flows:
         name: Loop Over Items
         steps:
           - action:
-              key: httpPost
+              key: invokeFlow
               component:
                 isPublic: true
-                key: http
+                key: cross-flow
                 version: LATEST
             description: ""
             inputs:
-              connection:
-                type: configVar
-                value: ""
               data:
                 type: reference
                 value: loopOverItems.currentItem
-              debugRequest:
+              flowName:
                 type: value
-                value: "false"
-              headers:
-                type: complex
-                value: []
-              ignoreSslErrors:
-                type: value
-                value: "false"
-              includeFullResponse:
-                type: value
-                value: "false"
-              maxRetries:
-                type: value
-                value: "0"
-              queryParams:
-                type: complex
-                value: []
-              responseType:
-                type: value
-                value: json
-              retryDelayMS:
-                type: value
-                value: "0"
-              retryOnAllErrors:
-                type: value
-                value: "false"
-              timeout:
-                type: value
-                value: ""
-              url:
-                type: reference
-                value: integrationTrigger.results.webhookUrls.Process Records
-              useExponentialBackoff:
-                type: value
-                value: "false"
-            name: POST Request
+                value: Process Records
+            name: Invoke Flow
       - action:
           key: loopOverItems
           component:
@@ -359,7 +324,8 @@ flows:
                         value:
                           - and
                           - - exists
-                            - type: reference
+                            - name: ""
+                              type: reference
                               value: >-
                                 rawGraphqlRequest.results.data.data.executionResult.endedAt
                 name: Branch on Expression
@@ -396,25 +362,13 @@ flows:
     name: Process Records
     steps:
       - action:
-          key: webhook
+          key: crossFlow
           component:
             isPublic: true
-            key: webhook-triggers
+            key: cross-flow
             version: LATEST
         description: ""
-        inputs:
-          body:
-            type: value
-            value: ""
-          contentType:
-            type: value
-            value: ""
-          headers:
-            type: complex
-            value: []
-          statusCode:
-            type: value
-            value: ""
+        inputs: {}
         isTrigger: true
         name: Flow 2 Trigger
       - action:
