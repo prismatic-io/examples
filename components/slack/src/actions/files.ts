@@ -9,7 +9,6 @@ import {
   fileContent,
   fileName,
   fileTitle,
-  fileType,
   highlight,
   initialComment,
   limit,
@@ -19,13 +18,14 @@ import {
   sort_dir,
   team_id,
   thread,
+  fetchAll,
 } from "../inputs";
 import {
   listFilesResponse,
   searchFilesResponse,
   uploadFileResponse,
 } from "../examplePayloads";
-import { debugLogger } from "../utils";
+import { debugLogger, paginateResults } from "../utils";
 
 export const listFiles = action({
   display: {
@@ -37,14 +37,19 @@ export const listFiles = action({
     const client = await createOauthClient({
       slackConnection: params.connection,
     });
+
+    if (fetchAll) {
+      return paginateResults(client, "files", "files", "list", {});
+    }
+
     const data = await client.files.list({
       page: util.types.toInt(params.cursor),
     });
     return { data };
   },
-  inputs: { connection: connectionInput, cursor, debug },
+  inputs: { connection: connectionInput, fetchAll, cursor, debug },
   examplePayload: {
-    data: listFilesResponse as any,
+    data: listFilesResponse as unknown,
   },
 });
 
@@ -59,13 +64,11 @@ export const uploadFile = action({
       slackConnection: params.connection,
     });
     const { data: fileData } = params.fileContent;
-    const data = await client.files.upload({
+    const data = await client.files.uploadV2({
       file: Readable.from(fileData),
       filename: params.fileName,
       title: params.title || undefined,
-      channels: params.channels || undefined,
-      content: params.channels || undefined,
-      filetype: params.fileType || undefined,
+      channel_id: params.channels || undefined,
       initial_comment: params.initialComment || undefined,
       thread_ts: params.thread || undefined,
     });
@@ -75,7 +78,6 @@ export const uploadFile = action({
     connection: connectionInput,
     fileContent,
     fileName,
-    fileType,
     title: fileTitle,
     channels,
     initialComment,
@@ -104,7 +106,7 @@ export const searchFiles = action({
       highlight,
       page,
       team_id,
-    }
+    },
   ) => {
     debugLogger({
       debug,
@@ -146,6 +148,6 @@ export const searchFiles = action({
     debug,
   },
   examplePayload: {
-    data: searchFilesResponse,
+    data: searchFilesResponse as unknown,
   },
 });

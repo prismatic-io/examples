@@ -77,7 +77,7 @@ const listWebhooks = action({
       const instanceWebhookUrls = Object.values(context.webhookUrls);
       return {
         data: (webhooks || []).filter((webhook) =>
-          instanceWebhookUrls.includes(webhook.url)
+          instanceWebhookUrls.includes(webhook.url),
         ),
       };
     }
@@ -104,7 +104,7 @@ const createWebhook = action({
       label: "Fields to Monitor",
       required: true,
       comments: `Select one or more fields to trigger this webhook on. This can be any of the following: ${webhookFields.join(
-        ", "
+        ", ",
       )}`,
       type: "string",
       collection: "valuelist",
@@ -114,7 +114,7 @@ const createWebhook = action({
       label: "Fields to send to Webhook",
       required: true,
       comments: `A list of fields to post to the webhook url. This can be any of the following: ${webhookFields.join(
-        ", "
+        ", ",
       )}`,
       type: "string",
       collection: "valuelist",
@@ -138,14 +138,14 @@ const createWebhook = action({
         data: { webhooks: allWebhooks },
       } = await client.get("/v1/webhooks");
       const existingWebhooks = allWebhooks.filter(
-        (webhook) => params.url === webhook.url
+        (webhook) => params.url === webhook.url,
       );
       if (existingWebhooks.length > 0) {
         context.logger.info(
-          "A webhook with those parameters already exists. Skipping webhook creation and returning existing webhook."
+          "A webhook with those parameters already exists. Skipping webhook creation and returning existing webhook.",
         );
         const { data: webhookData } = await client.get(
-          `/v1/webhooks/${existingWebhooks[0].id}/`
+          `/v1/webhooks/${existingWebhooks[0].id}/`,
         );
         return {
           data: webhookData,
@@ -168,11 +168,11 @@ const createWebhook = action({
             return [field, field];
           }
           context.logger.debug(
-            `${field} will not be monitored as it is not enabled in this BambooHR account`
+            `${field} will not be monitored as it is not enabled in this BambooHR account`,
           );
           return null;
         })
-        .filter((field) => field)
+        .filter((field) => field),
     );
 
     const monitorAvailableFields = params.monitorFields
@@ -181,7 +181,7 @@ const createWebhook = action({
           return field;
         }
         context.logger.debug(
-          `${field} will not be included in webhook payloads as it is not enabled in this BambooHR account`
+          `${field} will not be included in webhook payloads as it is not enabled in this BambooHR account`,
         );
         return null;
       })
@@ -196,10 +196,8 @@ const createWebhook = action({
     });
 
     // Save the new webhook's private key for use by the trigger
-    const webhookSecrets = Array.isArray(
-      context.crossFlowState["webhookSecrets"]
-    )
-      ? [...context.crossFlowState["webhookSecrets"], data.privateKey]
+    const webhookSecrets = Array.isArray(context.crossFlowState.webhookSecrets)
+      ? [...context.crossFlowState.webhookSecrets, data.privateKey]
       : [data.privateKey];
 
     return {
@@ -243,7 +241,7 @@ const deleteInstanceWebhooks = action({
     // Get webhooks pointing to this instance
     const instanceWebhookUrls = Object.values(context.webhookUrls);
     const instanceBambooWebhooks = webhooks.filter((webhook) =>
-      instanceWebhookUrls.includes(webhook.url)
+      instanceWebhookUrls.includes(webhook.url),
     );
 
     // Delete each BambooHR webhook

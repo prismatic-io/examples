@@ -27,6 +27,6 @@ export const pushView = action({
     debug,
   },
   examplePayload: {
-    data: pushViewResponse as any,
+    data: pushViewResponse as unknown,
   },
 });

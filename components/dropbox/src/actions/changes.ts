@@ -20,6 +20,12 @@ interface CursorData {
   includeDeleted: boolean;
 }
 
+export interface ListChangesResult {
+  entries: Array<unknown>;
+  cursor: string;
+  has_more: boolean;
+}
+
 export const listChanges = action({
   display: {
     label: "List Changes",
@@ -62,36 +68,36 @@ export const listChanges = action({
         includeDeleted: params.includeDeleted,
       };
       return {
-        data: response.result as any,
-        instanceState: { [context.stepId]: newCursorData },
-      };
-    } else {
-      // We have not previously run or settings have changed.
-      // Return the current cursor for this folder
-      const response = await dbx.filesListFolderGetLatestCursor({
-        path: params.directoryPath,
-        recursive: params.recursive,
-        include_deleted: params.includeDeleted,
-        limit: 2000,
-      });
-      context.logger.info(
-        "First time running, or settings have changed. Subsequent runs will show changes that occurred since the previous run."
-      );
-      const newCursorData: CursorData = {
-        cursor: response.result.cursor,
-        path: params.directoryPath,
-        recursive: params.recursive,
-        includeDeleted: params.includeDeleted,
-      };
-      return {
-        data: {
-          entries: [],
-          cursor: response.result.cursor,
-          has_more: false,
-        },
+        data: response.result as ListChangesResult,
         instanceState: { [context.stepId]: newCursorData },
       };
     }
+
+    // We have not previously run or settings have changed.
+    // Return the current cursor for this folder
+    const response = await dbx.filesListFolderGetLatestCursor({
+      path: params.directoryPath,
+      recursive: params.recursive,
+      include_deleted: params.includeDeleted,
+      limit: 2000,
+    });
+    context.logger.info(
+      "First time running, or settings have changed. Subsequent runs will show changes that occurred since the previous run."
+    );
+    const newCursorData: CursorData = {
+      cursor: response.result.cursor,
+      path: params.directoryPath,
+      recursive: params.recursive,
+      includeDeleted: params.includeDeleted,
+    };
+    return {
+      data: {
+        entries: [],
+        cursor: response.result.cursor,
+        has_more: false,
+      },
+      instanceState: { [context.stepId]: newCursorData },
+    };
   },
   inputs: {
     dropboxConnection: connectionInput,

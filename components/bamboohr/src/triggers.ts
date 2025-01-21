@@ -5,7 +5,7 @@ const validateHmac = (
   rawBody,
   timestamp: string,
   signature: string,
-  secrets: string[]
+  secrets: string[],
 ) => {
   const body = util.types.toString(rawBody.data);
   for (const secret of secrets) {
@@ -18,7 +18,7 @@ const validateHmac = (
     }
   }
   throw new Error(
-    "The included signing signature does not match a known BambooHR signing key for this integration. Rejecting payload."
+    "The included signing signature does not match a known BambooHR signing key for this integration. Rejecting payload.",
   );
 };
 
@@ -28,17 +28,17 @@ const bamboohrTrigger = trigger({
     description:
       "Receive and validate webhook requests from BambooHR for webhooks you configure.",
   },
-  perform: async (context, payload, params) => {
+  perform: async (context, payload) => {
     const headers = util.types.lowerCaseHeaders(payload.headers);
     const bamboohrSignature = headers["x-bamboohr-signature"];
     const bamboohrTimestamp = headers["x-bamboohr-timestamp"];
-    const secrets = context.crossFlowState["webhookSecrets"] as string[];
+    const secrets = context.crossFlowState.webhookSecrets as string[];
 
     validateHmac(
       payload.rawBody,
       bamboohrTimestamp,
       bamboohrSignature,
-      secrets || []
+      secrets || [],
     );
 
     return Promise.resolve({

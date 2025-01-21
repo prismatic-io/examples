@@ -1,4 +1,4 @@
-import { action, connection } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { createBambooClient } from "../client";
 import {
   connectionInput,
@@ -17,7 +17,7 @@ const getEmployeeTable = action({
   perform: async (context, params) => {
     const client = createBambooClient(params.connection);
     const { data } = await client.get(
-      `/v1/employees/${params.employeeId}/tables/${params.tableName}`
+      `/v1/employees/${params.employeeId}/tables/${params.tableName}`,
     );
     return { data };
   },
@@ -93,7 +93,7 @@ export const addEmployeeTableRow = action({
     const client = createBambooClient(params.connection);
     const { data } = await client.post(
       `/v1/employees/${params.employeeId}/tables/${params.tableName}`,
-      params.tableFieldValues
+      params.tableFieldValues,
     );
     return { data };
   },
@@ -114,7 +114,7 @@ export const updateEmployeeTableRow = action({
     const client = createBambooClient(params.connection);
     const { data } = await client.post(
       `/v1/employees/${params.employeeId}/tables/${params.tableName}/${params.rowId}`,
-      params.tableFieldValues
+      params.tableFieldValues,
     );
     return { data };
   },

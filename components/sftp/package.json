@@ -7,13 +7,13 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "lint": "eslint --cache --quiet --ext .ts,.js .",
-    "lint-fix": "eslint --cache --fix --quiet --ext .ts,.js .",
-    "format": "npm run lint-fix && prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
-    "check-format": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
-    "build": "npm run lint-fix && webpack",
     "test": "jest --maxWorkers=4",
-    "publish": "npm run lint --fix && npm run build && prism components:publish"
+    "lint": "eslint --cache --quiet --ext .ts,.js --ignore-pattern '*testapp*' .",
+    "lint-fix": "eslint --cache --fix --quiet --ext .ts,.js --ignore-pattern '*testapp*' .",
+    "format": "npm run lint-fix && prettier --loglevel error --write \"./src/**/*.{js,jsx,ts,tsx,css,html,json,scss}\"",
+    "check-format": "prettier --check \"./src/**/*.{js,jsx,ts,tsx,css,html,json,scss}\"",
+    "build": "npm run format && npm run lint && webpack",
+    "publish": "npm run build && prism components:publish"
   },
   "dependencies": {
     "@prismatic-io/spectral": "8.1.6",

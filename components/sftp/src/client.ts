@@ -1,6 +1,11 @@
 import Client from "ssh2-sftp-client";
 import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
 import { basic, privateKey } from "./connections";
+import {
+  secureCipherAlgorithms,
+  serverHostKeyAlgorithms,
+  unsecureCipherAlgorithms,
+} from "./constants";
 
 export const getAuthParams = (connection: Connection) => {
   switch (connection.key) {
@@ -42,9 +47,12 @@ export const getSftpClient = async (connection: Connection, debug: boolean) => {
     finish([connection.fields.password]);
   });
 
-  const { host, port, timeout } = connection.fields;
+  const { host, port, timeout, enableUnsecureCiphers } = connection.fields;
 
   try {
+    const cipher = util.types.toBool(enableUnsecureCiphers)
+      ? [...secureCipherAlgorithms, ...unsecureCipherAlgorithms]
+      : secureCipherAlgorithms;
     await sftp.connect({
       host: util.types.toString(host),
       port: util.types.toInt(port),
@@ -56,16 +64,8 @@ export const getSftpClient = async (connection: Connection, debug: boolean) => {
         }
       },
       algorithms: {
-        serverHostKey: [
-          "ssh-ed25519",
-          "ecdsa-sha2-nistp256",
-          "ecdsa-sha2-nistp384",
-          "ecdsa-sha2-nistp521",
-          "rsa-sha2-512",
-          "rsa-sha2-256",
-          "ssh-rsa",
-          "ssh-dss",
-        ],
+        serverHostKey: serverHostKeyAlgorithms,
+        cipher,
       },
       ...getAuthParams(connection),
     });

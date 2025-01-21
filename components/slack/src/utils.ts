@@ -1,6 +1,7 @@
 import { util } from "@prismatic-io/spectral";
 import { SearchChannelType } from "./interfaces";
-import { Channel } from "@slack/web-api/dist/response/ConversationsListResponse";
+import { WebClient } from "@slack/web-api";
+import { Channel } from "@slack/web-api/dist/types/response/ConversationsListResponse";
 
 interface GenerateChannelTypesParams {
   includePublicChannels: boolean;
@@ -54,9 +55,9 @@ export const valueListInputClean = (value: unknown) => {
   return undefined;
 };
 
-export const debugLogger = (params: any) => {
+export const debugLogger = (params: Record<string, unknown>) => {
   if (params.debug) {
-    const { debug, connection, ...rest } = params;
+    const { ...rest } = params;
     console.log("Payload", {
       ...rest,
     });
@@ -65,7 +66,7 @@ export const debugLogger = (params: any) => {
 
 export const getChannelDisplayName = (
   showIdInDropdown: boolean,
-  channel: Channel
+  channel: Channel,
 ): string => {
   let channelName: string;
   const isImChannel = channel.is_im || channel.is_mpim;
@@ -83,4 +84,32 @@ export const getChannelDisplayName = (
   } else {
     return `#${channelName}`;
   }
+};
+
+export const paginateResults = async (
+  client: WebClient,
+  object: string,
+  returnObject: string,
+  method: string,
+  params: Record<string, unknown>,
+) => {
+  let cursor;
+  const toReturn = [];
+  do {
+    const data = await client[object][method]({
+      ...params,
+      cursor: cursor,
+      limit: 50,
+    });
+
+    cursor = data.response_metadata.next_cursor;
+    toReturn.push(...data[returnObject]);
+  } while (cursor);
+
+  return {
+    data: {
+      ok: true,
+      [returnObject]: toReturn,
+    },
+  };
 };

@@ -22,16 +22,16 @@ const rawRequest = action({
   },
   perform: async (context, { connection, ...httpClientInputs }) => {
     const encodedAuth = Buffer.from(`${connection.fields.apiKey}:x`).toString(
-      "base64"
+      "base64",
     );
     const { data } = await sendRawRequest(
       `https://api.bamboohr.com/api/gateway.php/${util.types.toString(
-        connection.fields.companyDomain
+        connection.fields.companyDomain,
       )}/`,
       httpClientInputs,
       {
         Authorization: `Basic ${encodedAuth}`,
-      }
+      },
     );
     return { data };
   },

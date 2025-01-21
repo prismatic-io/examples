@@ -7,9 +7,11 @@ import {
 export const slackOAuth = oauth2Connection({
   oauth2Type: OAuth2Type.AuthorizationCode,
   key: "oauth2",
-  label: "Slack OAuth 2.0",
-  comments:
-    "Authenticate requests to Slack using values obtained from the developer console.",
+  display: {
+    label: "Slack OAuth 2.0",
+    description:
+      "Authenticate requests to Slack using values obtained from the developer console.",
+  },
   inputs: {
     authorizeUrl: {
       label: "Authorize URL",
@@ -42,7 +44,7 @@ export const slackOAuth = oauth2Connection({
       label: "Scopes (Bot)",
       placeholder: "Scopes",
       type: "string",
-      required: true,
+      required: false,
       shown: true,
       default:
         "chat:write chat:write.public chat:write.customize channels:read groups:read im:read mpim:read",
@@ -83,7 +85,10 @@ export const slackOAuth = oauth2Connection({
 });
 export const webhookUrlConnection = connection({
   key: "webhookUrl",
-  label: "Webhook URL",
+  display: {
+    label: "Slack Webhook URL",
+    description: "Authenticate requests to Slack using a Webhook URL.",
+  },
   comments: "Slack Webhook URL hosting",
   inputs: {
     webhookUrl: {

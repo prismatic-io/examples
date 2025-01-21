@@ -2,9 +2,11 @@ import { oauth2Connection, OAuth2Type } from "@prismatic-io/spectral";
 
 export const oauthConnection = oauth2Connection({
   key: "oauth",
-  label: "OAuth 2.0",
+  display: {
+    label: "OAuth 2.0",
+    description: "OAuth 2.0 Connectivity for Dropbox",
+  },
   oauth2Type: OAuth2Type.AuthorizationCode,
-  comments: "OAuth 2.0 Connectivity for Dropbox",
   inputs: {
     authorizeUrl: {
       label: "Authorize URL",

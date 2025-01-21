@@ -5,13 +5,14 @@
   "description": "Amazon S3 Component for Prismatic",
   "main": "index.ts",
   "scripts": {
-    "lint": "eslint --cache --quiet --ext .ts,.js --ignore-pattern '*testapp*' .",
-    "lint-fix": "eslint --cache --fix --quiet --ext .ts,.js --ignore-pattern '*testapp*' .",
-    "format": "npm run lint-fix && prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
-    "generate-regions-json": "aws ec2 describe-regions | jq '.Regions | map(.RegionName) | sort' > src/aws-regions.json",
-    "check-format": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
-    "build": "webpack",
-    "test": "echo 'no tests'"
+    "lint": "eslint --cache --quiet --ext .ts,.js --ignore-pattern \"*testapp*\" .",
+    "lint-fix": "eslint --cache --fix --quiet --ext .ts,.js --ignore-pattern \"*testapp*\" .",
+    "format": "npm run lint-fix && prettier --loglevel error --write \"./src/**/*.{js,jsx,ts,tsx,css,html,json,scss}\" \"documentation/*.mdx\"",
+    "generate-regions-json": "aws ec2 describe-regions | jq \".Regions | map(.RegionName) | sort\" > src/aws-regions.json",
+    "check-format": "prettier --check \"./src/**/*.{js,jsx,ts,tsx,css,html,json,scss}\" \"documentation/*.mdx\"",
+    "build": "npm run format && npm run lint && webpack",
+    "publish": "npm run build && prism components:publish",
+    "test": "echo \"no tests\""
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.569.0",
@@ -21,7 +22,6 @@
     "@aws-sdk/signature-v4-crt": "3.569.0",
     "@prismatic-io/spectral": "7.6.3",
     "aws-utils": "file:../../packages/aws-utils",
-    "axios": "^0.27.2",
     "uuid": "^9.0.1"
   },
   "author": "Prismatic",

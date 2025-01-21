@@ -115,15 +115,6 @@ export const excludeArchived = input({
   clean: util.types.toBool,
 });
 
-export const excludeMembers = input({
-  label: "Exclude Members",
-  type: "boolean",
-  required: false,
-  comments:
-    "This flag will determine if members of the channel will be excluded from the result set.",
-  clean: util.types.toBool,
-});
-
 export const limit = input({
   label: "Limit",
   type: "string",
@@ -138,7 +129,7 @@ export const debug = input({
   type: "boolean",
   required: false,
   comments: "When true, the payload will be logged.",
-  default: false,
+  clean: util.types.toBool,
 });
 
 export const connectionInput = input({
@@ -166,7 +157,7 @@ export const blocks = input({
       ],
     },
     null,
-    2
+    2,
   ),
   comments:
     "A JSON array containing blocks (objects) that make up the desired message. Use Slack's Block Kit Builder (https://app.slack.com/block-kit-builder/) to build block messages.",
@@ -210,7 +201,6 @@ export const includeImChannels = input({
 export const includeAllMetadata = input({
   label: "Include All Metadata",
   type: "boolean",
-  default: false,
   clean: util.types.toBool,
 });
 
@@ -220,7 +210,6 @@ export const inclusive = input({
     "Include messages with oldest or latest timestamps in results. Ignored unless either timestamp is specified",
   type: "boolean",
   required: false,
-  default: false,
   clean: util.types.toBool,
 });
 
@@ -300,9 +289,9 @@ export const channels = input({
   label: "Channels",
   type: "string",
   required: false,
-  example: "general,marketing",
+  example: "C02B0APBKP1, C02B0APBKP2, C02B0APBKP3",
   comments:
-    "Provide a comma separated list of channel names, or ids that the file will be shared in.",
+    "Provide a comma separated list of channel IDs that the file will be shared in.",
   clean: util.types.toString,
 });
 
@@ -416,7 +405,7 @@ export const view = input({
       callback_id: "view_identifier_12",
     },
     null,
-    2
+    2,
   ),
   comments:
     "A view payload (https://api.slack.com/reference/surfaces/views). This must be a JSON-encoded string.",
@@ -558,4 +547,12 @@ export const page = input({
   example: "1",
   default: "1",
   clean: (value: unknown) => util.types.toNumber(value, 1),
+});
+
+export const fetchAll = input({
+  label: "Fetch All",
+  type: "boolean",
+  required: false,
+  comments: "Make the action handle pagination, returning all results.",
+  clean: util.types.toBool,
 });

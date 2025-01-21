@@ -28,7 +28,7 @@ const rawRequest = action({
     const { data } = await sendRawRequest(
       "https://slack.com/api",
       httpClientInputs,
-      { Authorization: `Bearer ${token}` }
+      { Authorization: `Bearer ${token}` },
     );
     return { data };
   },

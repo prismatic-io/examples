@@ -1,5 +1,5 @@
 import { trigger, util } from "@prismatic-io/spectral";
-import axios from "axios";
+import { createClient as createHttpClient } from "@prismatic-io/spectral/dist/clients/http";
 import MessageValidator from "sns-validator";
 import { parseMessage } from "../inputs";
 import { snsExamplePayload } from "./exampleNotification";
@@ -63,11 +63,15 @@ export const subscriptionTrigger = trigger({
     const messageType = payload.headers["x-amz-sns-message-type"];
     switch (messageType) {
       case "SubscriptionConfirmation":
-        await axios.get(message["SubscribeURL"]);
+        await createHttpClient({
+          baseUrl: message["SubscribeURL"],
+        }).get("");
         branch = "Subscribe";
         break;
       case "UnsubscribeConfirmation":
-        await axios.get(message["SubscribeURL"]);
+        await createHttpClient({
+          baseUrl: message["SubscribeURL"],
+        }).get("");
         branch = "Unsubscribe";
         break;
       case "Notification":

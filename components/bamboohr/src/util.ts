@@ -59,7 +59,7 @@ export const employeeFields = [
 
 export const validateFields = (
   fieldValues: KeyValuePair<unknown>[],
-  fieldList: string[]
+  fieldList: string[],
 ) => {
   const values = util.types.keyValPairListToObject(fieldValues);
   const invalid = Object.keys(values).filter((key) => !fieldList.includes(key));
@@ -70,7 +70,7 @@ export const validateFields = (
 };
 
 export const validateEmployeeFields = (
-  fieldValues: KeyValuePair<unknown>[]
+  fieldValues: KeyValuePair<unknown>[],
 ) => {
   return validateFields(fieldValues, employeeFields);
 };
@@ -85,6 +85,4 @@ export const validateDate = (val) => {
 };
 
 export const filterFalseyValues = (obj) =>
-  Object.fromEntries(
-    Object.entries(obj).filter(([_, value]) => Boolean(value))
-  );
+  Object.fromEntries(Object.entries(obj).filter(([, value]) => Boolean(value)));

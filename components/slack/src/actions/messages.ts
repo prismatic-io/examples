@@ -38,7 +38,7 @@ export const postMessage = action({
   },
   perform: async (
     context,
-    { connection, message, channelName, username, messageId, debug }
+    { connection, message, channelName, username, messageId, debug },
   ) => {
     debugLogger({
       connection,
@@ -79,7 +79,7 @@ export const updateMessage = action({
   },
   perform: async (
     context,
-    { connection, message, channelId, messageId, debug }
+    { connection, message, channelId, messageId, debug },
   ) => {
     debugLogger({ message, channelId, messageId, debug });
     const client = await createOauthClient({
@@ -166,7 +166,7 @@ export const postEphemeralMessage = action({
   },
   perform: async (
     context,
-    { connection, channelName, userId, username, message, debug }
+    { connection, channelName, userId, username, message, debug },
   ) => {
     debugLogger({ channelName, userId, username, message, debug });
     const client = await createOauthClient({
@@ -253,7 +253,7 @@ export const postBlockMessage = action({
   },
   perform: async (
     context,
-    { connection, blocks, message, channelName, username, messageId, debug }
+    { connection, blocks, message, channelName, username, messageId, debug },
   ) => {
     debugLogger({ blocks, message, channelName, username, messageId, debug });
     const client = await createOauthClient({
@@ -302,7 +302,7 @@ export const listScheduledMessages = action({
     connection: connectionInput,
   },
   examplePayload: {
-    data: listScheduledMessagesResponse as any,
+    data: listScheduledMessagesResponse as unknown,
   },
 });
 
@@ -323,7 +323,7 @@ export const searchMessages = action({
       sort,
       sort_dir,
       team_id,
-    }
+    },
   ) => {
     debugLogger({
       debug,

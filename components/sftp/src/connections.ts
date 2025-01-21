@@ -55,6 +55,12 @@ export const basic = onPremConnection({
       example: "p@s$W0Rd",
     },
     ...commonInputs,
+    enableUnsecureCiphers: {
+      label: "Enable Unsecure Ciphers",
+      comments: "If true, CBC ciphers will be added to the connection.",
+      required: false,
+      type: "boolean",
+    },
   },
 });
 
@@ -89,6 +95,12 @@ export const privateKey = onPremConnection({
       example: "p@s$W0Rd",
     },
     ...commonInputs,
+    enableUnsecureCiphers: {
+      label: "Enable CBC Ciphers",
+      comments: "If true, CBC ciphers will be added to the connection.",
+      required: false,
+      type: "boolean",
+    },
   },
 });
 

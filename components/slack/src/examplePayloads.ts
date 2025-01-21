@@ -621,8 +621,7 @@ export const searchAllResponse = {
           username: "john",
         },
         team: "T2U81E2FZ",
-        text:
-          "uploaded a file: <https://example.slack.com/files/U2U85N1RZ/F7PKF1NR7/slack_workflow_diagram.png|slack workflow diagram> and commented: Sure! Here's the workflow diagram!",
+        text: "uploaded a file: <https://example.slack.com/files/U2U85N1RZ/F7PKF1NR7/slack_workflow_diagram.png|slack workflow diagram> and commented: Sure! Here's the workflow diagram!",
         ts: "1508804330.000296",
         type: "message",
         user: "U2U85N1RZ",

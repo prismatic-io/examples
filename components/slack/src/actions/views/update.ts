@@ -17,7 +17,7 @@ export const updateView = action({
   },
   perform: async (
     context,
-    { connection, debug, view_id, external_id, view }
+    { connection, debug, view_id, external_id, view },
   ) => {
     debugLogger({ debug, connection, view_id, external_id, view });
     const client = await createOauthClient({
@@ -38,6 +38,6 @@ export const updateView = action({
     debug,
   },
   examplePayload: {
-    data: updateViewResponse as any,
+    data: updateViewResponse as unknown,
   },
 });

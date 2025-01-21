@@ -18,7 +18,7 @@ const getEmployee = action({
   perform: async (context, params) => {
     const client = createBambooClient(params.connection);
     const { data } = await client.get(
-      `/v1/employees/${params.employeeId}/?fields=${employeeFields.join(",")}`
+      `/v1/employees/${params.employeeId}/?fields=${employeeFields.join(",")}`,
     );
     return { data };
   },
@@ -110,7 +110,7 @@ const updateEmployee = action({
     const client = createBambooClient(params.connection);
     const { data } = await client.post(
       `/v1/employees/${params.employeeId}/`,
-      params.employeeFieldValues
+      params.employeeFieldValues,
     );
     return { data };
   },

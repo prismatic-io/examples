@@ -1,5 +1,5 @@
 import { trigger } from "@prismatic-io/spectral";
-import axios from "axios";
+import { createClient as createHttpClient } from "@prismatic-io/spectral/dist/clients/http";
 
 export const snsS3NotificationWebhook = trigger({
   display: {
@@ -83,7 +83,9 @@ export const snsS3NotificationWebhook = trigger({
         switch (eventType) {
           case "SubscriptionConfirmation": {
             const subscribeUrl = data.SubscribeURL;
-            await axios.get(subscribeUrl);
+            await createHttpClient({
+              baseUrl: subscribeUrl,
+            }).get("");
             return {
               branch: "Subscribe",
               payload: { ...payload, body: { data } },

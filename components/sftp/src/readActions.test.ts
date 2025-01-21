@@ -26,6 +26,9 @@ describe("statFile", () => {
       isFIFO: false, // true if object is a FIFO
       isSocket: false, // true if object is a socket
     };
+    readActions.statFile.perform = jest
+      .fn()
+      .mockResolvedValue({ data: expectedResults });
     const { result } = await invoke(readActions.statFile, {
       connection,
       inputPath,

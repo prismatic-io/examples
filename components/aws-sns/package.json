@@ -5,19 +5,18 @@
   "description": "Amazon SNS Component for Prismatic",
   "main": "index.ts",
   "scripts": {
-    "lint": "eslint --cache --quiet --ext .ts,.js --ignore-pattern '*testapp*' .",
-    "lint-fix": "eslint --cache --fix --quiet --ext .ts,.js --ignore-pattern '*testapp*' .",
-    "format": "npm run lint-fix && prettier --loglevel error --write './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
-    "check-format": "prettier --check './src/**/*.{js,jsx,ts,tsx,css,html,json,scss}' 'documentation/*.mdx'",
+    "lint": "eslint --cache --quiet --ext .ts,.js --ignore-pattern \"*testapp*\" .",
+    "lint-fix": "eslint --cache --fix --quiet --ext .ts,.js --ignore-pattern \"*testapp*\" .",
+    "format": "npm run lint-fix && prettier --loglevel error --write \"./src/**/*.{js,jsx,ts,tsx,css,html,json,scss}\" \"documentation/*.mdx\"",
+    "check-format": "prettier --check \"./src/**/*.{js,jsx,ts,tsx,css,html,json,scss}\" \"documentation/*.mdx\"",
     "build": "npm run format && npm run lint && webpack",
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "@aws-sdk/client-sns": "^3.332.0",
     "@prismatic-io/spectral": "7.6.3",
-    "axios": "0.21.4",
-    "sns-validator": "^0.3.5",
-    "aws-utils": "file:../../packages/aws-utils"
+    "aws-utils": "file:../../packages/aws-utils",
+    "sns-validator": "^0.3.5"
   },
   "author": "Prismatic",
   "license": "MIT",

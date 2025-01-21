@@ -8,13 +8,14 @@ import {
   teamId,
   userId,
   debug,
+  fetchAll,
 } from "../inputs";
 import {
   getUserResponse,
   listUserConversationsResponse,
   listUsersResponse,
 } from "../examplePayloads";
-import { debugLogger } from "../utils";
+import { debugLogger, paginateResults } from "../utils";
 
 export const getUser = action({
   display: {
@@ -67,19 +68,30 @@ export const listUsers = action({
     label: "List Users",
     description: "List Users",
   },
-  perform: async (context, { connection, cursor, limit, teamId, debug }) => {
+  perform: async (
+    context,
+    { fetchAll, connection, cursor, limit, teamId, debug },
+  ) => {
     debugLogger({ cursor, limit, teamId, debug });
     const client = await createOauthClient({
       slackConnection: connection,
     });
-    const data = await client.users.list({
+
+    const params = {
       cursor: cursor || undefined,
       limit: limit || undefined,
       team_id: teamId || undefined,
-    });
+    };
+
+    if (fetchAll) {
+      return paginateResults(client, "users", "members", "list", params);
+    }
+
+    const data = await client.users.list(params);
     return { data };
   },
   inputs: {
+    fetchAll,
     limit,
     cursor,
     teamId,
@@ -98,22 +110,35 @@ export const listUsersConversations = action({
   },
   perform: async (
     context,
-    { connection, cursor, limit, teamId, userId, debug }
+    { connection, cursor, limit, teamId, userId, debug, fetchAll },
   ) => {
     debugLogger({ cursor, limit, teamId, userId, debug });
     const client = await createOauthClient({
       slackConnection: connection,
     });
-    const data = await client.users.conversations({
+    const params = {
       user: userId || undefined,
       cursor: cursor || undefined,
       limit: limit || undefined,
       team_id: teamId || undefined,
-    });
+    };
+
+    if (fetchAll) {
+      return paginateResults(
+        client,
+        "users",
+        "channels",
+        "conversations",
+        params,
+      );
+    }
+
+    const data = await client.users.conversations(params);
     return { data };
   },
   inputs: {
     userId,
+    fetchAll,
     limit,
     cursor,
     teamId,

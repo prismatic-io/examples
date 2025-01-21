@@ -107,7 +107,7 @@ export const limit = input({
   required: false,
   comments:
     "The maximum number of results to return per request. Note: This is an approximate number and there can be slightly more entries returned in some cases.",
-  example: `25`,
+  example: "25",
   clean: (value: unknown) => util.types.toInt(value, 25),
 });
 
@@ -117,7 +117,7 @@ export const cursor = input({
   required: false,
   comments:
     "Specify the cursor returned by your last call to list_folder or list_folder/continue.",
-  example: `lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E`,
+  example: "lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E",
   clean: util.types.toString,
 });
 
@@ -417,7 +417,7 @@ export const actions = input({
     },
     { label: "Empty", value: "" },
   ],
-  default: "",
+  default: [],
 });
 
 export const link_settings = input({

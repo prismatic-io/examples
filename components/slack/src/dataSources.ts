@@ -7,8 +7,8 @@ import {
   includePublicChannels,
 } from "./inputs";
 import { createOauthClient } from "./client";
-import { Channel } from "@slack/web-api/dist/response/ConversationsListResponse";
-import { Member } from "@slack/web-api/dist/response/UsersListResponse";
+import { Channel } from "@slack/web-api/dist/types/response/ConversationsListResponse";
+import { Member } from "@slack/web-api/dist/types/response/UsersListResponse";
 import { generateChannelTypesString, getChannelDisplayName } from "./utils";
 
 const selectChannels = dataSource({

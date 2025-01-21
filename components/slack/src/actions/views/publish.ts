@@ -27,6 +27,6 @@ export const publishView = action({
     debug,
   },
   examplePayload: {
-    data: publishViewResponse as any,
+    data: publishViewResponse as unknown,
   },
 });

@@ -31,7 +31,7 @@ export const searchAll = action({
       team_id,
       highlight,
       page,
-    }
+    },
   ) => {
     debugLogger({
       debug,
@@ -73,6 +73,6 @@ export const searchAll = action({
     debug,
   },
   examplePayload: {
-    data: searchAllResponse as any,
+    data: searchAllResponse as unknown,
   },
 });

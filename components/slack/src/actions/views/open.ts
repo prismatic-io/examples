@@ -27,6 +27,6 @@ export const openView = action({
     debug,
   },
   examplePayload: {
-    data: openViewResponse as any,
+    data: openViewResponse as unknown,
   },
 });

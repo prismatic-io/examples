@@ -27,8 +27,13 @@ import {
   sort_dir,
   team_ids,
   total_count_only,
+  fetchAll,
 } from "../inputs";
-import { debugLogger, generateChannelTypesString } from "../utils";
+import {
+  debugLogger,
+  generateChannelTypesString,
+  paginateResults,
+} from "../utils";
 import {
   archiveConversationResponse,
   closeConversationResponse,
@@ -50,7 +55,7 @@ export const createConversation = action({
   },
   perform: async (
     context,
-    { connection, isPrivate, conversationName, teamId, debug }
+    { connection, isPrivate, conversationName, teamId, debug },
   ) => {
     debugLogger({ debug, isPrivate, conversationName, teamId });
     const client = await createOauthClient({ slackConnection: connection });
@@ -101,7 +106,7 @@ export const renameConversation = action({
   },
   perform: async (
     context,
-    { connection, newConversationName, conversationName, debug }
+    { connection, newConversationName, conversationName, debug },
   ) => {
     debugLogger({ debug, newConversationName, conversationName });
     const client = await createOauthClient({
@@ -144,7 +149,8 @@ export const getConversationsHistory = action({
       inclusive,
       latest,
       debug,
-    }
+      fetchAll,
+    },
   ) => {
     debugLogger({
       debug,
@@ -159,19 +165,32 @@ export const getConversationsHistory = action({
     const client = await createOauthClient({
       slackConnection: connection,
     });
-    const data = await client.conversations.history({
+    const params = {
       channel: channelName,
       cursor: cursor || undefined,
-      include: includeAllMetadata || undefined,
+      include_all_metadata: includeAllMetadata || undefined,
       limit: limit || undefined,
       inclusive,
       ...(oldest ? { oldest } : {}),
       ...(latest ? { latest } : {}),
-    });
+    };
+
+    if (fetchAll) {
+      return paginateResults(
+        client,
+        "conversations",
+        "messages",
+        "history",
+        params,
+      );
+    }
+
+    const data = await client.conversations.history(params);
     return { data };
   },
   inputs: {
     channelName,
+    fetchAll,
     limit,
     cursor,
     includeAllMetadata,
@@ -197,19 +216,32 @@ export const listConversations = action({
       slackConnection: params.connection,
     });
 
-    const data = await client.conversations.list({
+    const parameters = {
       cursor: params.cursor || undefined,
       exclude_archived: params.excludeArchived || undefined,
       limit: params.limit || undefined,
       team_id: params.teamId || undefined,
       types: generateChannelTypesString(params),
-    });
+    };
+
+    if (params.fetchAll) {
+      return paginateResults(
+        client,
+        "conversations",
+        "channels",
+        "list",
+        parameters,
+      );
+    }
+
+    const data = await client.conversations.list(parameters);
     return { data };
   },
   inputs: {
     teamId,
     limit,
     cursor,
+    fetchAll,
     excludeArchived,
     connection: connectionInput,
     includePublicChannels,
@@ -255,21 +287,34 @@ export const listConversationMembers = action({
   },
   perform: async (
     context,
-    { connection, channelName, cursor, limit, debug }
+    { fetchAll, connection, channelName, cursor, limit, debug },
   ) => {
     debugLogger({ debug, channelName, cursor, limit });
     const client = await createOauthClient({
       slackConnection: connection,
     });
-    const data = await client.conversations.members({
+    const params = {
       cursor: cursor || undefined,
       limit: limit || undefined,
       channel: channelName,
-    });
+    };
+
+    if (fetchAll) {
+      return paginateResults(
+        client,
+        "conversations",
+        "members",
+        "members",
+        params,
+      );
+    }
+
+    const data = await client.conversations.members(params);
     return { data };
   },
   inputs: {
     channelName,
+    fetchAll,
     limit,
     cursor,
     connection: connectionInput,
@@ -440,7 +485,7 @@ export const searchConversation = action({
       sort_dir,
       team_ids,
       total_count_only,
-    }
+    },
   ) => {
     debugLogger({
       debug,
@@ -465,7 +510,7 @@ export const searchConversation = action({
       search_channel_types,
       sort,
       sort_dir,
-      team_ids,
+      team_ids: team_ids as [string, ...string[]],
       total_count_only,
     });
     return { data };

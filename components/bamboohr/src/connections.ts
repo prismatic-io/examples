@@ -2,7 +2,10 @@ import { connection } from "@prismatic-io/spectral";
 
 export const apiKey = connection({
   key: "apiKey",
-  label: "Bamboo API Key",
+  display: {
+    label: "Bamboo API Key",
+    description: "Bamboo API Key",
+  },
   comments: "Bamboo API Key",
   inputs: {
     apiKey: {

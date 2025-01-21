@@ -2,6 +2,7 @@ import { component } from "@prismatic-io/spectral";
 import actions from "./actions";
 import connections from "./connections";
 import triggers from "./triggers";
+import { handleErrors } from "@prismatic-io/spectral/dist/clients/http";
 
 export default component({
   key: "bamboohr",
@@ -16,4 +17,7 @@ export default component({
   actions,
   connections,
   triggers,
+  hooks: {
+    error: handleErrors,
+  },
 });

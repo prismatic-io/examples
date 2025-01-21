@@ -20,7 +20,7 @@ const listEmployeeFiles = action({
   perform: async (context, params) => {
     const client = createBambooClient(params.connection);
     const { data } = await client.get(
-      `/v1/employees/${params.employeeId}/files/view`
+      `/v1/employees/${params.employeeId}/files/view`,
     );
     return { data };
   },
@@ -109,7 +109,7 @@ const deleteEmployeeFile = action({
   perform: async (context, params) => {
     const client = createBambooClient(params.connection);
     const { data } = await client.delete(
-      `/v1/employees/${params.employeeId}/files/${params.fileId}`
+      `/v1/employees/${params.employeeId}/files/${params.fileId}`,
     );
     return { data };
   },
@@ -123,12 +123,9 @@ const getEmployeeFile = action({
   inputs: { connection: connectionInput, employeeId, fileId },
   perform: async (context, params) => {
     const client = createBambooClient(params.connection);
-    const {
-      data,
-      headers,
-    } = await client.get(
+    const { data, headers } = await client.get(
       `/v1/employees/${params.employeeId}/files/${params.fileId}`,
-      { responseType: "arraybuffer" }
+      { responseType: "arraybuffer" },
     );
     return { data, contentType: headers["content-type"] };
   },
@@ -157,7 +154,7 @@ const uploadEmployeeFile = action({
     await client.post(
       `/v1/employees/${params.employeeId}/files`,
       formData.getBuffer(),
-      { headers: formData.getHeaders() }
+      { headers: formData.getHeaders() },
     );
     return { data: null };
   },
