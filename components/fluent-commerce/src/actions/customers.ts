@@ -77,12 +77,16 @@ const createCustomer = action({
       type: "string",
       required: false,
       collection: "keyvaluelist",
-      clean: (attributes: any) =>
-        attributes.map((attribute: KeyValuePair) => ({
-          name: attribute.key,
-          type: "STRING",
-          value: attribute.value,
-        })),
+      clean: (attributes: unknown) => {
+        if (Array.isArray(attributes)) {
+          attributes.map((attribute: KeyValuePair) => ({
+            name: attribute.key,
+            type: "STRING",
+            value: attribute.value,
+          }));
+        }
+        return [];
+      },
       comments: "Custom attributes you would like to apply to the customer",
     }),
   },

@@ -77,7 +77,7 @@ const fastGet = action({
     debug: debugInput,
   },
   examplePayload: {
-    data: "Sample file contents",
+    data: Buffer.from("Sample file contents"),
     contentType: "text/plain",
   },
 });

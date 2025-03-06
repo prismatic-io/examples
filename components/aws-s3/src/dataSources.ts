@@ -10,7 +10,7 @@ const selectRegion = dataSource({
     description: "Select an AWS region",
   },
   dataSourceType: "picklist",
-  perform: async (context, params) => {
+  perform: async () => {
     return Promise.resolve({
       result: awsRegions.map((region) => ({ label: region, key: region })),
     });
@@ -24,7 +24,7 @@ const selectBucket = dataSource({
     description: "Choose a bucket from a list",
   },
   dataSourceType: "picklist",
-  perform: async (context, params) => {
+  perform: async (_, params) => {
     const s3 = await createS3Client({
       awsConnection: params.accessKey,
       awsRegion: "",

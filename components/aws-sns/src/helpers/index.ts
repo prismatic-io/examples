@@ -5,12 +5,12 @@ import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
 export const validateConnection = (connection: Connection): void => {
   if (
     ![accessKeySecretPair.key, assumeRoleConnection.key].includes(
-      connection.key
+      connection.key,
     )
   ) {
     throw new ConnectionError(
       connection,
-      `Unsupported connection method ${connection.key}.`
+      `Unsupported connection method ${connection.key}.`,
     );
   }
 };

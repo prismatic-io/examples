@@ -30,7 +30,7 @@ export const putObjectRetention = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
-    }
+    },
   ) => {
     const s3 = await createS3Client({
       awsConnection: accessKey,
@@ -48,7 +48,7 @@ export const putObjectRetention = action({
       (!retentionModePresent && retainUntilDatePresent)
     ) {
       throw new Error(
-        "Both Retention Mode and Retain Until Date must be set when either is set."
+        "Both Retention Mode and Retain Until Date must be set when either is set.",
       );
     }
 

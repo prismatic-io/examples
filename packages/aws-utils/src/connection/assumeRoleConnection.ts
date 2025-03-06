@@ -1,9 +1,11 @@
-import { AssumeRoleConnection } from "../interfaces/AssumeRoleConnection";
+import { DefaultConnectionDefinition } from "@prismatic-io/spectral";
 
-export const assumeRoleConnection: AssumeRoleConnection = {
+export const assumeRoleConnection: DefaultConnectionDefinition = {
   key: "awsAssumeRole",
-  label: "AWS Role ARN",
-  comments: "Connect to AWS using an assumed role",
+  display: {
+    label: "AWS Role ARN",
+    description: "Connect to AWS using an assumed role",
+  },
   inputs: {
     roleARN: {
       label: "Role ARN",

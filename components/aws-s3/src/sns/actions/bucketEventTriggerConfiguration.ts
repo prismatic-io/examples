@@ -10,7 +10,7 @@ import {
 } from "../../inputs";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { processTopicConfiguration } from "../../utils";
-import { TopicConfiguration } from "@aws-sdk/client-s3";
+import { Event, TopicConfiguration } from "@aws-sdk/client-s3";
 import { bucketEventTriggerConfigurationPayload } from "../../examplePayloads";
 
 export const bucketEventTriggerConfiguration = action({
@@ -31,7 +31,7 @@ export const bucketEventTriggerConfiguration = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
-    }
+    },
   ) => {
     const s3Client = await createS3Client({
       awsConnection,
@@ -44,7 +44,7 @@ export const bucketEventTriggerConfiguration = action({
     const topicConfiguration: TopicConfiguration = {
       Id: eventNotificationName,
       TopicArn: snsTopicArn,
-      Events: eventsList,
+      Events: eventsList as Event[],
     };
 
     return {
@@ -53,7 +53,7 @@ export const bucketEventTriggerConfiguration = action({
         bucket,
         bucketOwnerAccountid,
         eventNotificationName,
-        topicConfiguration
+        topicConfiguration,
       ),
     };
   },

@@ -4,9 +4,6 @@
 # Components
 components/**/dist
 
-# Yarn
-**/yarn-error.log
-
 # Node
 node_modules
 

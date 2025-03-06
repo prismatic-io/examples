@@ -29,7 +29,7 @@ const moveFile = action({
   },
   perform: async (
     context,
-    { connection, sourcePath, destinationPath, debug }
+    { connection, sourcePath, destinationPath, debug },
   ) => {
     const sftp = await getSftpClient(connection, debug);
 

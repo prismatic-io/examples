@@ -3,8 +3,11 @@ import { assumeRoleConnection } from "aws-utils";
 
 export const accessKeySecretPair = connection({
   key: "apiKeySecret",
-  label: "AWS API Key and Secret",
-  comments: "AWS API Key and Secret",
+  display: {
+    label: "AWS S3 Access Key and Secret",
+    description:
+      "Authenticates requests to AWS S3 using an API Key and Secret.",
+  },
   inputs: {
     accessKeyId: {
       label: "Access Key ID",

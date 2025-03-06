@@ -29,7 +29,7 @@ export const listOptOutNumbers = action({
       nextToken: util.types.toString(params.nextToken),
     };
     const command = new ListPhoneNumbersOptedOutCommand(
-      listPhoneNumbersOptedOutParams
+      listPhoneNumbersOptedOutParams,
     );
     const response = await sns.send(command);
 

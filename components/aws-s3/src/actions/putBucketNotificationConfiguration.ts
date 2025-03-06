@@ -32,7 +32,7 @@ export const putBucketNotificationConfiguration = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
-    }
+    },
   ) => {
     const s3 = await createS3Client({
       awsConnection: accessKey,
@@ -50,7 +50,7 @@ export const putBucketNotificationConfiguration = action({
     const data = await putBucketNotificationConfigurationFn(
       s3,
       bucket,
-      notificationConfiguration
+      notificationConfiguration,
     );
 
     return {

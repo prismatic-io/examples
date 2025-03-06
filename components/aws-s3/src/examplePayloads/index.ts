@@ -320,8 +320,7 @@ export const putObjectPayload: { data: PutObjectOutput } = {
 };
 
 export const generatePresignedUrlPayload: { data: string } = {
-  data:
-    "https://my-bucket.s3.us-east-2.amazonaws.com/my-file.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256...",
+  data: "https://my-bucket.s3.us-east-2.amazonaws.com/my-file.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256...",
 };
 
 export const generatePresignedForMultiparUploadsPayload: {
@@ -329,8 +328,7 @@ export const generatePresignedForMultiparUploadsPayload: {
 } = {
   data: [
     {
-      url:
-        "https://my-bucket.s3.us-east-2.amazonaws.com/my-file.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256...",
+      url: "https://my-bucket.s3.us-east-2.amazonaws.com/my-file.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256...",
       partNumber: 1,
     },
   ],

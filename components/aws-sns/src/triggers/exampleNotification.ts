@@ -58,4 +58,15 @@ export const snsExamplePayload: TriggerPayload = {
     id: "123",
     name: "name",
   },
+  flow: {
+    id: "flowId",
+    name: "flowName",
+  },
+  integration: {
+    id: "integrationId",
+    name: "integrationName",
+    externalVersion: "1.0.0",
+    versionSequenceId: "1",
+  },
+  startedAt: "2012-04-25T21:49:25.719Z",
 };

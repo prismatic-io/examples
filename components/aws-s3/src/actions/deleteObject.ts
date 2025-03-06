@@ -20,7 +20,7 @@ export const deleteObject = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
-    }
+    },
   ) => {
     const s3 = await createS3Client({
       awsConnection: accessKey,

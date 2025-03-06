@@ -19,7 +19,7 @@ const basicAuthConnection = createConnection(basic, {
 describe("Connect to server that only allows keyboard-interactive", () => {
   if (!process.env.DOCKER_ENABLED) {
     console.warn(
-      "Skipping SSH key tests. Run `DOCKER_ENABLED=true npm run test` to enable."
+      "Skipping SSH key tests. Run `DOCKER_ENABLED=true npm run test` to enable.",
     );
     test("Skip", async () => {
       return Promise.resolve();
@@ -34,11 +34,11 @@ describe("Connect to server that only allows keyboard-interactive", () => {
       pattern: "",
     });
     expect(result?.data).toEqual([".dockerenv", "bin", "lib", "sbin"]);
-    expect(loggerMock["debug"]).toHaveBeenCalledWith(
-      "Client: password auth failed"
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      "Client: password auth failed",
     );
-    expect(loggerMock["debug"]).toHaveBeenCalledWith(
-      "This SFTP server requires keyboard-interactive login. Falling back to keyboard-interactive."
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      "This SFTP server requires keyboard-interactive login. Falling back to keyboard-interactive.",
     );
   });
 });

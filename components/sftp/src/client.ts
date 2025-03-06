@@ -3,9 +3,12 @@ import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
 import { basic, privateKey } from "./connections";
 import {
   secureCipherAlgorithms,
-  serverHostKeyAlgorithms,
+  secureServerHostKeyAlgorithms,
   unsecureCipherAlgorithms,
+  unsecureServerHostKeyAlgorithms,
 } from "./constants";
+
+import type { CipherAlgorithm, ServerHostKeyAlgorithm } from "ssh2";
 
 export const getAuthParams = (connection: Connection) => {
   switch (connection.key) {
@@ -24,7 +27,7 @@ export const getAuthParams = (connection: Connection) => {
     default:
       throw new ConnectionError(
         connection,
-        "Unknown Connection type provided."
+        "Unknown Connection type provided.",
       );
   }
 };
@@ -32,27 +35,55 @@ export const getAuthParams = (connection: Connection) => {
 export const getSftpClient = async (connection: Connection, debug: boolean) => {
   const sftp = new Client();
 
-  sftp.on("keyboard-interactive", function (
-    _name,
-    _instructions,
-    _instructionsLang,
-    _prompts,
-    finish
-  ) {
-    if (debug) {
-      console.debug(
-        "This SFTP server requires keyboard-interactive login. Falling back to keyboard-interactive."
-      );
-    }
-    finish([connection.fields.password]);
-  });
+  sftp.on(
+    "keyboard-interactive",
+    function (_name, _instructions, _instructionsLang, _prompts, finish) {
+      if (debug) {
+        console.debug(
+          "This SFTP server requires keyboard-interactive login. Falling back to keyboard-interactive.",
+        );
+      }
+      finish([connection.fields.password]);
+    },
+  );
 
-  const { host, port, timeout, enableUnsecureCiphers } = connection.fields;
+  const {
+    host,
+    port,
+    timeout,
+    enableUnsecureCiphers,
+    enableUnsecureServerHostKeyAlgorithms,
+    customServerHostKeyAlgorithms,
+    customCiphers,
+  } = connection.fields;
 
   try {
-    const cipher = util.types.toBool(enableUnsecureCiphers)
+    let cipher = util.types.toBool(enableUnsecureCiphers)
       ? [...secureCipherAlgorithms, ...unsecureCipherAlgorithms]
       : secureCipherAlgorithms;
+
+    let serverHostKey = util.types.toBool(enableUnsecureServerHostKeyAlgorithms)
+      ? [...secureServerHostKeyAlgorithms, ...unsecureServerHostKeyAlgorithms]
+      : secureServerHostKeyAlgorithms;
+
+    const customServerHostKeyAlgorithmsString = util.types.toString(
+      customServerHostKeyAlgorithms,
+    );
+
+    if (customServerHostKeyAlgorithmsString) {
+      serverHostKey = customServerHostKeyAlgorithmsString
+        .replace(/\s+/g, "")
+        .split(",") as ServerHostKeyAlgorithm[];
+    }
+
+    const customCiphersString = util.types.toString(customCiphers);
+
+    if (customCiphersString) {
+      cipher = customCiphersString
+        .replace(/\s+/g, "")
+        .split(",") as CipherAlgorithm[];
+    }
+
     await sftp.connect({
       host: util.types.toString(host),
       port: util.types.toInt(port),
@@ -64,7 +95,7 @@ export const getSftpClient = async (connection: Connection, debug: boolean) => {
         }
       },
       algorithms: {
-        serverHostKey: serverHostKeyAlgorithms,
+        serverHostKey,
         cipher,
       },
       ...getAuthParams(connection),
@@ -72,7 +103,7 @@ export const getSftpClient = async (connection: Connection, debug: boolean) => {
   } catch (err) {
     throw new ConnectionError(
       connection,
-      `Unable to connect to SFTP server. ${err}`
+      `Unable to connect to SFTP server. ${err}`,
     );
   }
 

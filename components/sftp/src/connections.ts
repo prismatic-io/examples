@@ -40,12 +40,45 @@ const commonInputs = {
     default: "3000",
     example: "4000",
   },
+  enableUnsecureServerHostKeyAlgorithms: {
+    label: "Enable Unsecure Server Host Key Algorithms",
+    comments:
+      "If true, unsecure server host key algorithms will be added to the connection.",
+    required: false,
+    type: "boolean",
+  },
+  enableUnsecureCiphers: {
+    label: "Enable Unsecure Ciphers",
+    comments: "If true, CBC ciphers will be added to the connection.",
+    required: false,
+    type: "boolean",
+  },
+  customServerHostKeyAlgorithms: {
+    label: "Custom Server Host Key Algorithms",
+    comments:
+      "A comma-separated list of custom server host key algorithms. Overrides the default server host key algorithms. Algorithm order matters. Advanced setting.",
+    placeholder: "Custom Server Host Key Algorithms",
+    example: ["ssh-rsa", "ssh-dss"].join(", "),
+    required: false,
+    type: "string",
+  },
+  customCiphers: {
+    label: "Custom Ciphers",
+    comments:
+      "A comma-separated list of custom ciphers. Overrides the default ciphers. Cipher order matters. Advanced setting.",
+    placeholder: "Custom Ciphers",
+    example: ["aes128-ctr", "aes192-ctr", "aes256-ctr"].join(", "),
+    required: false,
+    type: "string",
+  },
 } as OnPremConnectionDefinition["inputs"];
 
 export const basic = onPremConnection({
   key: "basic",
-  label: "Basic Username/Password",
-  comments: "Basic Username and Password connection",
+  display: {
+    label: "Basic Username/Password",
+    description: "Basic Username and Password connection",
+  },
   inputs: {
     password: {
       label: "Password",
@@ -55,19 +88,15 @@ export const basic = onPremConnection({
       example: "p@s$W0Rd",
     },
     ...commonInputs,
-    enableUnsecureCiphers: {
-      label: "Enable Unsecure Ciphers",
-      comments: "If true, CBC ciphers will be added to the connection.",
-      required: false,
-      type: "boolean",
-    },
   },
 });
 
 export const privateKey = onPremConnection({
   key: "privateKey",
-  label: "Private Key",
-  comments: "Private key connection",
+  display: {
+    label: "Private Key",
+    description: "Private Key connection",
+  },
   inputs: {
     privateKey: {
       label: "Private Key",
@@ -95,12 +124,6 @@ export const privateKey = onPremConnection({
       example: "p@s$W0Rd",
     },
     ...commonInputs,
-    enableUnsecureCiphers: {
-      label: "Enable CBC Ciphers",
-      comments: "If true, CBC ciphers will be added to the connection.",
-      required: false,
-      type: "boolean",
-    },
   },
 });
 

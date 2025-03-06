@@ -30,7 +30,7 @@ export const updateTopicPolicy = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
-    }
+    },
   ) => {
     const sns = await createSNSClient({
       awsConnection,

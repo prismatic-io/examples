@@ -99,24 +99,25 @@ export const QUEUE_CONFIGURATIONS_EXAMPLE: QueueConfiguration[] = [
   },
 ];
 
-export const LAMBDA_FUNCTION_CONFIGURATIONS_EXAMPLE: LambdaFunctionConfiguration[] = [
-  {
-    Id: "lambda-1",
-    LambdaFunctionArn:
-      "arn:aws:lambda:us-west-2:123456789012:function:my-function",
-    Events: ["s3:ObjectCreated:*"],
-    Filter: {
-      Key: {
-        FilterRules: [
-          {
-            Name: "prefix",
-            Value: "images/",
-          },
-        ],
+export const LAMBDA_FUNCTION_CONFIGURATIONS_EXAMPLE: LambdaFunctionConfiguration[] =
+  [
+    {
+      Id: "lambda-1",
+      LambdaFunctionArn:
+        "arn:aws:lambda:us-west-2:123456789012:function:my-function",
+      Events: ["s3:ObjectCreated:*"],
+      Filter: {
+        Key: {
+          FilterRules: [
+            {
+              Name: "prefix",
+              Value: "images/",
+            },
+          ],
+        },
       },
     },
-  },
-];
+  ];
 
 export const EVENT_BRIDGE_CONFIGURATION_EXAMPLE: EventBridgeConfiguration = {
   Id: "event-bridge-1",

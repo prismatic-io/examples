@@ -48,7 +48,7 @@ export const generatePresignedForMultiparUploads = action({
       urlArray.push(
         getSignedUrl(s3, command, {
           expiresIn: params.expirationSeconds,
-        })
+        }),
       );
     }
 

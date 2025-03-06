@@ -16,7 +16,7 @@ export const createSNSClient = async ({
         awsRegion,
         accessKeyId,
         secretAccessKey,
-        toTrimmedString(awsConnection.fields.roleARN)
+        toTrimmedString(awsConnection.fields.roleARN),
       )
     : { accessKeyId, secretAccessKey };
 
@@ -32,7 +32,7 @@ export const createSNSClient = async ({
       awsConnection,
       `Invalid AWS Credentials have been configured. This is sometimes caused by missing characters from a copy/paste. Original AWS error message: ${
         (err as Error).message
-      }`
+      }`,
     );
   }
 };

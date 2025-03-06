@@ -2,9 +2,11 @@ import { connection } from "@prismatic-io/spectral";
 
 export const fluentCommerceOAuthPassword = connection({
   key: "fluent-password-grant",
-  label: "Fluent Commerce OAuth 2.0 Password Grant",
-  comments:
-    "Authenticate requests to Fluent Commerce using a username and password",
+  display: {
+    description:
+      "Authenticate requests to Fluent Commerce using a username and password",
+    label: "Fluent Commerce OAuth 2.0 Password Grant",
+  },
   inputs: {
     host: {
       label: "Fluent Host",

@@ -3,9 +3,11 @@ import { assumeRoleConnection } from "aws-utils";
 
 export const accessKeySecretPair = connection({
   key: "apiKeySecret",
-  label: "AWS SNS Access Key and Secret",
-  comments:
-    "Authenticates requests to Amazon SNS using an API Key and API Secret",
+  display: {
+    label: "AWS SNS Access Key and Secret",
+    description:
+      "Authenticates requests to Amazon SNS using an API Key and API Secret",
+  },
   inputs: {
     accessKeyId: {
       label: "Access Key ID",

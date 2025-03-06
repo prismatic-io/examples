@@ -19,25 +19,27 @@ import {
   QUEUE_CONFIGURATIONS_EXAMPLE,
   TOPIC_CONFIGURATIONS_EXAMPLE,
 } from "./constants";
-import { KeyValuePair, util } from "@prismatic-io/spectral";
+import { KeyValuePair } from "@prismatic-io/spectral";
 
 export const getBucketNotificationConfiguration = async (
   s3Client: S3Client,
   bucket: string,
   bucketOwnerAccountid?: string,
-  removeMetadata = true
+  removeMetadata = true,
 ): Promise<NotificationConfiguration> => {
-  const getBucketNotificationConfigurationCommandInput: GetBucketNotificationConfigurationCommandInput = {
-    Bucket: bucket,
-    ExpectedBucketOwner: bucketOwnerAccountid,
-  };
+  const getBucketNotificationConfigurationCommandInput: GetBucketNotificationConfigurationCommandInput =
+    {
+      Bucket: bucket,
+      ExpectedBucketOwner: bucketOwnerAccountid,
+    };
 
-  const getBucketNotificationConfigurationCommand = new GetBucketNotificationConfigurationCommand(
-    getBucketNotificationConfigurationCommandInput
-  );
+  const getBucketNotificationConfigurationCommand =
+    new GetBucketNotificationConfigurationCommand(
+      getBucketNotificationConfigurationCommandInput,
+    );
   // Get the existing notification configuration for the bucket
   const getBucketNotificationConfigurationCommandOutput = await s3Client.send(
-    getBucketNotificationConfigurationCommand
+    getBucketNotificationConfigurationCommand,
   );
 
   // Remove the metadata from the response
@@ -50,18 +52,20 @@ export const getBucketNotificationConfiguration = async (
 export const putBucketNotificationConfiguration = async (
   s3Client: S3Client,
   bucket: string,
-  notificationConfiguration: NotificationConfiguration
+  notificationConfiguration: NotificationConfiguration,
 ): Promise<PutBucketNotificationConfigurationCommandOutput> => {
-  const putBucketNotificationConfigurationCommandInput: PutBucketNotificationConfigurationCommandInput = {
-    Bucket: bucket,
-    NotificationConfiguration: notificationConfiguration,
-    SkipDestinationValidation: true,
-  };
-  const putBucketNotificationConfigurationCommand = new PutBucketNotificationConfigurationCommand(
-    putBucketNotificationConfigurationCommandInput
-  );
+  const putBucketNotificationConfigurationCommandInput: PutBucketNotificationConfigurationCommandInput =
+    {
+      Bucket: bucket,
+      NotificationConfiguration: notificationConfiguration,
+      SkipDestinationValidation: true,
+    };
+  const putBucketNotificationConfigurationCommand =
+    new PutBucketNotificationConfigurationCommand(
+      putBucketNotificationConfigurationCommandInput,
+    );
   const putBucketNotificationConfigurationCommandOutput = await s3Client.send(
-    putBucketNotificationConfigurationCommand
+    putBucketNotificationConfigurationCommand,
   );
   return putBucketNotificationConfigurationCommandOutput;
 };
@@ -71,12 +75,12 @@ export const processTopicConfiguration = async (
   bucket: string,
   bucketOwnerAccountid: string,
   eventNotificationName: string,
-  topicConfiguration: TopicConfiguration
+  topicConfiguration: TopicConfiguration,
 ): Promise<PutBucketNotificationConfigurationCommandOutput> => {
   const notificationConfiguration = await getBucketNotificationConfiguration(
     s3Client,
     bucket,
-    bucketOwnerAccountid
+    bucketOwnerAccountid,
   );
 
   if (!("TopicConfigurations" in notificationConfiguration))
@@ -93,7 +97,7 @@ export const processTopicConfiguration = async (
         existingTopicConfigurationIndex = index;
 
       return topicConfigurationIdEqualsEventNotificationName;
-    }
+    },
   );
 
   if (existingTopicConfigurationIndex === -1) {
@@ -109,12 +113,12 @@ export const processTopicConfiguration = async (
   return await putBucketNotificationConfiguration(
     s3Client,
     bucket,
-    notificationConfiguration
+    notificationConfiguration,
   );
 };
 
 export const getObjectIdentifiers = (
-  objectKeys: unknown
+  objectKeys: unknown,
 ): ObjectIdentifier[] => {
   if (Array.isArray(objectKeys)) {
     return objectKeys.map((key) => ({ Key: key }));
@@ -123,7 +127,7 @@ export const getObjectIdentifiers = (
 };
 
 export const getTopicConfigurations = (
-  topicConfigurations: unknown
+  topicConfigurations: unknown,
 ): TopicConfiguration[] => {
   if (
     typeof topicConfigurations === "string" &&
@@ -133,8 +137,8 @@ export const getTopicConfigurations = (
     if (!Array.isArray(topicConfigurationsJson))
       throw new Error(
         `Topic configurations must be an array with the following structure: ${JSON.stringify(
-          TOPIC_CONFIGURATIONS_EXAMPLE
-        )}`
+          TOPIC_CONFIGURATIONS_EXAMPLE,
+        )}`,
       );
     return topicConfigurationsJson;
   }
@@ -143,7 +147,7 @@ export const getTopicConfigurations = (
 };
 
 export const getQueueConfigurations = (
-  queueConfigurations: unknown
+  queueConfigurations: unknown,
 ): QueueConfiguration[] => {
   if (
     typeof queueConfigurations === "string" &&
@@ -153,8 +157,8 @@ export const getQueueConfigurations = (
     if (!Array.isArray(queueConfigurationsJson))
       throw new Error(
         `Queue configurations must be an array with the following structure: ${JSON.stringify(
-          QUEUE_CONFIGURATIONS_EXAMPLE
-        )}`
+          QUEUE_CONFIGURATIONS_EXAMPLE,
+        )}`,
       );
     return queueConfigurationsJson;
   }
@@ -163,20 +167,20 @@ export const getQueueConfigurations = (
 };
 
 export const getLambdaFunctionConfigurations = (
-  lambdaFunctionConfigurations: unknown
+  lambdaFunctionConfigurations: unknown,
 ): LambdaFunctionConfiguration[] => {
   if (
     typeof lambdaFunctionConfigurations === "string" &&
     lambdaFunctionConfigurations.length > 0
   ) {
     const lambdaFunctionConfigurationsJson = JSON.parse(
-      lambdaFunctionConfigurations
+      lambdaFunctionConfigurations,
     );
     if (!Array.isArray(lambdaFunctionConfigurationsJson))
       throw new Error(
         `Lambda function configurations must be an array with the following structure: ${JSON.stringify(
-          LAMBDA_FUNCTION_CONFIGURATIONS_EXAMPLE
-        )}`
+          LAMBDA_FUNCTION_CONFIGURATIONS_EXAMPLE,
+        )}`,
       );
     return lambdaFunctionConfigurationsJson;
   }
@@ -185,7 +189,7 @@ export const getLambdaFunctionConfigurations = (
 };
 
 export const getEventBridgeConfiguration = (
-  eventBridgeConfiguration: unknown
+  eventBridgeConfiguration: unknown,
 ): EventBridgeConfiguration => {
   if (
     typeof eventBridgeConfiguration === "string" &&
@@ -198,7 +202,7 @@ export const getEventBridgeConfiguration = (
 };
 
 export const getObjectAttributes = (
-  attributes: unknown
+  attributes: unknown,
 ): ObjectAttributes[] => {
   if (Array.isArray(attributes)) {
     if (attributes.length === 0) {
@@ -210,6 +214,9 @@ export const getObjectAttributes = (
 
 export const encodeTags = (tags: KeyValuePair[]): string => {
   return querystring.encode(
-    (tags || []).reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {})
+    (tags || []).reduce(
+      (acc, { key, value }) => ({ ...acc, [key]: value }),
+      {},
+    ),
   );
 };

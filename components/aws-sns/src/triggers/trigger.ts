@@ -1,11 +1,11 @@
 import { trigger, util } from "@prismatic-io/spectral";
-import { createClient as createHttpClient } from "@prismatic-io/spectral/dist/clients/http";
 import MessageValidator from "sns-validator";
 import { parseMessage } from "../inputs";
 import { snsExamplePayload } from "./exampleNotification";
+import { createClient } from "@prismatic-io/spectral/dist/clients/http";
 
 export const lowerCaseHeaders = (
-  headers: Record<string, string>
+  headers: Record<string, string>,
 ): Record<string, string> =>
   Object.entries(headers).reduce((result, [key, val]) => {
     return { ...result, [key.toLowerCase()]: val };
@@ -46,7 +46,7 @@ export const subscriptionTrigger = trigger({
         validator.validate(util.types.toString(data), (error, message) => {
           if (error) {
             logger.error(
-              `SNS Message could not be verified with error: ${error}`
+              `SNS Message could not be verified with error: ${error}`,
             );
             return reject(error);
           }
@@ -61,17 +61,16 @@ export const subscriptionTrigger = trigger({
     let branch = "";
 
     const messageType = payload.headers["x-amz-sns-message-type"];
+    const client = createClient({
+      baseUrl: message.SubscribeURL,
+    });
     switch (messageType) {
       case "SubscriptionConfirmation":
-        await createHttpClient({
-          baseUrl: message["SubscribeURL"],
-        }).get("");
+        await client.get("");
         branch = "Subscribe";
         break;
       case "UnsubscribeConfirmation":
-        await createHttpClient({
-          baseUrl: message["SubscribeURL"],
-        }).get("");
+        await client.get("");
         branch = "Unsubscribe";
         break;
       case "Notification":
@@ -79,19 +78,17 @@ export const subscriptionTrigger = trigger({
         break;
       default:
         throw new Error(
-          `Message type was not "Notification", "SubscriptionConfirmation" or "UnsubscribeConfirmation", but "${messageType}" instead.`
+          `Message type was not "Notification", "SubscriptionConfirmation" or "UnsubscribeConfirmation", but "${messageType}" instead.`,
         );
     }
 
     // Parse non-raw message data
     if (_parseMessage && payload.headers["x-amz-sns-rawdelivery"] !== "true") {
       try {
-        message["Message"] = JSON.parse(
-          util.types.toString(message["Message"])
-        );
+        message.Message = JSON.parse(util.types.toString(message.Message));
       } catch {
         throw new Error(
-          `Received a message that is not valid JSON: ${message["Message"]}`
+          `Received a message that is not valid JSON: ${message.Message}`,
         );
       }
     }

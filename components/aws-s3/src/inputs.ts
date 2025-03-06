@@ -246,8 +246,10 @@ export const eventsList = input({
   example: "s3:ObjectCreated:*",
   placeholder: "s3:ObjectCreated:*",
   required: true,
-  clean: (stringArray: any) =>
-    stringArray.map((string: string) => util.types.toString(string).trim()),
+  clean: (stringArray: unknown) =>
+    (stringArray as []).map((string: string) =>
+      util.types.toString(string).trim(),
+    ),
 });
 
 export const eventNotificationName = input({
@@ -312,10 +314,8 @@ export const fileChunk = input({
   required: true,
   comments:
     "The file data chunk to upload. This can be binary data referenced from a previous step.",
-  clean: (value): Buffer =>
-    util.types.isBufferDataPayload(value)
-      ? Buffer.from(value.data)
-      : (value as Buffer),
+  clean: (value: unknown): Buffer =>
+    util.types.isBufferDataPayload(value) ? value.data : (value as Buffer),
 });
 
 export const partNumber = input({

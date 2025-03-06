@@ -20,7 +20,7 @@ export const subscribeToTopic = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
-    }
+    },
   ) => {
     const sns = await createSNSClient({
       awsConnection,

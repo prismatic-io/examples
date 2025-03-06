@@ -7,7 +7,7 @@ import { accessKeySecretPair } from "./connections";
 const throwConnectionError = (connection: Connection, error: Error): void => {
   throw new ConnectionError(
     connection,
-    `Invalid AWS Credentials have been configured. This is sometimes caused by missing characters from a copy/paste. Original AWS error message: ${error.message}`
+    `Invalid AWS Credentials have been configured. This is sometimes caused by missing characters from a copy/paste. Original AWS error message: ${error.message}`,
   );
 };
 

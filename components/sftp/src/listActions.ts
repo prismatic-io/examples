@@ -24,7 +24,7 @@ const listDirectory = action({
 
     try {
       const fileList = await sftp.list(path, (file) =>
-        pattern ? minimatch(file.name, pattern) : true
+        pattern ? minimatch(file.name, pattern) : true,
       );
       const fileNameList = fileList
         .filter(({ type }) => type !== "d")

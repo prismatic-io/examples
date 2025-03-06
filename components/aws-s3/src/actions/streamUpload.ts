@@ -60,8 +60,8 @@ const createUploadStream = action({
     const tags = querystring.encode(
       (params.tagging || []).reduce(
         (acc, { key, value }) => ({ ...acc, [key]: value }),
-        {}
-      )
+        {},
+      ),
     );
 
     // We'll use a UUID to uniquely identify this upload

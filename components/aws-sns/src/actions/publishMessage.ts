@@ -73,7 +73,7 @@ const getAttributeType = (input: unknown): MessageAttributeValue => {
 const attributeReducer = (kvpList: KeyValuePair<unknown>[] = []) => {
   return kvpList.reduce(
     (result, { key, value }) => ({ ...result, [key]: getAttributeType(value) }),
-    {}
+    {},
   );
 };
 

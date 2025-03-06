@@ -1,5 +1,5 @@
 import merge from "lodash.merge";
-import { action, input, util } from "@prismatic-io/spectral";
+import { action, input, KeyValuePair, util } from "@prismatic-io/spectral";
 import { createFluentClient } from "../client";
 import { connectionInput } from "../inputs";
 
@@ -29,7 +29,8 @@ const genericRequest = action({
       type: "string",
       required: false,
       collection: "keyvaluelist",
-      clean: (val: any) => util.types.keyValPairListToObject(val),
+      clean: (val: unknown) =>
+        util.types.keyValPairListToObject(val as KeyValuePair[]),
     }),
     variablesObject: input({
       label: "Variables Object",
@@ -43,7 +44,7 @@ const genericRequest = action({
     const client = await createFluentClient(params.connection);
     const data = await client.request(
       params.query,
-      merge(params.variables, params.variablesObject)
+      merge(params.variables, params.variablesObject),
     );
     return { data };
   },

@@ -30,19 +30,19 @@ const examplePayload: Response = {
 };
 
 const processBinaryValueIfPresent = (
-  parsedEntries
+  parsedEntries,
 ): PublishBatchRequestEntry[] =>
   parsedEntries.map((entry) => {
-    if (entry["MessageAttributes"]) {
-      for (const key in entry["MessageAttributes"]) {
+    if (entry.MessageAttributes) {
+      for (const key in entry.MessageAttributes) {
         const messageAttributeValueIsBuffer =
-          entry["MessageAttributes"][key]["BinaryValue"] &&
+          entry.MessageAttributes[key].BinaryValue &&
           util.types.isBufferDataPayload(
-            entry["MessageAttributes"][key]["BinaryValue"]
+            entry.MessageAttributes[key].BinaryValue,
           );
         if (messageAttributeValueIsBuffer) {
-          entry["MessageAttributes"][key]["BinaryValue"] = Buffer.from(
-            entry["MessageAttributes"][key]["BinaryValue"].data
+          entry.MessageAttributes[key].BinaryValue = Buffer.from(
+            entry.MessageAttributes[key].BinaryValue.data,
           );
         }
       }

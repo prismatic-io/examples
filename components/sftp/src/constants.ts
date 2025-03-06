@@ -23,13 +23,16 @@ export const kexAlgorithms = [
   "diffie-hellman-group1-sha1",
 ] as KexAlgorithm[];
 
-export const serverHostKeyAlgorithms = [
+export const secureServerHostKeyAlgorithms = [
   "ssh-ed25519",
   "ecdsa-sha2-nistp256",
   "ecdsa-sha2-nistp384",
   "ecdsa-sha2-nistp521",
   "rsa-sha2-512",
   "rsa-sha2-256",
+] as ServerHostKeyAlgorithm[];
+
+export const unsecureServerHostKeyAlgorithms = [
   "ssh-rsa",
   "ssh-dss",
 ] as ServerHostKeyAlgorithm[];

@@ -12,6 +12,7 @@ import {
   acl,
 } from "../inputs";
 import { putObjectPayload } from "../examplePayloads";
+import { ReadStream } from "fs";
 
 export const putObject = action({
   display: {
@@ -31,7 +32,7 @@ export const putObject = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
-    }
+    },
   ) => {
     const s3 = await createS3Client({
       awsConnection: accessKey,
@@ -44,14 +45,14 @@ export const putObject = action({
     const tags = querystring.encode(
       (tagging || []).reduce(
         (acc, { key, value }) => ({ ...acc, [key]: value }),
-        {}
-      )
+        {},
+      ),
     );
     const putParameters: PutObjectRequest = {
       ACL: acl || null,
       Bucket: bucket,
       Key: objectKey,
-      Body: data as any,
+      Body: data as unknown as ReadStream,
       ContentType: contentType,
       Tagging: tags,
     };

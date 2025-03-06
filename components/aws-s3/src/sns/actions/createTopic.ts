@@ -23,7 +23,7 @@ export const createTopic = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
-    }
+    },
   ) => {
     const sns = await createSNSClient({
       awsConnection,

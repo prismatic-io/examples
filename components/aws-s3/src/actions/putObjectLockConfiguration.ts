@@ -31,7 +31,7 @@ export const putObjectLockConfiguration = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
-    }
+    },
   ) => {
     const s3 = await createS3Client({
       awsConnection: accessKey,
@@ -46,7 +46,7 @@ export const putObjectLockConfiguration = action({
 
     if (defaultRetentionDaysPresent && defaultRetentionYearsPresent) {
       throw new Error(
-        "You cannot specify both Default Retention Years and Default Retention Days. Please specify one or the other."
+        "You cannot specify both Default Retention Years and Default Retention Days. Please specify one or the other.",
       );
     }
 
@@ -56,7 +56,7 @@ export const putObjectLockConfiguration = action({
       !defaultRetentionYearsPresent
     ) {
       throw new Error(
-        "You must specify either Default Retention Years or Default Retention Days."
+        "You must specify either Default Retention Years or Default Retention Days.",
       );
     }
 

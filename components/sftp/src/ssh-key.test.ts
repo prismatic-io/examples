@@ -37,7 +37,7 @@ const connectionWithoutPassphrase = createConnection(privateKey, {
 describe("Connect to server with SSH key", () => {
   if (!process.env.DOCKER_ENABLED) {
     console.warn(
-      "Skipping SSH key tests. Run `DOCKER_ENABLED=true npm run test` to enable."
+      "Skipping SSH key tests. Run `DOCKER_ENABLED=true npm run test` to enable.",
     );
     test("Skip", async () => {
       return Promise.resolve();

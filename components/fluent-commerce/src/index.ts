@@ -1,6 +1,7 @@
 import { component } from "@prismatic-io/spectral";
 import actions from "./actions";
 import connections from "./connections";
+import { handleErrors } from "@prismatic-io/spectral/dist/clients/http";
 
 export default component({
   key: "fluent-commerce",
@@ -14,4 +15,7 @@ export default component({
   },
   actions,
   connections,
+  hooks: {
+    error: handleErrors,
+  },
 });

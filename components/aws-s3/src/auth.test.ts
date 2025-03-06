@@ -1,4 +1,3 @@
-const getCallerIdentityMock = jest.fn();
 const s3Mock = jest.fn();
 
 jest.mock("@aws-sdk/client-s3", () => {
@@ -19,7 +18,6 @@ import { ConnectionError } from "@prismatic-io/spectral";
 import { createS3Client } from "./auth";
 import { accessKeySecretPair } from "./connections";
 import { createConnection } from "@prismatic-io/spectral/dist/testing";
-import { awsRegion } from "aws-utils";
 
 describe("createS3Client", () => {
   describe("invalid credentials", () => {

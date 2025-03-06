@@ -47,7 +47,7 @@ export const listSubscriptions = action({
       NextToken: util.types.toString(params.nextToken),
     };
     const command = new ListSubscriptionsByTopicCommand(
-      listSubscriptionsByTopicParams
+      listSubscriptionsByTopicParams,
     );
     const response = await sns.send(command);
 
