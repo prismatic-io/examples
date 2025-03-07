@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@prismatic-io/spectral": "5.0.0-rc.2",
-    "axios": "1.6.8"
+    "axios": "1.8.2"
   },
   "devDependencies": {
     "@types/jest": "26.0.24",
