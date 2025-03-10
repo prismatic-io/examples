@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+service HelloService {
+  rpc SayHello (HelloRequest) returns (HelloResponse) {}
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string greeting = 1;
+}
+
+// The response message containing the greetings
+message HelloResponse {
+  string reply = 1;
+}
