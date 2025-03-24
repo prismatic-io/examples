@@ -1,0 +1,1042 @@
+category: ''
+configPages:
+  - elements:
+      - type: configVar
+        value: PostgreSQL Connection
+      - type: configVar
+        value: Salesforce Connection
+      - type: configVar
+        value: Prismatic Connection
+    name: Configuration
+  - elements:
+      - type: configVar
+        value: JSONPlaceholder Page Size
+      - type: configVar
+        value: SFDC Page Size
+      - type: configVar
+        value: PostgreSQL Page Size
+      - type: configVar
+        value: Prismatic Page Size
+    name: Page Size Values
+    tagline: ''
+    userLevelConfigured: false
+  - elements:
+      - type: configVar
+        value: Where to send values
+    name: Incoming Endpoint
+    tagline: ''
+    userLevelConfigured: false
+defaultInstanceProfile: Default Instance Profile
+definitionVersion: 7
+description: ''
+documentation: ''
+endpointType: flow_specific
+flows:
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: JSON Placeholder Example
+    steps:
+      - action:
+          key: recursiveTrigger
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ''
+        inputs:
+          defaultCursor:
+            type: value
+            value: '1'
+          runOnDeploy:
+            type: value
+            value: 'true'
+        isTrigger: true
+        name: Trigger
+      - action:
+          key: loopNTimes
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ''
+        inputs:
+          iterationCount:
+            type: value
+            value: '5'
+        name: Loop over 5 pages
+        steps:
+          - action:
+              key: getCursor
+              component:
+                isPublic: true
+                key: recursive-flow
+                version: LATEST
+            description: ''
+            inputs: {}
+            name: Get Recursive Cursor
+          - action:
+              key: httpGet
+              component:
+                isPublic: true
+                key: http
+                version: LATEST
+            description: ''
+            inputs:
+              connection:
+                type: configVar
+                value: ''
+              debugRequest:
+                type: value
+                value: 'false'
+              headers:
+                type: complex
+                value: []
+              ignoreSslErrors:
+                type: value
+                value: 'false'
+              includeFullResponse:
+                type: value
+                value: 'false'
+              maxRetries:
+                type: value
+                value: '0'
+              queryParams:
+                type: complex
+                value:
+                  - name:
+                      type: value
+                      value: _limit
+                    type: configVar
+                    value: JSONPlaceholder Page Size
+                  - name:
+                      type: value
+                      value: _page
+                    type: reference
+                    value: getRecursiveCursor.results
+              responseType:
+                type: value
+                value: json
+              retryDelayMS:
+                type: value
+                value: '0'
+              retryOnAllErrors:
+                type: value
+                value: 'false'
+              timeout:
+                type: value
+                value: ''
+              url:
+                type: value
+                value: 'https://jsonplaceholder.typicode.com/comments'
+              useExponentialBackoff:
+                type: value
+                value: 'false'
+            name: Get Page of Comments
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: No more results
+                steps:
+                  - action:
+                      key: stopExecution
+                      component:
+                        isPublic: true
+                        key: stop-execution
+                        version: LATEST
+                    description: ''
+                    inputs:
+                      contentType:
+                        type: value
+                        value: application/json
+                      headers:
+                        type: complex
+                        value: []
+                      jsonBody:
+                        type: value
+                        value: ''
+                      statusCode:
+                        type: value
+                        value: '200'
+                    name: Stop Execution
+              - name: Else
+                steps:
+                  - action:
+                      key: httpPost
+                      component:
+                        isPublic: true
+                        key: http
+                        version: LATEST
+                    description: ''
+                    inputs:
+                      connection:
+                        type: configVar
+                        value: ''
+                      data:
+                        type: reference
+                        value: getPageOfComments.results
+                      debugRequest:
+                        type: value
+                        value: 'false'
+                      headers:
+                        type: complex
+                        value: []
+                      ignoreSslErrors:
+                        type: value
+                        value: 'false'
+                      includeFullResponse:
+                        type: value
+                        value: 'false'
+                      maxRetries:
+                        type: value
+                        value: '0'
+                      queryParams:
+                        type: complex
+                        value: []
+                      responseType:
+                        type: value
+                        value: json
+                      retryDelayMS:
+                        type: value
+                        value: '0'
+                      retryOnAllErrors:
+                        type: value
+                        value: 'false'
+                      timeout:
+                        type: value
+                        value: ''
+                      url:
+                        type: configVar
+                        value: Where to send values
+                      useExponentialBackoff:
+                        type: value
+                        value: 'false'
+                    name: Do something with records
+            description: ''
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: No more results
+                    type: complex
+                    value:
+                      - and
+                      - - isEmpty
+                        - name: ''
+                          type: reference
+                          value: getPageOfComments.results
+                        - name: ''
+                          type: value
+                          value: ''
+            name: Check if we should stop
+          - action:
+              key: add
+              component:
+                isPublic: true
+                key: math
+                version: LATEST
+            description: ''
+            inputs:
+              numbers:
+                type: complex
+                value:
+                  - type: reference
+                    value: getRecursiveCursor.results
+                  - type: value
+                    value: '1'
+            name: Add 1 to current page value
+          - action:
+              key: setCursor
+              component:
+                isPublic: true
+                key: recursive-flow
+                version: LATEST
+            description: ''
+            inputs:
+              cursor:
+                type: reference
+                value: add1ToCurrentPageValue.results
+            name: Set Recursive Cursor
+      - action:
+          key: invokeRecursive
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ''
+        inputs: {}
+        name: Invoke Recursive Trigger
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: PostgreSQL Example
+    steps:
+      - action:
+          key: recursiveTrigger
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ''
+        inputs:
+          defaultCursor:
+            type: value
+            value: '1970-01-01 00:00:00'
+          runOnDeploy:
+            type: value
+            value: 'true'
+        isTrigger: true
+        name: Trigger
+      - action:
+          key: loopNTimes
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ''
+        inputs:
+          iterationCount:
+            type: value
+            value: '5'
+        name: Loop over 5 pages
+        steps:
+          - action:
+              key: getCursor
+              component:
+                isPublic: true
+                key: recursive-flow
+                version: LATEST
+            description: ''
+            inputs: {}
+            name: Get Recursive Cursor
+          - action:
+              key: query
+              component:
+                isPublic: true
+                key: postgres
+                version: LATEST
+            description: ''
+            inputs:
+              debug:
+                type: value
+                value: 'false'
+              params:
+                type: complex
+                value:
+                  - name:
+                      type: value
+                      value: cursor
+                    type: reference
+                    value: getRecursiveCursor.results
+                  - name:
+                      type: value
+                      value: limit
+                    type: configVar
+                    value: PostgreSQL Page Size
+              paramsObject:
+                type: value
+                value: ''
+              postgresConnection:
+                type: configVar
+                value: PostgreSQL Connection
+              queryField:
+                type: value
+                value: |-
+                  SELECT id,
+                         firstname,
+                         lastname,
+                         createdat::TEXT
+                  FROM taylor_people
+                  WHERE createdat > ${cursor}
+                  ORDER BY createdat
+                  LIMIT ${limit}
+            name: Fetch Records
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: No more results
+                steps:
+                  - action:
+                      key: stopExecution
+                      component:
+                        isPublic: true
+                        key: stop-execution
+                        version: LATEST
+                    description: ''
+                    inputs:
+                      contentType:
+                        type: value
+                        value: application/json
+                      headers:
+                        type: complex
+                        value: []
+                      jsonBody:
+                        type: value
+                        value: ''
+                      statusCode:
+                        type: value
+                        value: '200'
+                    name: Stop Execution
+              - name: Else
+                steps:
+                  - action:
+                      key: httpPost
+                      component:
+                        isPublic: true
+                        key: http
+                        version: LATEST
+                    description: ''
+                    inputs:
+                      connection:
+                        type: configVar
+                        value: ''
+                      data:
+                        type: reference
+                        value: fetchRecords.results
+                      debugRequest:
+                        type: value
+                        value: 'false'
+                      headers:
+                        type: complex
+                        value: []
+                      ignoreSslErrors:
+                        type: value
+                        value: 'false'
+                      includeFullResponse:
+                        type: value
+                        value: 'false'
+                      maxRetries:
+                        type: value
+                        value: '0'
+                      queryParams:
+                        type: complex
+                        value: []
+                      responseType:
+                        type: value
+                        value: json
+                      retryDelayMS:
+                        type: value
+                        value: '0'
+                      retryOnAllErrors:
+                        type: value
+                        value: 'false'
+                      timeout:
+                        type: value
+                        value: ''
+                      url:
+                        type: configVar
+                        value: Where to send values
+                      useExponentialBackoff:
+                        type: value
+                        value: 'false'
+                    name: Do something with records
+            description: ''
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: No more results
+                    type: complex
+                    value:
+                      - and
+                      - - isEmpty
+                        - name: ''
+                          type: reference
+                          value: fetchRecords.results
+                        - name: ''
+                          type: value
+                          value: ''
+            name: Branch on Expression
+          - action:
+              key: last
+              component:
+                isPublic: true
+                key: collection-tools
+                version: LATEST
+            description: ''
+            inputs:
+              listInput:
+                type: reference
+                value: fetchRecords.results
+            name: Last
+          - action:
+              key: setCursor
+              component:
+                isPublic: true
+                key: recursive-flow
+                version: LATEST
+            description: ''
+            inputs:
+              cursor:
+                type: reference
+                value: last.results.createdat
+            name: Set Recursive Cursor
+      - action:
+          key: invokeRecursive
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ''
+        inputs: {}
+        name: Invoke Recursive Trigger
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Salesforce Example
+    steps:
+      - action:
+          key: recursiveTrigger
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ''
+        inputs:
+          defaultCursor:
+            type: value
+            value: '0'
+          runOnDeploy:
+            type: value
+            value: 'true'
+        isTrigger: true
+        name: Trigger
+      - action:
+          key: loopNTimes
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ''
+        inputs:
+          iterationCount:
+            type: value
+            value: '5'
+        name: Loop over 5 pages
+        steps:
+          - action:
+              key: getCursor
+              component:
+                isPublic: true
+                key: recursive-flow
+                version: LATEST
+            description: ''
+            inputs: {}
+            name: Get Recursive Cursor
+          - action:
+              key: query
+              component:
+                isPublic: true
+                key: salesforce
+                version: LATEST
+            description: ''
+            inputs:
+              connection:
+                type: configVar
+                value: Salesforce Connection
+              debug:
+                type: value
+                value: 'false'
+              queryString:
+                type: template
+                value: >-
+                  SELECT Id, FirstName, LastName, CreatedDate FROM Contact ORDER
+                  BY CreatedDate, Id LIMIT {{#SFDC Page Size}} OFFSET 
+                  {{$getRecursiveCursor.results}}
+              version:
+                type: value
+                value: '51.0'
+            name: Fetch SFDC Records
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: No more results
+                steps:
+                  - action:
+                      key: stopExecution
+                      component:
+                        isPublic: true
+                        key: stop-execution
+                        version: LATEST
+                    description: ''
+                    inputs:
+                      contentType:
+                        type: value
+                        value: application/json
+                      headers:
+                        type: complex
+                        value: []
+                      jsonBody:
+                        type: value
+                        value: ''
+                      statusCode:
+                        type: value
+                        value: '200'
+                    name: Stop Execution
+              - name: Else
+                steps:
+                  - action:
+                      key: httpPost
+                      component:
+                        isPublic: true
+                        key: http
+                        version: LATEST
+                    description: ''
+                    inputs:
+                      connection:
+                        type: configVar
+                        value: ''
+                      data:
+                        type: reference
+                        value: fetchSfdcRecords.results.records
+                      debugRequest:
+                        type: value
+                        value: 'false'
+                      headers:
+                        type: complex
+                        value: []
+                      ignoreSslErrors:
+                        type: value
+                        value: 'false'
+                      includeFullResponse:
+                        type: value
+                        value: 'false'
+                      maxRetries:
+                        type: value
+                        value: '0'
+                      queryParams:
+                        type: complex
+                        value: []
+                      responseType:
+                        type: value
+                        value: json
+                      retryDelayMS:
+                        type: value
+                        value: '0'
+                      retryOnAllErrors:
+                        type: value
+                        value: 'false'
+                      timeout:
+                        type: value
+                        value: ''
+                      url:
+                        type: configVar
+                        value: Where to send values
+                      useExponentialBackoff:
+                        type: value
+                        value: 'false'
+                    name: POST Request
+            description: ''
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: No more results
+                    type: complex
+                    value:
+                      - and
+                      - - isEmpty
+                        - name: ''
+                          type: reference
+                          value: fetchSfdcRecords.results.records
+                        - name: ''
+                          type: value
+                          value: ''
+            name: Branch on Expression
+          - action:
+              key: add
+              component:
+                isPublic: true
+                key: math
+                version: LATEST
+            description: ''
+            inputs:
+              numbers:
+                type: complex
+                value:
+                  - type: reference
+                    value: getRecursiveCursor.results
+                  - type: configVar
+                    value: SFDC Page Size
+            name: Compute New Offset
+          - action:
+              key: setCursor
+              component:
+                isPublic: true
+                key: recursive-flow
+                version: LATEST
+            description: ''
+            inputs:
+              cursor:
+                type: reference
+                value: computeNewOffset.results
+            name: Set Recursive Cursor
+      - action:
+          key: invokeRecursive
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ''
+        inputs: {}
+        name: Invoke Recursive Trigger
+  - description: ''
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Prismatic API Example
+    steps:
+      - action:
+          key: recursiveTrigger
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ''
+        inputs:
+          defaultCursor:
+            type: value
+            value: '0'
+          runOnDeploy:
+            type: value
+            value: 'true'
+        isTrigger: true
+        name: Trigger
+      - action:
+          key: loopNTimes
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ''
+        inputs:
+          iterationCount:
+            type: value
+            value: '5'
+        name: Loop over 5 pages
+        steps:
+          - action:
+              key: getCursor
+              component:
+                isPublic: true
+                key: recursive-flow
+                version: LATEST
+            description: ''
+            inputs: {}
+            name: Get Recursive Cursor
+          - action:
+              key: rawRequest
+              component:
+                isPublic: true
+                key: prismatic
+                version: LATEST
+            description: ''
+            inputs:
+              connection:
+                type: configVar
+                value: Prismatic Connection
+              query:
+                type: value
+                value: |-
+                  query getComponents($cursor: String, $limit: Int) {
+                    components(
+                      after: $cursor
+                      orderBy: {direction: ASC, field: LABEL}
+                      first: $limit
+                    ) {
+                      nodes {
+                        key
+                        label
+                        versionNumber
+                        versionCreatedAt
+                      }
+                      pageInfo {
+                        endCursor
+                      }
+                    }
+                  }
+              variables:
+                type: complex
+                value:
+                  - name:
+                      type: value
+                      value: cursor
+                    type: reference
+                    value: getRecursiveCursor.results
+                  - name:
+                      type: value
+                      value: limit
+                    type: configVar
+                    value: Prismatic Page Size
+            name: Raw GraphQL Request
+          - action:
+              key: branchOnExpression
+              component:
+                isPublic: true
+                key: branch
+                version: LATEST
+            branches:
+              - name: No more results
+                steps:
+                  - action:
+                      key: stopExecution
+                      component:
+                        isPublic: true
+                        key: stop-execution
+                        version: LATEST
+                    description: ''
+                    inputs:
+                      contentType:
+                        type: value
+                        value: application/json
+                      headers:
+                        type: complex
+                        value: []
+                      jsonBody:
+                        type: value
+                        value: ''
+                      statusCode:
+                        type: value
+                        value: '200'
+                    name: Stop Execution
+              - name: Else
+                steps:
+                  - action:
+                      key: httpPost
+                      component:
+                        isPublic: true
+                        key: http
+                        version: LATEST
+                    description: ''
+                    inputs:
+                      connection:
+                        type: configVar
+                        value: ''
+                      data:
+                        type: reference
+                        value: rawGraphqlRequest.results.data.data.components.nodes
+                      debugRequest:
+                        type: value
+                        value: 'false'
+                      headers:
+                        type: complex
+                        value: []
+                      ignoreSslErrors:
+                        type: value
+                        value: 'false'
+                      includeFullResponse:
+                        type: value
+                        value: 'false'
+                      maxRetries:
+                        type: value
+                        value: '0'
+                      queryParams:
+                        type: complex
+                        value: []
+                      responseType:
+                        type: value
+                        value: json
+                      retryDelayMS:
+                        type: value
+                        value: '0'
+                      retryOnAllErrors:
+                        type: value
+                        value: 'false'
+                      timeout:
+                        type: value
+                        value: ''
+                      url:
+                        type: configVar
+                        value: Where to send values
+                      useExponentialBackoff:
+                        type: value
+                        value: 'false'
+                    name: POST Request
+            description: ''
+            inputs:
+              conditions:
+                type: complex
+                value:
+                  - name: No more results
+                    type: complex
+                    value:
+                      - and
+                      - - isEmpty
+                        - name: ''
+                          type: reference
+                          value: rawGraphqlRequest.results.data.data.components.nodes
+                        - name: ''
+                          type: value
+                          value: ''
+            name: Branch on Expression
+          - action:
+              key: setCursor
+              component:
+                isPublic: true
+                key: recursive-flow
+                version: LATEST
+            description: ''
+            inputs:
+              cursor:
+                type: reference
+                value: >-
+                  rawGraphqlRequest.results.data.data.components.pageInfo.endCursor
+            name: Set Recursive Cursor
+      - action:
+          key: invokeRecursive
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ''
+        inputs: {}
+        name: Invoke Recursive Trigger
+name: Recursive Flow Examples
+requiredConfigVars:
+  - dataType: number
+    defaultValue: '15'
+    key: JSONPlaceholder Page Size
+    orgOnly: false
+  - connection:
+      key: postgres
+      component:
+        isPublic: true
+        key: postgres
+        version: LATEST
+    dataType: connection
+    inputs:
+      database:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: ''
+      host:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: ''
+      password:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: ''
+      port:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: '5432'
+      requireSSL:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: 'false'
+      timeout:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: '5000'
+      username:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: ''
+    key: PostgreSQL Connection
+    meta:
+      visibleToCustomerDeployer: true
+      visibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - connection:
+      key: basic
+      component:
+        isPublic: true
+        key: salesforce
+        version: LATEST
+    dataType: connection
+    inputs:
+      loginUrl:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: ''
+      password:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: ''
+      username:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: ''
+    key: Salesforce Connection
+    meta:
+      visibleToCustomerDeployer: true
+      visibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataType: number
+    defaultValue: '5'
+    key: SFDC Page Size
+    orgOnly: false
+  - dataType: string
+    defaultValue: 'https://postman-echo.com/post'
+    description: Where should data go after fetching it?
+    key: Where to send values
+    orgOnly: false
+  - dataType: number
+    defaultValue: '50'
+    key: PostgreSQL Page Size
+    orgOnly: false
+  - connection:
+      key: apiKey
+      component:
+        isPublic: true
+        key: prismatic
+        version: LATEST
+    dataType: connection
+    inputs:
+      apiKey:
+        type: value
+        value: ''
+    key: Prismatic Connection
+    meta:
+      isVisibleToCustomerDeployer: true
+      isVisibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataType: number
+    defaultValue: '10'
+    key: Prismatic Page Size
+    orgOnly: false
