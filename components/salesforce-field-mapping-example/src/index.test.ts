@@ -6,12 +6,14 @@ import {
 } from "@prismatic-io/spectral/dist/testing";
 
 /* Copied from Salesforce component for testing purposes */
-export const salesforceOAuth = oauth2Connection({
+const salesforceOAuth = oauth2Connection({
   oauth2Type: OAuth2Type.AuthorizationCode,
   key: "oauth2",
-  label: "Salesforce OAuth 2.0",
-  comments:
-    "Authenticate requests to Salesforce using values obtained from the developer console.",
+  display: {
+    label: "Salesforce OAuth 2.0",
+    description:
+      "Authenticate requests to Salesforce using values obtained from the developer console.",
+  },
   inputs: {
     authorizeUrl: {
       label: "Authorize URL",

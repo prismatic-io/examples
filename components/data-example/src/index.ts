@@ -7,8 +7,11 @@ const pointOfSaleInput = input({
   comments:
     "Ensure the input is a deserialized object of the form { productName: string, price: number, quantity: number }.",
   example: "{ productName: 'Widget', price: 1.25, quantity: 75 }",
-  clean: (value: any) => {
-    const parsedValue = util.types.isJSON(value) ? JSON.parse(value) : value;
+  clean: (value: unknown) => {
+    const parsedValue =
+      typeof value === "string" && util.types.isJSON(value)
+        ? JSON.parse(value)
+        : value;
     if (
       !(
         "productName" in parsedValue &&

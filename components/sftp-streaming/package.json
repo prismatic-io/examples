@@ -18,8 +18,8 @@
     ]
   },
   "dependencies": {
-    "@prismatic-io/spectral": "9.1.1",
-    "ssh2-sftp-client": "^11.0.0"
+    "@prismatic-io/spectral": "10.4.4",
+    "ssh2-sftp-client": "^12.0.0"
   },
   "devDependencies": {
     "@prismatic-io/eslint-config-spectral": "2.0.2",

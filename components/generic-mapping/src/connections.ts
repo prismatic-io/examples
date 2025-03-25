@@ -5,8 +5,10 @@ import {
 } from "@prismatic-io/spectral";
 export const apiKey = connection({
   key: "apiKey",
-  label: "API Key",
-  comments: "API Key connection",
+  display: {
+    label: "API Key",
+    description: "API Key connection",
+  },
   inputs: {
     apiKey: {
       label: "API Key",
@@ -20,7 +22,10 @@ export const apiKey = connection({
 });
 export const oauth = oauth2Connection({
   key: "oauth",
-  label: "OAuth 2.0 Connection",
+  display: {
+    label: "OAuth 2.0 Connection",
+    description: "OAuth 2.0 Connection",
+  },
   oauth2Type: OAuth2Type.AuthorizationCode,
   inputs: {
     authorizeUrl: {
