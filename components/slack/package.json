@@ -13,9 +13,9 @@
     "publish": "npm run build && prism components:publish"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "10.3.5",
+    "@prismatic-io/spectral": "10.4.4",
     "@slack/bolt": "4.2.0",
-    "@slack/webhook": "6.1.0"
+    "@slack/webhook": "7.0.5"
   },
   "devDependencies": {
     "@prismatic-io/eslint-config-spectral": "2.0.1",
