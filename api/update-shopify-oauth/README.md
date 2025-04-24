@@ -10,4 +10,4 @@ To run this script:
 2. Set a Prismatic API key environment variable with `export PRISMATIC_API_KEY=$(prism me:token)`
 3. Run the script with `npx tsx src/index.ts --integration-version-id YOUR-INTEGRATION-VERSION-ID --instance-id YOUR-INSTANCE-ID`
 
-<div style="position: relative; padding-bottom: 56.25%; height: 0;"><iframe src="https://www.loom.com/embed/8f282eaade014ae5bae63bb700df4664?sid=8cc881d8-ff5a-494a-b946-253f53b34e9f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
+Watch a video tutorial here: https://www.loom.com/share/8f282eaade014ae5bae63bb700df4664?sid=1f262789-1a17-4391-994c-53e7253cd62f
