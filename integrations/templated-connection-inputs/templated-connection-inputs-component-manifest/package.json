@@ -1,0 +1,21 @@
+{
+  "name": "@component-manifests/templated-connection-inputs",
+  "version": "2025.4.28-t-16.39.22",
+  "main": "dist/index.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist/"
+  ],
+  "devDependencies": {
+    "@prismatic-io/spectral": "10.5.3",
+    "rimraf": "5.0.7",
+    "typescript": "5.5.3"
+  },
+  "peerDependencies": {
+    "@prismatic-io/spectral": ">= 10.5.3"
+  }
+}

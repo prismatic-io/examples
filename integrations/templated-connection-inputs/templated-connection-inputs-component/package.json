@@ -1,0 +1,33 @@
+{
+  "name": "templated-connection-inputs-component",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "webpack",
+    "publish": "npm run build && prism components:publish",
+    "generate:manifest": "npm run build && npx @prismatic-io/spectral component-manifest",
+    "generate:manifest:dev": "npm run build && npx @prismatic-io/spectral component-manifest --skip-signature-verify",
+    "test": "jest",
+    "lint": "eslint --ext .ts ."
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": ["@prismatic-io/eslint-config-spectral"]
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "10.5.3"
+  },
+  "devDependencies": {
+    "@prismatic-io/eslint-config-spectral": "2.1.0",
+    "@types/jest": "29.5.14",
+    "copy-webpack-plugin": "13.0.0",
+    "eslint": "^8.57.1",
+    "jest": "29.7.0",
+    "ts-jest": "29.3.2",
+    "ts-loader": "9.5.2",
+    "typescript": "5.8.3",
+    "webpack": "5.99.5",
+    "webpack-cli": "6.0.1"
+  }
+}
