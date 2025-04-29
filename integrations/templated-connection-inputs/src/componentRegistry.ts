@@ -6,8 +6,5 @@
  */
 
 import { componentManifests } from "@prismatic-io/spectral";
-import templatedConnectionInputsComponent from "@component-manifests/templated-connection-inputs";
 
-export const componentRegistry = componentManifests({
-  templatedConnectionInputsComponent,
-});
+export const componentRegistry = componentManifests({});
