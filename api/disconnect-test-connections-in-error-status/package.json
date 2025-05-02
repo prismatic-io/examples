@@ -1,0 +1,16 @@
+{
+  "name": "disconnect-test-connections-in-error-state",
+  "version": "1.0.0",
+  "scripts": {},
+  "dependencies": {
+    "argparse": "^2.0.1",
+    "graphql": "^16.10.0",
+    "graphql-request": "^7.1.2"
+  },
+  "devDependencies": {
+    "@types/argparse": "^2.0.17",
+    "@types/node": "^22.15.3",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}
