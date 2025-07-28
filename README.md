@@ -34,14 +34,26 @@ Here are some example use cases:
 - Use job data from your system to create invoices in your customers' ERP.
 - Import and process data from third-party forms that vary significantly from customer to customer.
 - Email activity summary reports with parameters and intervals defined on a per-customer basis.
+- Build AI-powered assistants that can search, analyze, and interact with your systems.
 
 For information on the Prismatic platform, check out our [website](https://prismatic.io) and [docs](https://prismatic.io/docs).
 
 ## Repository Contents
 
+- `ai/` contains AI agent examples using OpenAI's Agent SDK for building intelligent integrations.
 - `api/` contains sample code that interacts with Prismatic's [GraphQL API](https://prismatic.io/docs/api/api-overview/).
 - `components/` contains code for sample custom components, which are a good reference for building your own custom components.
-- `integrations/` contains sample integrations written in YAML.
+- `integrations/` contains sample integrations written in YAML and Code-Native Integration examples written in Typescript.
+
+## AI Agent Examples
+
+This repository includes examples of AI-powered integrations using OpenAI's Agent SDK:
+
+- **[OpenAI Agent Integration](ai/openai-agent/)** - A comprehensive example with different flows showcasing progressively advanced agent patterns including basic chat, tool usage, agent composition, API wrapping, human approval workflows, and intelligent routing.
+- **[Slack AI Starter Kit](ai/slack-ai-starter/)** - A minimal starter kit for building AI-powered Slack apps. Clean, simple foundation with just OpenAI agents and Slack Assistant framework - perfect for getting started quickly.
+- **[Slack AI Assistant Example](ai/slack-chatbot-agent/)** - A full-featured example showing advanced patterns including web search tools and dynamic integration discovery with Prismatics Agent Flows API. Great reference for companies building sophisticated AI assistants.
+
+These examples show how to build intelligent integrations that can understand context, make decisions, and interact with various systems on behalf of users.
 
 ## License
 

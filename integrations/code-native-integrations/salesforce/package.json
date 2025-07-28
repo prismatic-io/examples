@@ -1,0 +1,36 @@
+{
+  "name": "salesforce-opportunities",
+  "scripts": {
+    "build": "webpack",
+    "import": "npm run build && prism integrations:import",
+    "test": "jest",
+    "lint": "eslint --ext .ts .",
+    "lint-fix": "eslint --fix --quiet --ext .ts .",
+    "format": "prettier . --write"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@prismatic-io/eslint-config-spectral"
+    ]
+  },
+  "dependencies": {
+    "jsforce": "latest",
+    "@prismatic-io/spectral": "latest",
+    "dotenv": "^17.2.1",
+    "zod": "^4.0.10"
+  },
+  "devDependencies": {
+    "@component-manifests/salesforce": "*",
+    "@prismatic-io/eslint-config-spectral": "2.0.1",
+    "@types/jest": "29.5.12",
+    "copy-webpack-plugin": "12.0.2",
+    "jest": "29.7.0",
+    "prettier": "3.4.2",
+    "ts-jest": "29.1.2",
+    "ts-loader": "9.5.1",
+    "typescript": "5.5.3",
+    "webpack": "5.91.0",
+    "webpack-cli": "5.1.4"
+  }
+}

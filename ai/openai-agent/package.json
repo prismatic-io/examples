@@ -1,0 +1,38 @@
+{
+  "name": "openai-agent-integration",
+  "scripts": {
+    "build": "node esbuild.config.js",
+    "import": "npm run build && prism integrations:import",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lint": "eslint --ext .ts .",
+    "lint-fix": "eslint --fix --quiet --ext .ts .",
+    "format": "prettier . --write"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@prismatic-io/eslint-config-spectral"
+    ]
+  },
+  "dependencies": {
+    "@openai/agents": "^0.0.12",
+    "@prismatic-io/spectral": "10.5.13",
+    "bufferutil": "^4.0.9",
+    "jsonwebtoken": "^9.0.2",
+    "utf-8-validate": "^6.0.5",
+    "vite": "^6.3.5",
+    "ws": "^8.18.3",
+    "zod": "<=3.25.67"
+  },
+  "devDependencies": {
+    "@component-manifests/slack": "*",
+    "@prismatic-io/eslint-config-spectral": "2.0.1",
+    "@vitest/ui": "^3.2.4",
+    "esbuild": "^0.25.8",
+    "fs-extra": "^11.3.0",
+    "prettier": "3.4.2",
+    "typescript": "5.5.3",
+    "vitest": "^3.2.4"
+  }
+}
