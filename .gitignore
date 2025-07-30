@@ -17,3 +17,6 @@ dist
 components/**/*.log
 
 .eslintcache
+.claude
+.spectral
+.kiro
