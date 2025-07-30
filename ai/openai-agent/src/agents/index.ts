@@ -1,9 +1,8 @@
-export { 
-  createAgent, 
-  runAgent, 
-  runAgentWithDebug, 
+export {
+  createAgent,
+  runAgent,
+  runAgentWithDebug,
   runAgentWithApproval,
-  type ToolApproval,
-  type PendingApproval,
-  type ApprovalResult
 } from "./agentFactory";
+
+export type { ToolApproval, PendingApproval, ApprovalResult } from "../types/tool.types";

@@ -8,6 +8,7 @@ import {
 } from "@openai/agents";
 
 import { AgentConfiguration } from "../types/config.types";
+import { ApprovalResult, ToolApproval } from "../types/tool.types";
 
 export async function createAgent(
   config?: AgentConfiguration,
@@ -58,27 +59,6 @@ export async function runAgentWithDebug(
   return result;
 }
 
-export type ToolApproval = {
-  callId: string;
-  decision: 'approved' | 'rejected';
-  reason?: string;
-};
-
-export type PendingApproval = {
-  callId: string;
-  toolName: string;
-  arguments: any;
-  agentName: string;
-};
-
-export type ApprovalResult = {
-  needsApproval: boolean;
-  response?: string;
-  state?: string;
-  pendingApprovals?: PendingApproval[];
-  history: any[];
-};
-
 export async function runAgentWithApproval(
   agent: Agent,
   messages: AgentInputItem[],
@@ -121,7 +101,7 @@ export async function runAgentWithApproval(
     // Initial execution
     result = await run(agent, messages, { maxTurns: 10 });
   }
-  
+
   // Check if there are interruptions that need approval
   if (result.interruptions && result.interruptions.length > 0) {
     // Return formatted response for approval UI

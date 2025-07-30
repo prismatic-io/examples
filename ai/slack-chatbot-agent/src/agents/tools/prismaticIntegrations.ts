@@ -10,11 +10,6 @@ export interface FlowConfig {
   inputSchema?: any;
 }
 
-export interface PrismaticClientConfig {
-  apiUrl: string;
-  token: string;
-}
-
 export interface EmbeddedUserConfig {
   sub: string; // Unique user ID (UUID recommended)
   organization: string; // Organization ID from Embedded tab

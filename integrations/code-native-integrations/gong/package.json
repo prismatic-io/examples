@@ -1,0 +1,37 @@
+{
+  "name": "gong",
+  "scripts": {
+    "build": "webpack",
+    "import": "npm run build && prism integrations:import",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "lint": "eslint --ext .ts .",
+    "lint-fix": "eslint --fix --quiet --ext .ts .",
+    "format": "prettier . --write"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@prismatic-io/eslint-config-spectral"
+    ]
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "latest",
+    "axios": "^1.6.0",
+    "dotenv": "^17.2.1",
+    "zod": "^4.0.10"
+  },
+  "devDependencies": {
+    "@prismatic-io/eslint-config-spectral": "2.0.1",
+    "@types/node": "^20.11.0",
+    "@vitest/ui": "^1.2.0",
+    "copy-webpack-plugin": "12.0.2",
+    "prettier": "3.4.2",
+    "ts-loader": "9.5.1",
+    "typescript": "5.5.3",
+    "vitest": "^1.2.0",
+    "webpack": "5.91.0",
+    "webpack-cli": "5.1.4"
+  }
+}

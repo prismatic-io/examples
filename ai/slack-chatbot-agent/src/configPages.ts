@@ -68,7 +68,7 @@ export const configPages = {
           apiKey: {
             label: "API Key",
             placeholder: "sk-proj-Csg...",
-            type: "string",
+            type: "password",
             required: true,
             shown: true,
             default: "",
@@ -84,7 +84,7 @@ export const configPages = {
           apiKey: {
             label: "API Key",
             placeholder: "sk-proj-Csg...",
-            type: "string",
+            type: "password",
             required: true,
             shown: true,
             default: "",
@@ -95,8 +95,7 @@ export const configPages = {
         label: "Prismatic Signing Key",
         iconPath: "./assets/icon.png",
         stableKey: "abc123asdf-signing-key-prismatic-asdf",
-        dataType: "code",
-        codeLanguage: "html",
+        dataType: "string",
         defaultValue: process.env.PRISMATIC_SIGNING_KEY || "",
       }),
     },

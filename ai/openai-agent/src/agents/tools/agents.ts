@@ -10,12 +10,8 @@ const summarizerTool = summarizer.asTool({
     toolDescription: "Generate a concise summary of the supplied text.",
 });
 
-
-
-
 const toolAgents = {
     summarizer: summarizerTool,
 }
-
 
 export default toolAgents;

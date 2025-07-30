@@ -68,7 +68,7 @@ export const configPages = {
           apiKey: {
             label: "API Key",
             placeholder: "sk-proj-Csg...",
-            type: "string",
+            type: "password",
             required: true,
             shown: true,
             default: "",
