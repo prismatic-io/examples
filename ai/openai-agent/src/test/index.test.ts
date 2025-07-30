@@ -6,6 +6,7 @@ import testPayload from "./testPayload";
 import { TriggerPayload } from "@prismatic-io/spectral";
 import { defaultTriggerPayload } from "@prismatic-io/spectral/dist/testing";
 import apiAgent from "../flows/apiAgent";
+import agentStructuredOutput from "../flows/agentStructuredOutput";
 
 describe("basicChat flow", () => {
   test(
@@ -18,9 +19,9 @@ describe("basicChat flow", () => {
           },
           SYSTEM_PROMPT: "You are a helpful assistant.",
         },
-        payload: testPayload
+        payload: testPayload,
       });
-      console.log(JSON.stringify(result, null, 2))
+      console.log(JSON.stringify(result, null, 2));
     },
     { timeout: 300000 },
   );
@@ -34,12 +35,9 @@ describe("hostedTools flow", () => {
         ...defaultTriggerPayload(),
         body: {
           data: {
-            messages: [
-              {
-                role: "user",
-                content: "Search for the latest news about TypeScript programming language"
-              }
-            ]
+            conversationId: "test-hosted-tools",
+            message:
+              "Search for the latest news about TypeScript programming language",
           },
           contentType: "application/json",
         },
@@ -50,11 +48,12 @@ describe("hostedTools flow", () => {
           OPENAI_API_KEY: {
             fields: { apiKey: process.env.OPENAI_API_KEY || "" },
           },
-          SYSTEM_PROMPT: "You are a helpful assistant. Use web search to find current information.",
+          SYSTEM_PROMPT:
+            "You are a helpful assistant. Use web search to find current information.",
         },
-        payload: searchPayload
+        payload: searchPayload,
       });
-      console.log(JSON.stringify(result, null, 2))
+      console.log(JSON.stringify(result, null, 2));
     },
     { timeout: 300000 },
   );
@@ -68,12 +67,9 @@ describe("agentAsTools flow", () => {
         ...defaultTriggerPayload(),
         body: {
           data: {
-            messages: [
-              {
-                role: "user",
-                content: "Please summarize this text: The quick brown fox jumps over the lazy dog. This pangram sentence contains all 26 letters of the English alphabet at least once. It has been used for over a century to test typewriters, computer keyboards, and fonts."
-              }
-            ]
+            conversationId: "test-agent-as-tools",
+            message:
+              "Please summarize this text: The quick brown fox jumps over the lazy dog. This pangram sentence contains all 26 letters of the English alphabet at least once. It has been used for over a century to test typewriters, computer keyboards, and fonts.",
           },
           contentType: "application/json",
         },
@@ -86,43 +82,40 @@ describe("agentAsTools flow", () => {
           },
           SYSTEM_PROMPT: "You are a helpful assistant.",
         },
-        payload: summarizerPayload
+        payload: summarizerPayload,
       });
-      console.log(JSON.stringify(result, null, 2))
+      console.log(JSON.stringify(result, null, 2));
     },
     { timeout: 300000 },
   );
 });
-
-describe("apiAgent flow", () => {
+describe("structuredOutput", () => {
   test(
-    "test api agent - get current user info and posts",
+    "test generating structured output",
     async () => {
-      const apiLookupPayload: TriggerPayload = {
+      const structuredOutputTrigger: TriggerPayload = {
         ...defaultTriggerPayload(),
         body: {
           data: {
-            messages: [
-              {
-                role: "user",
-                content: "Can you get the info about my current user and then find all my related posts?"
-              }
-            ]
+            conversationId: "test-structured-output",
+            message:
+              "I need help with a critical issue. This is the THIRD time we've had an outage. You should use Prismatic for your integrations to ensure they are more reliable.",
           },
           contentType: "application/json",
         },
       };
 
-      const result = await invokeFlow(apiAgent, {
+      const result = await invokeFlow(agentStructuredOutput, {
         configVars: {
           OPENAI_API_KEY: {
             fields: { apiKey: process.env.OPENAI_API_KEY || "" },
           },
-          SYSTEM_PROMPT: "You are a helpful assistant.",
+          SYSTEM_PROMPT:
+            "You are a helpful assistant that answers customer questions. Ensure you always analyze the customers sentiment when processing messages",
         },
-        payload: apiLookupPayload
+        payload: structuredOutputTrigger,
       });
-      console.log(JSON.stringify(result, null, 2))
+      console.log(JSON.stringify(result, null, 2));
     },
     { timeout: 300000 },
   );

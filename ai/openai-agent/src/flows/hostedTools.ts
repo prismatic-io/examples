@@ -1,33 +1,52 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { createAgent, runAgent } from "../agents";
-import { AgentInputItem } from "@openai/agents";
-import openAiHostedTools from "../agents/tools/hosted";
+import { Agent, run, setDefaultOpenAIKey, user } from "@openai/agents";
+import { createHostedTools } from "../agents/tools/openaiHostedTools";
+import { ChatRequest } from "../types";
 
 export const hostedTools = flow({
-  name: "Agent Chat Handler",
-  stableKey: "Agent-Chat-Handler",
-  description:
-    "Handles incoming messages and generates responses with OpenAI Assistant SDK",
+  name: "Hosted Tools",
+  stableKey: "hosted-tools",
+  description: "Demonstrates using OpenAI's hosted tools like web search",
   onTrigger: async (context, payload) => {
     return Promise.resolve({
       payload,
     });
   },
   onExecution: async ({ configVars }, params) => {
-    const openaiConnection = util.types.toString(
+    const openaiKey = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
 
-    const incomingMessage = params.onTrigger.results.body.data as { messages: { role: string, content: string }[] }
+    // Set the OpenAI API key
+    setDefaultOpenAIKey(openaiKey);
 
-    // Setup OpenAI hosted tools like web search and code interpreter
-    const tools = openAiHostedTools();
+    // Create agent with OpenAI's hosted tools
+    const agent = new Agent({
+      name: "Research Assistant",
+      instructions: configVars.SYSTEM_PROMPT,
+      tools: createHostedTools(), // Returns array of OpenAI-hosted tools like web_search
+    });
 
-    const agent = await createAgent({ systemPrompt: configVars.SYSTEM_PROMPT, openAIKey: openaiConnection, tools })
-    const result = await runAgent(agent, incomingMessage.messages as AgentInputItem[])
+    // Get the message from the payload
+    const { message, conversationId, lastResponseId } = params.onTrigger.results
+      .body.data as ChatRequest;
 
+    if (!message) {
+      throw new Error("Message is required for hosted tools");
+    }
+
+    // Run the agent with the message
+    const result = await run(agent, [user(message)], {
+      previousResponseId: lastResponseId,
+    });
+
+    // Return the response directly
     return {
-      data: result
+      data: {
+        response: result.finalOutput,
+        lastResponseId: result.lastResponseId,
+        conversationId: conversationId,
+      },
     };
   },
 });

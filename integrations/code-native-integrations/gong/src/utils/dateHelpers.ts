@@ -1,10 +1,10 @@
-export const getDefaultDateRange = (days: number = 30) => {
+export const getDefaultDateRange = (days = 30) => {
   const now = new Date();
   const daysAgo = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-  
+
   return {
     fromDate: daysAgo.toISOString(),
-    toDate: now.toISOString()
+    toDate: now.toISOString(),
   };
 };
 

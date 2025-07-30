@@ -19,7 +19,7 @@ export const configPages = {
             label: "Secret Key",
             comments: "Your Gong API Secret Key",
             required: true,
-          }
+          },
         },
       }),
     },

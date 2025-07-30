@@ -5,12 +5,8 @@ const testPayload: TriggerPayload = {
   ...defaultTriggerPayload(),
   body: {
     data: {
-      messages: [
-        {
-          role: "user",
-          content: "What is the capital of France?"
-        }
-      ]
+      conversationId: "test-conversation",
+      message: "What is the capital of France?",
     },
     contentType: "application/json",
   },

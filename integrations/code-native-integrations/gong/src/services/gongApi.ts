@@ -1,43 +1,43 @@
-import { AxiosInstance } from 'axios';
-import { makeGongRequest } from './gongClient';
+import { AxiosInstance } from "axios";
+import { makeGongRequest } from "./gongClient";
 import {
   CallsResponse,
   CallTranscriptsResponse,
   CallsExtensiveResponse,
   User,
-  UsersResponse
-} from '../schemas/gong';
+  UsersResponse,
+} from "../schemas/gong";
 
 export const listCalls = async (
   client: AxiosInstance,
   fromDateTime: string,
   toDateTime: string,
-  cursor?: string
+  cursor?: string,
 ): Promise<CallsResponse> => {
   const params = new URLSearchParams({
     fromDateTime,
     toDateTime,
-    ...(cursor && { cursor })
+    ...(cursor && { cursor }),
   });
 
   return makeGongRequest<CallsResponse>(
     client,
-    'get',
-    `/calls?${params.toString()}`
+    "get",
+    `/calls?${params.toString()}`,
   );
 };
 
 export const getCallTranscripts = async (
   client: AxiosInstance,
-  callIds: string[]
+  callIds: string[],
 ): Promise<CallTranscriptsResponse> => {
   return makeGongRequest<CallTranscriptsResponse>(
     client,
-    'post',
-    '/calls/transcript',
+    "post",
+    "/calls/transcript",
     {
-      filter: { callIds }
-    }
+      filter: { callIds },
+    },
   );
 };
 
@@ -46,62 +46,56 @@ export const getCallsExtensive = async (
   fromDateTime: string,
   toDateTime: string,
   primaryUserIds?: string[],
-  cursor?: string
+  cursor?: string,
 ): Promise<CallsExtensiveResponse> => {
   return makeGongRequest<CallsExtensiveResponse>(
     client,
-    'post',
-    '/calls/extensive',
+    "post",
+    "/calls/extensive",
     {
       filter: {
         fromDateTime,
         toDateTime,
-        ...(primaryUserIds && { primaryUserIds })
+        ...(primaryUserIds && { primaryUserIds }),
       },
       ...(cursor && { cursor }),
       contentSelector: {
         exposedFields: {
-          parties: true
-        }
-      }
-    }
+          parties: true,
+        },
+      },
+    },
   );
 };
 
 export const listUsers = async (
   client: AxiosInstance,
-  cursor?: string
+  cursor?: string,
 ): Promise<UsersResponse> => {
-  const params = cursor ? `?cursor=${cursor}` : '';
+  const params = cursor ? `?cursor=${cursor}` : "";
 
-  return makeGongRequest<UsersResponse>(
-    client,
-    'get',
-    `/users${params}`
-  );
+  return makeGongRequest<UsersResponse>(client, "get", `/users${params}`);
 };
 
-export const getAllUsers = async (
-  client: AxiosInstance
-): Promise<User[]> => {
+export const getAllUsers = async (client: AxiosInstance): Promise<User[]> => {
   const allUsers: User[] = [];
   let cursor: string | undefined;
-
+  console.log("getAllUsers");
   do {
     const response = await listUsers(client, cursor);
     allUsers.push(...response.users);
     cursor = response.records.cursor;
   } while (cursor);
-
+  console.log("allUsers", allUsers);
   return allUsers;
 };
 
 export const findUserByEmail = async (
   client: AxiosInstance,
-  email: string
+  email: string,
 ): Promise<User | undefined> => {
   const users = await getAllUsers(client);
-  return users.find(user =>
-    user.emailAddress?.toLowerCase() === email.toLowerCase()
+  return users.find(
+    (user) => user.emailAddress?.toLowerCase() === email.toLowerCase(),
   );
 };

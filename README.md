@@ -47,13 +47,30 @@ For information on the Prismatic platform, check out our [website](https://prism
 
 ## AI Agent Examples
 
-This repository includes examples of AI-powered integrations using OpenAI's Agent SDK:
+This repository includes production-ready examples of AI-powered integrations using OpenAI's Agent SDK:
 
-- **[OpenAI Agent Integration](ai/openai-agent/)** - A comprehensive example with different flows showcasing progressively advanced agent patterns including basic chat, tool usage, agent composition, API wrapping, human approval workflows, and intelligent routing.
-- **[Slack AI Starter Kit](ai/slack-ai-starter/)** - A minimal starter kit for building AI-powered Slack apps. Clean, simple foundation with just OpenAI agents and Slack Assistant framework - perfect for getting started quickly.
-- **[Slack AI Assistant Example](ai/slack-chatbot-agent/)** - A full-featured example showing advanced patterns including web search tools and dynamic integration discovery with Prismatics Agent Flows API. Great reference for companies building sophisticated AI assistants.
+### [OpenAI Agent Integration](ai/openai-agent/)
+A comprehensive reference implementation featuring 7 production-ready flows that showcase advanced agent patterns:
+- **Basic Chat** - Simple conversational AI without tools
+- **API Agent** - Demonstrates wrapping REST APIs as AI tools with approval flows
+- **Human Approval** - Human-in-the-loop pattern for sensitive operations
+- **Agent Routing** - Dynamic routing to specialized agents based on intent
+- **Integrations as Tools** - Dynamically discovers and uses deployed Prismatic integrations as AI tools
+- **Agent as Tools** - Composes specialized agents as reusable tools
+- **Hosted Tools** - Leverages OpenAI's built-in web search and code interpreter
 
-These examples show how to build intelligent integrations that can understand context, make decisions, and interact with various systems on behalf of users.
+Includes interactive chat scripts for local testing and comprehensive state management with both file-based and Prismatic-based storage backends.
+
+### [Slack Chatbot Agent](ai/slack-chatbot-agent/)
+A production-ready Slack Assistant integration that demonstrates enterprise AI assistant patterns:
+- Implements Slack's Assistant framework with proper webhook handling and 3-second acknowledgment
+- Features approval flow UI with Slack blocks for tool execution authorization
+- Manages conversation state across message threads with execution tracking
+- Dynamically discovers customer-specific Prismatic integrations as AI tools
+- Includes robust retry handling and state persistence
+- Supports both development (file-based) and production (Prismatic-based) state storage
+
+Both examples include comprehensive testing utilities, proper error handling, and production-ready architecture patterns for building intelligent integrations that can understand context, make decisions, and interact with various systems on behalf of users.
 
 ## License
 

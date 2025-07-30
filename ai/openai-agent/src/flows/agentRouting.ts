@@ -1,32 +1,38 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { Agent, handoff, run, tool, setDefaultOpenAIKey } from "@openai/agents";
-import { RECOMMENDED_PROMPT_PREFIX } from '@openai/agents-core/extensions';
-import { AgentInputItem } from "@openai/agents";
-import { z } from 'zod';
+import {
+  Agent,
+  handoff,
+  run,
+  tool,
+  setDefaultOpenAIKey,
+  user,
+} from "@openai/agents";
+import { RECOMMENDED_PROMPT_PREFIX } from "@openai/agents-core/extensions";
+import { z } from "zod";
+import { ChatRequest } from "../types";
 
-// Mock order data
 const mockOrders: Record<string, any> = {
   "ORD-12345": {
     status: "shipped",
     items: ["Widget Pro X1", "Widget Pro X2"],
     tracking: "1Z999AA10123456784",
     deliveryDate: "Tuesday, November 5th",
-    total: "$299.99"
+    total: "$299.99",
   },
   "ORD-67890": {
     status: "processing",
     items: ["Enterprise Widget Suite"],
     tracking: null,
     deliveryDate: "Expected: November 8th",
-    total: "$1,299.00"
+    total: "$1,299.00",
   },
   "ORD-11111": {
     status: "delivered",
     items: ["Widget Basic"],
     tracking: "1Z999BB20234567891",
     deliveryDate: "Delivered: October 28th",
-    total: "$49.99"
-  }
+    total: "$49.99",
+  },
 };
 
 // Tool definitions
@@ -34,7 +40,7 @@ const lookupOrderTool = tool({
   name: "lookup_order",
   description: "Look up order information by order ID",
   parameters: z.object({
-    orderId: z.string().describe('The order ID to look up (e.g., ORD-12345)')
+    orderId: z.string().describe("The order ID to look up (e.g., ORD-12345)"),
   }),
   execute: async ({ orderId }) => {
     const order = mockOrders[orderId];
@@ -48,15 +54,15 @@ const lookupOrderTool = tool({
 - Total: ${order.total}
 - ${order.tracking ? `Tracking: ${order.tracking}` : "Tracking not yet available"}
 - ${order.deliveryDate}`;
-  }
+  },
 });
 
 const createTicketTool = tool({
   name: "create_ticket",
   description: "Create a support ticket for customer issues",
   parameters: z.object({
-    issue: z.string().describe('Description of the customer issue'),
-    orderId: z.string().nullable().describe('Related order ID if applicable')
+    issue: z.string().describe("Description of the customer issue"),
+    orderId: z.string().nullable().describe("Related order ID if applicable"),
   }),
   execute: async ({ issue, orderId }) => {
     const ticketId = `TICKET-${Math.floor(Math.random() * 10000)}`;
@@ -69,7 +75,7 @@ ${orderId ? `- Related Order: ${orderId}` : ""}
 
 You'll receive an email confirmation shortly.`;
     return response;
-  }
+  },
 });
 
 export const agentRouting = flow({
@@ -83,39 +89,46 @@ export const agentRouting = flow({
     });
   },
   onExecution: async ({ configVars }, params) => {
-    const openaiConnection = util.types.toString(
+    const openaiKey = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
 
-    setDefaultOpenAIKey(openaiConnection);
+    // Set the OpenAI API key
+    setDefaultOpenAIKey(openaiKey);
 
-    const incomingMessage = params.onTrigger.results.body.data as { messages: { role: string, content: string }[] }
+    // Get the message from the payload
+    const { message, lastResponseId, conversationId } = params.onTrigger.results
+      .body.data as ChatRequest;
+
+    if (!message) {
+      throw new Error("Message is required for agent routing");
+    }
 
     // Specialized agents
     const orderLookupAgent = new Agent({
-      name: 'Order Lookup Agent',
+      name: "Order Lookup Agent",
       instructions: `${RECOMMENDED_PROMPT_PREFIX}
       You help customers check their order status.
       When asked about an order:
       1. Use the lookup_order tool to get order details
       2. Present the information in a friendly, helpful way`,
-      tools: [lookupOrderTool]
+      tools: [lookupOrderTool],
     });
 
     const supportAgent = new Agent({
-      name: 'Support Agent',
+      name: "Support Agent",
       instructions: `${RECOMMENDED_PROMPT_PREFIX}
       Remember to always use the tool to help the customer.
       1. Use the create_ticket tool to create a support ticket
       2. Provide the ticket details and set expectations for response time
 
       Be empathetic and professional.`,
-      tools: [createTicketTool]
+      tools: [createTicketTool],
     });
 
     // Triage agent with handoffs using Agent.create
     const triageAgent = Agent.create({
-      name: 'Triage Agent',
+      name: "Triage Agent",
       instructions: `${RECOMMENDED_PROMPT_PREFIX}
       You are a customer service routing agent. Your job is to understand what the customer needs and route them to the right specialist.
 
@@ -125,19 +138,21 @@ export const agentRouting = flow({
 
       Important:
       - Do NOT try to answer questions yourself`,
-      handoffs: [orderLookupAgent, handoff(supportAgent)]
+      handoffs: [orderLookupAgent, handoff(supportAgent)],
     });
 
-    // Run the triage agent with the incoming messages
-    const result = await run(triageAgent, incomingMessage.messages as AgentInputItem[], {
-
+    // Run the triage agent with the message
+    const result = await run(triageAgent, [user(message)], {
+      previousResponseId: lastResponseId,
     });
 
+    // Return the response directly
     return {
       data: {
         response: result.finalOutput,
-        history: result.history
-      }
+        lastResponseId: result.lastResponseId,
+        conversationId,
+      },
     };
   },
 });

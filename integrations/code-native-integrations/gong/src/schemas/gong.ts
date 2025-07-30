@@ -2,7 +2,7 @@ export interface Party {
   id: string;
   emailAddress: string;
   name: string;
-  affiliation: 'Internal' | 'External';
+  affiliation: "Internal" | "External";
   speakerId?: string;
 }
 

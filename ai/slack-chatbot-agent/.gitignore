@@ -2,3 +2,5 @@ node_modules/
 dist/
 .env
 prism-mcp/
+.spectral/
+tmp/agent-state

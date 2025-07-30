@@ -1,54 +1,60 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { createAgent, runAgent } from "../agents";
-import { AgentInputItem } from "@openai/agents";
+import { Agent, run, setDefaultOpenAIKey, user } from "@openai/agents";
 import apiTools from "../agents/tools/api";
-
+import { ChatRequest, ChatResponse } from "../types";
 export const apiAgent = flow({
   name: "API Agent",
-  stableKey: "API-Agent",
-  description:
-    "Handles incoming messages and provides API interactions through an AI agent",
+  stableKey: "api-agent",
+  description: "Demonstrates wrapping REST APIs as AI tools for interaction",
   onTrigger: async (context, payload) => {
     return Promise.resolve({
       payload,
     });
   },
   onExecution: async ({ configVars }, params) => {
-    const openaiConnection = util.types.toString(
+    const openaiKey = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
 
-    const incomingMessage = params.onTrigger.results.body.data as { messages: { role: string, content: string }[] }
+    // Set the OpenAI API key
+    setDefaultOpenAIKey(openaiKey);
 
-    const systemPrompt = `${configVars.SYSTEM_PROMPT}
+    // Create agent with API tools
+    const agent = new Agent({
+      name: "API Assistant",
+      instructions: `${configVars.SYSTEM_PROMPT}
 
-You are an API assistant that can help users interact with their data. You have access to the following tools:
-- get_current_user_info: Get information about the currently logged in user
-- get_users_posts: Get all posts from the current user
-- get_post: Get a specific post by its ID
-- create_post: Create a new post with a title and body
-- update_post: Update an existing post's title and body
-- get_post_comments: Get all comments for a specific post
-
-Use these tools to help users manage their posts and access their data.`;
-
-    const agent = await createAgent({
-      systemPrompt,
-      openAIKey: openaiConnection,
+You are an API assistant that helps users interact with their data.
+Use the available tools to fulfill user requests.`,
       tools: [
+        // Read-only tools
         apiTools.getCurrentUserInfo,
         apiTools.getPosts,
         apiTools.getPost,
-        apiTools.createPost,
-        apiTools.updatePost,
         apiTools.getPostComments,
-      ]
+      ],
     });
 
-    const result = await runAgent(agent, incomingMessage.messages as AgentInputItem[]);
+    // Get the message from the payload
+    const { message, conversationId, lastResponseId } = params.onTrigger.results
+      .body.data as ChatRequest;
 
+    if (!message) {
+      throw new Error("Message is required for API agent");
+    }
+
+    // Run the agent with the message
+    const result = await run(agent, [user(message)], {
+      previousResponseId: lastResponseId,
+    });
+
+    // Return the response directly
     return {
-      data: result
+      data: {
+        response: result.finalOutput,
+        lastResponseId: result.lastResponseId,
+        conversationId: conversationId,
+      },
     };
   },
 });

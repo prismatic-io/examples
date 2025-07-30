@@ -1,8 +1,5 @@
-/* eslint-disable @typescript-eslint/require-await */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { App, Receiver, ReceiverEvent, StringIndexed } from "@slack/bolt";
-import { TriggerPayload } from "@prismatic-io/spectral";
+import { TriggerPayload, util } from "@prismatic-io/spectral";
 
 export interface PrismaticResponse {
   statusCode: number;
@@ -29,25 +26,31 @@ export class PrismaticWebhookReceiver implements Receiver {
   public stop(): Promise<unknown> {
     return Promise.resolve();
   }
-  public trigger(): Promise<unknown> {
-    return Promise.resolve();
-  }
 
   public toHandler(): (request: TriggerPayload) => Promise<PrismaticResponse> {
     return async (request: TriggerPayload) => {
-      const {
-        body: { data },
-      } = request;
+      const { headers, body } = request;
 
-      // Create Bolt event
+      let parsedBody: StringIndexed;
+
+      // Check if this is an interactive payload (URL-encoded)
+      if (headers["Content-Type"] === "application/x-www-form-urlencoded") {
+        const params = new URLSearchParams(util.types.toString(body.data));
+        const payload = params.get("payload");
+        parsedBody = JSON.parse(payload || "{}");
+      } else {
+        // This is a regular event (already JSON)
+        parsedBody = body.data as StringIndexed;
+      }
+
+      // Convert prismatic payload to Bolt event
       const event: ReceiverEvent = {
-        body: data as StringIndexed,
+        body: parsedBody,
         ack: async () => {
           console.log("Event acknowledged");
         },
       };
 
-      // Process the event through Bolt
       try {
         if (this.app) {
           await this.app.processEvent(event);
