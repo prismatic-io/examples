@@ -1,6 +1,5 @@
-import { webSearchTool, codeInterpreterTool } from '@openai/agents';
+import { webSearchTool, codeInterpreterTool } from "@openai/agents";
 
-const hostedTools = () => [webSearchTool(), codeInterpreterTool()]
+const hostedTools = () => [webSearchTool(), codeInterpreterTool()];
 
-
-export default hostedTools
+export default hostedTools;

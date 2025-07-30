@@ -1,86 +1,8 @@
-# Slack AI Assistant Example for Prismatic
+# Slack Chatbot Agent for Prismatic
 
-A starter example for building AI-powered Slack apps using Slack's Assistant framework and OpenAI agents on Prismatic's Code-Native Integration platform. This example demonstrates how to create intelligent Slack apps with conversational AI and web search capabilities.
+A production-ready reference implementation for building AI-powered Slack assistants on Prismatic's Code-Native Integration platform using OpenAI's Agent SDK and Slack's Assistant framework.
 
-## Overview
-
-This example demonstrates how to build Slack apps that leverage Slack's new AI Assistant capabilities. It provides a foundation that B2B software companies can build upon to create AI-powered Slack experiences for their customers.
-
-The example showcases:
-
-- Integration with Slack's Assistant framework for dedicated AI interactions
-- OpenAI Agent SDK for intelligent conversation handling
-- Web search capabilities through Tavily API
-- Thread-based conversation context management
-- Suggested prompts for better user engagement
-
-## Key Features
-
-- OpenAI Agent SDK integration with `@openai/agents`
-- Web search through Tavily API
-- Thread-based conversation context
-- Customizable system prompts
-- Slack Assistant framework integration
-- Suggested prompts for user guidance
-- Dynamic integration discovery - automatically exposes customer's Prismatic integrations as AI tools
-- Embedded user authentication for secure multi-tenant operations
-- Seamless invocation of customer-specific workflows
-
-## Prismatic Integration Tools
-
-This example includes support for dynamically discovering and invoking Prismatic integrations as AI agent tools. When configured with a Prismatic signing key, the AI assistant can:
-
-- Automatically discover all enabled integrations for a specific customer
-- Convert integration flows into callable tools with proper parameter schemas
-- Invoke customer-specific workflows directly from the AI conversation
-- Maintain secure, multi-tenant isolation using embedded user authentication
-
-This capability allows B2B companies to create AI assistants that can interact with customer-specific integrations, providing a personalized experience where the AI can trigger workflows, query data, and perform actions unique to each customer's configuration.
-
-## Architecture
-
-The integration uses a webhook-based flow:
-
-1. Slack sends events to Prismatic webhook endpoint
-2. Flow acknowledges receipt immediately (Slack 3s requirement)
-3. (Optional) If configured, discover customer's Prismatic integrations as tools
-4. OpenAI agent processes message with conversation context
-5. Agent may invoke web search or customer-specific integration tools
-6. Response sent back through Slack Assistant API
-
-### Implementation Flow
-
-```typescript
-// Webhook receives Slack event
-const slackEvent = params.onTrigger.results.body.data;
-
-// Create agent with web search tool
-const agent = await createAgent({
-  systemPrompt: configVars.SYSTEM_PROMPT,
-  openAIKey: configVars.OPENAI_API_KEY,
-  tools: [webSearchTool]
-});
-
-// Process and respond via Slack Assistant
-await assistant.threadStarted({ event, say });
-```
-
-## Prerequisites
-
-- Prismatic account
-- Slack workspace with admin access
-- OpenAI API key
-- Tavily API key for web search
-- Node.js 18+
-- Prism CLI (`npm install -g @prismatic-io/prism`)
-
-## Getting Started
-
-This example shows the key patterns for integrating with Slack's Assistant framework. You can extend it with your own tools, customize the AI behavior, and adapt it to your specific use cases.
-
-## Quick Start
-
-### Deploy
+## 🚀 Quick Start
 
 ```bash
 # Clone and install
@@ -88,198 +10,457 @@ git clone <repository-url>
 cd slack-chatbot-agent
 npm install
 
-# Configure environment
+# Set up environment
 cp .env.example .env
-# Edit .env with your Slack app credentials
+# Configure Slack app credentials and OpenAI API key in .env
+
+# Run tests
+npm test
 
 # Deploy to Prismatic
-prism login
-npm run build
 npm run import
 ```
 
-### Configure
+## 📚 Overview
 
-1. Navigate to your integration in Prismatic UI
-2. Configure Slack OAuth connection
-3. Add OpenAI and Tavily API keys
-4. Customize system prompt (optional)
-5. Deploy instance and note webhook URL
+This integration provides a production-ready webhook-based flow that handles Slack Assistant events with AI capabilities, approval workflows, and dynamic tool discovery.
 
-### Environment Variables
+**Key capabilities:**
 
-```env
-SLACK_CLIENT_ID=your_slack_client_id
-SLACK_CLIENT_SECRET=your_slack_client_secret
-SLACK_SIGNING_SECRET=your_slack_signing_secret
-OPENAI_API_KEY=sk-proj-...
-TAVILY_API_KEY=tvly-...
-```
+1. **Slack Assistant Framework** - Native integration with Slack's AI conversation model
+2. **Approval Workflows** - Human-in-the-loop pattern for sensitive operations
+3. **Dynamic Tool Discovery** - Automatically exposes customer's Prismatic integrations as AI tools
+4. **State Management** - Conversation persistence across message threads
+5. **Multi-tenant Support** - Secure customer isolation with embedded authentication
 
-## Configuration
+## 🔧 Flow: Slack Event Handler
 
-### Slack Connection (OAuth2)
+### Description
 
-Automatically configured from environment variables with required scopes:
-- `app_mentions:read` - Read mentions of the app
-- `chat:write` - Send messages as the app
-- `commands` - Add slash commands
-- `im:history` - Access direct message history
-- `assistant:write` - Use Slack's Assistant features
+Production-ready webhook handler for Slack Assistant events with OpenAI agent processing.
 
-### Required Config Variables
-- `OPENAI_API_KEY`: Your OpenAI API key
-- `TAVILY_API_KEY`: Tavily API key for web search ([tavily.com](https://tavily.com))
-- `SYSTEM_PROMPT`: Instructions for agent behavior
+### Key Features
 
-### Optional Config Variables
-- `PRISMATIC_SIGNING_KEY`: Your Prismatic signing key for embedded user authentication. When provided, enables dynamic discovery and invocation of customer-specific integrations as AI tools
+- Two-phase execution (immediate ACK + async processing)
+- Retry detection and handling
+- Thread-based conversation tracking
+- Approval UI with Slack blocks
+- Dynamic Prismatic tool loading
+- Self-invocation prevention
 
-## Development
+### Available Tools
 
-### Local Testing
+- **Customer Integrations** - Dynamically discovered from deployed Prismatic integrations
+- **OpenAI Hosted Tools** - Web search and other OpenAI-provided capabilities
+- **Approval Tools** - Example tools demonstrating the approval pattern
+
+### Use Cases
+
+- Customer support automation
+- Workflow approval systems
+- Multi-step operations with state
+
+### Test It
 
 ```bash
-# Run unit tests
-npm test
-
-# Run tests with UI
-npm run test:ui
-
-# Run linting
-npm run lint
-
-# Format code
-npm run format
+npm test  # Runs unit tests with mock Slack events
 ```
 
-## Project Structure
+## 🏗️ Architecture
+
+### Webhook Flow Pattern
+
+The integration uses a two-phase execution model to handle Slack's 3-second response requirement:
+
+```typescript
+flow({
+  name: "Slack Message Handler",
+  stableKey: "slack-event-handler",
+
+  onTrigger: async (context, payload) => {
+    // Phase 1: Immediate acknowledgment
+    const { response } = ack(payload, signingSecret);
+    return { payload, response };
+  },
+
+  onExecution: async (context, params) => {
+    // Phase 2: Async agent processing
+    const runner = await setupAgent({
+      openAIKey: configVars.OPENAI_API_KEY,
+      systemPrompt: configVars.SYSTEM_PROMPT,
+      customer: customer,
+      prismaticRefreshToken,
+      excludeIntegrationId: integration.id,
+    });
+
+    const result = await runner.run(
+      userInput,
+      conversationId,
+      previousExecutionId,
+    );
+
+    if (result.needsApproval) {
+      // Display approval UI
+      await showApprovalBlocks(state.pendingApproval);
+    } else {
+      // Send response
+      await client.chat.postMessage({
+        text: result.finalOutput,
+      });
+    }
+  },
+});
+```
+
+### State Management Pattern
+
+Conversation state with support for approval interruptions:
+
+```typescript
+interface AgentState {
+  conversationId: string;
+  history: AgentInputItem[]; // Full conversation history
+  runState?: string; // Serialized for resumption
+  metadata: {
+    timestamp: number;
+    interrupted: boolean;
+    lastExecutionId?: string;
+  };
+  pendingApproval?: {
+    // Present when approval needed
+    toolName: string;
+    arguments: any;
+  };
+}
+```
+
+### Approval Flow Sequence
+
+1. Agent attempts to execute a tool marked with `needsApproval: true`
+2. Execution is interrupted and state is persisted
+3. Slack UI displays interactive approval blocks
+4. User clicks Approve/Deny button
+5. Agent resumes execution with the decision
+6. Process continues or terminates based on approval
+
+## 📁 Project Structure
 
 ```
 slack-chatbot-agent/
 ├── src/
-│   ├── index.ts                 # Integration entry point
-│   ├── configPages.ts           # UI configuration
 │   ├── flows/
-│   │   └── eventHandler.ts      # Webhook handler flow
+│   │   ├── eventHandler.ts      # Main webhook flow
+│   │   └── index.ts              # Flow exports
 │   ├── agents/
-│   │   ├── agentFactory.ts      # Agent creation utilities
-│   │   ├── prompts.ts           # System prompts
-│   │   └── tools/
-│   │       ├── webSearch.ts     # Web search tool
-│   │       ├── tavilySearch.ts  # Tavily API client
-│   │       └── prismaticIntegrations.ts # Dynamic integration discovery
+│   │   ├── index.ts              # Core agent logic
+│   │   ├── setup.ts              # Agent configuration
+│   │   ├── prompts.ts            # System prompts
+│   │   ├── state/                # State persistence
+│   │   │   ├── index.ts          # State factory
+│   │   │   ├── fileStorage.ts    # Development storage
+│   │   │   ├── prismaticStorage.ts # Production storage
+│   │   │   └── types.ts          # State interfaces
+│   │   ├── tools/
+│   │   │   ├── prismaticTools.ts # Dynamic tool creation
+│   │   │   ├── approvalTool.ts   # Approval examples
+│   │   │   └── openaiHostedTools.ts # OpenAI tools
+│   │   └── types/
+│   │       └── index.ts          # Agent types
 │   ├── slack/
-│   │   ├── app.ts               # Slack app setup
-│   │   ├── assistant.ts         # Assistant framework
-│   │   └── webhookReceiver.ts   # Custom receiver
+│   │   ├── app.ts                # Bolt app setup
+│   │   ├── acknowledge.ts        # Webhook ACK logic
+│   │   ├── webhookReceiver.ts    # Custom receiver
+│   │   ├── blocks/
+│   │   │   └── approvalBlocks.ts # UI components
+│   │   ├── middleware/
+│   │   │   └── filterBotMessage.ts # Message filtering
+│   │   ├── types/
+│   │   │   └── index.ts          # Slack types
+│   │   └── util.ts               # Helper functions
+│   ├── prismatic/                # Reusable API client
+│   │   ├── api/                  # API operations
+│   │   │   ├── customers.ts
+│   │   │   ├── executions.ts
+│   │   │   ├── flows.ts
+│   │   │   ├── integrations.ts
+│   │   │   └── index.ts
+│   │   ├── auth/                 # Authentication
+│   │   │   ├── embedded.ts       # Embedded user auth
+│   │   │   ├── jwt.ts            # JWT generation
+│   │   │   ├── refresh.ts        # Token refresh
+│   │   │   └── index.ts
+│   │   ├── client/               # GraphQL clients
+│   │   │   ├── customer.ts
+│   │   │   ├── organization.ts
+│   │   │   ├── graphql.ts
+│   │   │   └── index.ts
+│   │   ├── types.ts              # Prismatic types
+│   │   └── index.ts              # Main exports
+│   ├── configPages.ts            # Integration config
+│   ├── componentRegistry.ts      # Component setup
+│   ├── index.ts                  # Entry point
 │   └── test/
-│       └── index.test.ts        # Flow tests
+│       ├── index.test.ts         # Flow tests
+│       ├── agent.test.ts         # Agent tests
+│       └── testPayload.ts        # Test fixtures
+├── assets/
+│   └── icon.png                  # Integration icon
 ├── package.json
 ├── tsconfig.json
-└── esbuild.config.js
+├── vitest.config.ts
+├── esbuild.config.js
+├── test.sh
+├── CLAUDE.md                      # AI development guide
+└── README.md
 ```
 
+## 🔑 Configuration
 
-## Usage Examples
+### Environment Variables
 
+```bash
+# Required: Slack App Credentials
+SLACK_CLIENT_ID=your_client_id
+SLACK_CLIENT_SECRET=your_client_secret
+SLACK_SIGNING_SECRET=your_signing_secret
+
+# Required: OpenAI
+OPENAI_API_KEY=sk-proj-...
+
+# Optional: Enable Prismatic tools
+PRISMATIC_REFRESH_TOKEN=your-refresh-token
+
+# Optional: Custom system prompt
+SYSTEM_PROMPT="You are a helpful assistant"
 ```
-User: How do I reset my password in Prismatic?
-Bot: *searches documentation* To reset your password in Prismatic, follow these steps...
 
-User: What's the difference between CNI and built-in components?
-Bot: *searches Prismatic docs* Code-Native Integrations (CNI) allow you to write custom logic...
+### Slack App Setup
 
-User: What are the latest features in the platform?
-Bot: *searches recent updates* Here are the latest features released...
+1. **Create Slack App**:
+
+   - Go to [api.slack.com/apps](https://api.slack.com/apps)
+   - Click "Create New App" → "From scratch"
+   - Name your app and select workspace
+
+2. **Configure OAuth Scopes**:
+
+   ```
+   app_mentions:read
+   chat:write
+   commands
+   im:history
+   assistant:write
+   ```
+
+3. **Enable Assistant**:
+
+   - Navigate to "Assistant" in sidebar
+   - Enable Assistant capabilities
+   - Configure Assistant settings
+
+4. **Get Credentials**:
+   - Client ID/Secret from "Basic Information"
+   - Signing Secret from "Basic Information"
+   - Add to `.env` file
+
+### Prismatic Deployment
+
+1. **Import Integration**:
+
+```bash
+npm run import
+# Creates .spectral/prism.json with integration ID
 ```
 
-**Use cases**: Documentation search, technical support, API reference lookup, integration guidance
+2. **Deploy Instance**:
 
-## Advanced Features
+   - Navigate to Prismatic UI
+   - Create system instance
+   - Configure connections and variables
+   - Deploy and activate
 
-### Dynamic Integration Discovery
+3. **Configure Webhook**:
 
-When configured with a Prismatic signing key, this example demonstrates how to build multi-tenant AI assistants that can:
+   - Copy webhook URL from deployed instance
+   - Add to Slack app's Event Subscriptions
+   - Verify endpoint
 
-1. **Automatic Tool Generation**: On startup, the assistant queries Prismatic's API to discover all enabled integrations for the current customer and converts them into callable AI tools.
+4. **Test in Slack**:
+   - Install app to workspace
+   - Start conversation with bot
+   - Test approval flows and tools
 
-2. **Customer Isolation**: Each customer's AI assistant only has access to their specific integrations, maintaining secure multi-tenant boundaries.
-
-3. **Schema-Aware Invocation**: Integration parameters are automatically extracted and provided to the AI, ensuring proper tool usage.
-
-Example scenario: A customer has a Salesforce integration and a custom ERP integration deployed. Their Slack AI assistant automatically gains the ability to query Salesforce records and trigger ERP workflows without any code changes.
-
-### Configuration for Multi-Tenant Support
-
-To enable dynamic integration discovery:
-
-1. Generate a Prismatic signing key from your organization settings
-2. Add it to the integration configuration
-3. The AI will automatically discover and use customer-specific integrations
-
-This pattern is particularly powerful for B2B SaaS companies that want to provide AI assistants that can interact with each customer's unique integration landscape.
-
-## Extending
+## 🧩 Extending
 
 ### Adding Custom Tools
 
-```typescript
-import { tool } from '@openai/agents';
-import { z } from 'zod';
+Create new tools for the agent to use:
 
-const myCustomTool = tool({
-    name: 'my_tool',
-    description: 'What this tool does',
-    parameters: z.object({
-        query: z.string().describe('Search query'),
-    }),
-    async execute({ query }) {
-        // Tool implementation
-        return await myAPI.search(query);
+```typescript
+// src/agents/tools/custom.ts
+import { tool } from "@openai/agents";
+import { z } from "zod";
+
+export const customTool = tool({
+  name: "custom_action",
+  description: "Performs custom action",
+  parameters: z.object({
+    input: z.string().describe("Action input"),
+    priority: z.enum(["low", "medium", "high"]),
+  }),
+  needsApproval: true, // Optional: require approval
+  async execute({ input, priority }) {
+    // Implementation
+    const result = await performAction(input, priority);
+    return `Completed: ${result}`;
+  },
+});
+
+// Add to agent setup
+const tools = [...existingTools, customTool];
+```
+
+### Customizing Approval Flow
+
+Modify the approval UI and logic:
+
+```typescript
+// src/slack/blocks/approvalBlocks.ts
+export function createApprovalBlocks(
+  toolName: string,
+  args: any,
+  executionId: string,
+  customContext?: any, // Add custom context
+): (Block | KnownBlock)[] {
+  return [
+    {
+      type: "header",
+      text: {
+        type: "plain_text",
+        text: "🔒 Tool Approval Required",
+      },
     },
+    // Add custom sections
+    {
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `*Risk Level:* ${calculateRisk(toolName)}`,
+      },
+    },
+    // ... rest of blocks
+  ];
+}
+```
+
+### Implementing Custom State Storage
+
+Create a custom storage backend:
+
+```typescript
+// src/agents/state/customStorage.ts
+import { StateStorage, AgentState } from "./types";
+
+export class CustomStorage implements StateStorage {
+  async save(state: AgentState): Promise<void> {
+    // Custom save logic
+    await myDatabase.save(state.conversationId, state);
+  }
+
+  async load(
+    conversationId: string,
+    executionId: string,
+  ): Promise<AgentState | null> {
+    // Custom load logic
+    return await myDatabase.load(conversationId);
+  }
+
+  getLastSavedState(): AgentState | null {
+    // Return cached state
+    return this.lastState;
+  }
+}
+```
+
+## 🧪 Testing
+
+### Unit Tests
+
+```bash
+npm test           # Run all tests
+npm run test:ui    # Vitest UI
+npm run lint       # ESLint
+npm run format     # Prettier
+```
+
+### Test Coverage
+
+The test suite includes:
+
+- **Flow Tests** (`index.test.ts`): Webhook handling and Slack event processing
+- **Agent Tests** (`agent.test.ts`): Agent behavior, approval flows, and state management
+- **Mock Payloads** (`testPayload.ts`): Realistic Slack event fixtures
+
+### Example Test
+
+```typescript
+// Testing approval flow
+test("should handle approval interruption", async () => {
+  const agent = await setupAgent({
+    openAIKey: process.env.OPENAI_API_KEY!,
+    systemPrompt: "You are a helpful assistant.",
+    includeApprovalTools: true,
+  });
+
+  // Trigger approval-required tool
+  const result = await agent.run(
+    "Deploy v1 to production",
+    "test-conversation",
+  );
+
+  expect(result.needsApproval).toBe(true);
+
+  // Resume with approval
+  const approved = await agent.resume(
+    "test-conversation",
+    "test-execution-id",
+    { approved: true },
+  );
+
+  expect(approved.finalOutput).toContain("deployed");
 });
 ```
 
-### Customizing Search Domains
+### Slack Testing
 
-Configure Tavily to focus on specific domains or exclude others through the search parameters.
+1. **Deploy to Prismatic** and get webhook URL
+2. **Configure Slack app** with webhook
+3. **Test scenarios**:
+   - Normal conversations
+   - Tool approvals
+   - Thread continuity
+   - Error handling
 
-## Troubleshooting
+### Monitoring
 
-### Bot Not Responding
-1. Check webhook URL in Slack app settings
-2. Verify API keys are correctly configured
-3. Check Prismatic instance logs
+- View execution logs in Prismatic UI
+- Monitor Slack app insights
+- Check error rates and response times
 
-### Search Not Working
-1. Verify Tavily API key is valid
-2. Check rate limits
-3. Review search query logs
+## 📚 Resources
 
-### Authentication Issues
-1. Re-authorize Slack OAuth connection
-2. Verify signing secret matches
-3. Check token scopes
+- [Slack Assistant Framework](https://api.slack.com/docs/assistant) - Official Slack Assistant documentation
+- [OpenAI Agents SDK](https://github.com/openai/openai-agents-js) - Agent SDK documentation
+- [Prismatic Documentation](https://prismatic.io/docs) - Platform documentation
+- [Slack Bolt SDK](https://slack.dev/bolt-js) - Slack SDK for Node.js
 
-## Security
+## 🤝 Contributing
 
-- All API keys stored encrypted in Prismatic
-- Webhook signatures verified cryptographically
-- No conversation data persisted
-- Minimal permission scopes requested
-- HTTPS for all external communications
+This is reference architecture for Prismatic customers. Feel free to:
 
-## Resources
-
-- [OpenAI Agents SDK Documentation](https://openai.github.io/openai-agents-js/)
-- [Prismatic Documentation](https://prismatic.io/docs)
-- [Slack API Documentation](https://api.slack.com)
-- [Tavily API Documentation](https://docs.tavily.com)
-
-## Support
-
-- Issues: Open an issue in this repository
+- Fork and adapt for your use case
+- Submit issues for bugs or questions
+- Share your extensions and improvements
 
 ---
 

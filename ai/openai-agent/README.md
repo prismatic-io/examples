@@ -1,198 +1,8 @@
 # OpenAI Agent Integration for Prismatic
 
-A starter template for building OpenAI agents on Prismatic's Code-Native Integration platform. This repository includes six example implementations that demonstrate progressively advanced agent patterns.
+A reference implementation for building OpenAI agents on Prismatic's Code-Native Integration platform. This repository demonstrates best practices for creating conversational AI integrations with tool usage, approval flows, and agent routing patterns.
 
-## Overview
-
-This integration provides webhook-based flows that integrate OpenAI's Agent SDK with Prismatic. Each flow showcases different capabilities:
-
-1. **Basic Chat** - Simple conversational agent without tools
-2. **Hosted Tools** - Agent with OpenAI's web search and code interpreter
-3. **Agent as Tools** - Advanced pattern using specialized agents as composable tools
-4. **API Agent** - Demonstrates wrapping your API into agent-provided tools
-5. **Human Approval Flow** - Human-in-the-loop approval for sensitive operations
-6. **Agent Routing** - Dynamic agent handoff based on conversation context
-
-## Example Flows
-
-### 1. Basic Chat (`src/flows/basicChat.ts`)
-
-Simple conversational AI implementation without any tools.
-
-```typescript
-const agent = await createAgent({ 
-  systemPrompt: configVars.SYSTEM_PROMPT, 
-  openAIKey: openaiConnection 
-})
-const result = await runAgent(agent, incomingMessage.messages)
-```
-
-**Use cases**: Q&A systems, chatbots, text generation
-
-### 2. Hosted Tools (`src/flows/hostedTools.ts`)
-
-Leverages OpenAI's built-in tools for enhanced capabilities.
-
-```typescript
-import openAiHostedTools from "../agents/tools/hosted";
-
-const tools = openAiHostedTools(); // Returns [webSearchTool(), codeInterpreterTool()]
-const agent = await createAgent({ 
-  systemPrompt: configVars.SYSTEM_PROMPT, 
-  openAIKey: openaiConnection, 
-  tools 
-})
-```
-
-**Use cases**: Real-time information retrieval, code analysis, data processing
-
-**Available tools**:
-- `webSearchTool()` - Search the web for current information
-- `codeInterpreterTool()` - Execute Python code in a sandboxed environment
-
-### 3. Agent as Tools (`src/flows/agentAsTools.ts`)
-
-Demonstrates using specialized agents as tools within a parent agent.
-
-```typescript
-// Create a specialized agent
-const summarizer = new Agent({
-  name: "Summarizer",
-  instructions: "Generate a concise summary of the supplied text.",
-});
-
-// Convert to tool
-const summarizerTool = summarizer.asTool({
-  toolName: "summarize_text",
-  toolDescription: "Generate a concise summary of the supplied text.",
-});
-
-// Use in parent agent
-const agent = await createAgent({
-  systemPrompt: `${configVars.SYSTEM_PROMPT} \n Use the summarizer tool...`,
-  openAIKey: openaiConnection,
-  tools: [summarizerTool]
-})
-```
-
-**Use cases**: Multi-agent workflows, specialized task delegation, modular AI systems
-
-### 4. API Agent (`src/flows/apiAgent.ts`)
-
-Demonstrates wrapping your API into agent-provided tools. This example uses JSONPlaceholder API to show how organizations can expose their own APIs as tools for AI agents.
-
-```typescript
-import apiTools from "../agents/tools/api";
-
-// Define tools that wrap your API endpoints
-const getCurrentUserInfo = tool({
-    name: 'get_current_user_info',
-    description: 'Get the info of the currently logged in user',
-    parameters: z.object({}),
-    async execute() {
-        const response = await fetch(`${API_BASE_URL}/users/1`);
-        if (!response.ok) {
-            throw new Error(`Failed to fetch user info: ${response.statusText}`);
-        }
-        return await response.json();
-    },
-});
-
-// Use API tools in agent
-const agent = await createAgent({
-    systemPrompt: "You are an API assistant...",
-    openAIKey: openaiConnection,
-    tools: [
-        apiTools.getCurrentUserInfo,
-        apiTools.getPosts,
-        apiTools.getPost,
-        apiTools.createPost,
-        apiTools.updatePost,
-        apiTools.getPostComments,
-    ]
-});
-```
-
-**Available API operations**:
-- `get_current_user_info` - Fetch current user details
-- `get_users_posts` - Retrieve all posts for the current user
-- `get_post` - Get a specific post by ID
-- `create_post` - Create a new post
-- `update_post` - Update an existing post
-- `get_post_comments` - Fetch comments for a post
-
-**Use cases**: Customer data access, CRM integrations, internal tool automation, API orchestration
-
-### 5. Human Approval Flow (`src/flows/humanApprovalFlow.ts`)
-
-Implements human-in-the-loop approval for sensitive operations. Operations requiring approval are paused until explicitly approved or rejected.
-
-```typescript
-const result = await runAgentWithApproval(agent, messages, resumeState);
-
-// Result includes approval state
-if (result.needsApproval) {
-  return {
-    needsApproval: true,
-    state: result.state,
-    pendingApprovals: result.pendingApprovals
-  };
-}
-```
-
-**Key features**:
-- Marks sensitive tools with `needsApproval: true`
-- Serializes agent state for resume
-- Supports approval/rejection with reasons
-- Maintains conversation context across interruptions
-
-**Use cases**: Financial transactions, data modifications, compliance workflows, admin operations
-
-### 6. Agent Routing (`src/flows/agentRouting.ts`)
-
-Demonstrates intelligent routing to specialized agents using the handoff pattern.
-
-```typescript
-import { Agent, handoff } from '@openai/agents';
-
-// Create specialized agents
-const orderLookupAgent = new Agent({ 
-  name: 'Order Lookup Agent',
-  instructions: 'You help customers check order status',
-  tools: [lookupOrderTool]
-});
-
-const supportAgent = new Agent({ 
-  name: 'Support Agent',
-  instructions: 'You help create support tickets',
-  tools: [createTicketTool]
-});
-
-// Triage agent with handoffs
-const triageAgent = Agent.create({
-  name: 'Triage Agent',
-  instructions: 'Route to appropriate specialist',
-  handoffs: [orderLookupAgent, handoff(supportAgent)]
-});
-```
-
-**Routing capabilities**:
-- Dynamic agent selection based on intent
-- Seamless conversation handoff
-- Context preservation across agents
-- Specialized tool access per agent
-
-**Use cases**: Route to different APIs or integrations based on conversation context, multi-system workflows, vendor-specific operations, customer-specific integration routing
-
-## Quick Start
-
-### Prerequisites
-- Prismatic account
-- OpenAI API key
-- Node.js 18+
-- Prism CLI (`npm install -g @prismatic-io/prism`)
-
-### Deploy
+## 🚀 Quick Start
 
 ```bash
 # Clone and install
@@ -200,275 +10,503 @@ git clone <repository-url>
 cd openai-agent
 npm install
 
-# Set environment variable for testing
-export OPENAI_API_KEY=sk-proj-...
+# Set up environment
+cp .env.example .env
+# Add your OpenAI API key to .env
 
-# Run tests
-npm test
+# Test locally with interactive chat
+npm run chat
 
 # Deploy to Prismatic
-prism login
-npm run build
 npm run import
 ```
 
-### Configure
-1. Navigate to your integration in Prismatic UI
-2. Add your OpenAI API key
-3. Customize system prompt (optional)
-4. Deploy instance and note webhook URL
+## 📚 Overview
 
-### Test
+This integration provides seven production-ready flows that showcase different OpenAI Agent SDK patterns:
+
+1. **Basic Chat** - Simple conversational agent
+2. **API Agent** - Wraps your API endpoints as AI tools
+3. **Human Approval** - Human-in-the-loop for sensitive operations
+4. **Agent Routing** - Dynamic routing to specialized agents
+5. **Integrations as Tools** - Use deployed Prismatic integrations as tools
+6. **Agent as Tools** - Compose specialized agents as reusable tools
+7. **Hosted Tools** - OpenAI's built-in web search and code interpreter
+
+## 🎯 Interactive Testing
+
+This repository includes interactive chat scripts for testing each flow locally or against deployed Prismatic instances.
+
+### Local Testing
+
+Test flows locally without deployment:
 
 ```bash
-# Test basic chat
-curl -X POST https://your-webhook-url \
-  -H "Content-Type: application/json" \
-  -d '{
-    "messages": [
-      {"role": "user", "content": "What is the capital of France?"}
-    ]
-  }'
+# Basic conversational AI
+npm run chat
 
-# Test API agent
-curl -X POST https://your-webhook-url \
-  -H "Content-Type: application/json" \
-  -d '{
-    "messages": [
-      {"role": "user", "content": "Can you get the info about my current user and then find all my related posts?"}
-    ]
-  }'
+# API tools with approval flow
+npm run chat:api
+
+# Agent routing demonstration
+npm run chat:routing
+
+# Test all available scripts
+npm run chat:tools        # Agent composition
+npm run chat:hosted       # OpenAI hosted tools
+npm run chat:integrations # Prismatic integrations as tools
 ```
 
-## Architecture
+### Prismatic Testing
 
-### Flow Structure
-Each flow follows this pattern:
-1. Receive webhook payload containing messages
-2. Create agent with configuration
-3. Process messages through agent
-4. Return agent response
+Test against deployed system instances:
 
-### Agent Factory (`src/agents/agentFactory.ts`)
+```bash
+# Set Prismatic credentials
+export PRISMATIC_REFRESH_TOKEN=your-token
+
+# Import and deploy
+npm run import
+
+# Test against deployed instance
+npm run chat  # Automatically detects Prismatic mode
+```
+
+## 🔧 Flows
+
+### 1. Basic Chat (`basicChat`)
+
+Simple conversational AI without tools.
+
+**Use cases**: Q&A, chatbots, content generation
+
+**Test it**:
+
+```bash
+npm run chat
+```
+
+### 2. API Agent (`apiAgent`)
+
+Demonstrates wrapping REST APIs as AI tools. Includes approval flow for write operations.
+
+**Available tools**:
+
+- `get_current_user_info` - Fetch user details
+- `get_users_posts` - List user posts
+- `get_post` - Get specific post
+- `create_post` ⚠️ - Create post (requires approval)
+- `update_post` ⚠️ - Update post (requires approval)
+- `get_post_comments` - Fetch comments
+
+**Use cases**: API orchestration, data access, CRUD operations
+
+**Test it**:
+
+```bash
+npm run chat:api
+# Try: "Create a post about AI"
+# The tool will pause for your approval
+```
+
+### 3. Human Approval Flow (`humanApprovalFlow`)
+
+Implements human-in-the-loop approval for sensitive operations.
+
+**Key features**:
+
+- Interrupt/resume pattern
+- State serialization
+- Approval UI formatting
+- Conversation continuity
+
+**Use cases**: Financial transactions, data modifications, compliance workflows
+
+**Test it**:
+
+```bash
+npm run chat:approval
+# Try: "Update post 1 with new content"
+```
+
+### 4. Agent Routing (`agentRouting`)
+
+Intelligent routing to specialized agents using handoff patterns.
+
+**Specialized agents**:
+
+- **Triage Agent** - Routes based on intent
+- **Order Lookup Agent** - Handles order queries
+- **Support Agent** - Creates support tickets
+
+**Use cases**: Multi-system workflows, intent-based routing, specialized handling
+
+**Test it**:
+
+```bash
+npm run chat:routing
+# Try: "Where is my order ORD-12345?"
+```
+
+### 5. Integrations as Tools (`integrationsAsTools`)
+
+Uses deployed Prismatic integrations as AI tools. Dynamically loads available integrations for a customer.
+
+**Setup**:
+
+```bash
+export CUSTOMER_EXTERNAL_ID=your-customer-id
+npm run chat:integrations
+```
+
+**Use cases**: Customer-specific tools, multi-tenant scenarios, dynamic tool loading
+
+### 6. Agent as Tools (`agentAsTools`)
+
+Demonstrates composing specialized agents as reusable tools.
+
+**Available agents**:
+
+- **Summarizer** - Text summarization specialist
+
+**Use cases**: Multi-agent systems, task delegation, modular AI
+
+**Test it**:
+
+```bash
+npm run chat:tools
+# Try: "Summarize this text: [paste long text]"
+```
+
+### 7. Hosted Tools (`hostedTools`)
+
+Leverages OpenAI's built-in hosted tools.
+
+**Available tools**:
+
+- `web_search` - Real-time web information
+- Other OpenAI-provided tools as available
+
+**Use cases**: Current events, web research, real-time data
+
+**Test it**:
+
+```bash
+npm run chat:hosted
+# Try: "Search for the latest AI news"
+```
+
+## 🏗️ Architecture
+
+### Standardized Flow Input/Output
+
+All flows use a standardized format for consistency:
+
 ```typescript
-export async function createAgent(config?: AgentConfiguration): Promise<Agent> {
-  setDefaultOpenAIKey(config.openAIKey);
-  
-  const agent = new Agent({
-    name: "AI Agent",
-    instructions: config.systemPrompt,
-    tools: config.tools,
-  });
-  
-  return agent;
+// Input
+interface FlowInput {
+  conversationId: string;
+  message: string | null;
+  previousExecutionId?: string;
+  approval?: {
+    approved: boolean;
+    feedback?: string;
+  };
+}
+
+// Output
+interface FlowOutput {
+  agentState: {
+    finalOutput?: string;
+    pendingApproval?: {
+      toolName: string;
+      arguments: any;
+    };
+  };
+  executionId: string;
 }
 ```
 
-### Message Format
+### Chat Script Architecture
+
+The interactive chat scripts use a shared functional library for consistency:
+
 ```typescript
-{
-  "messages": [
-    {
-      "role": "user" | "assistant",
-      "content": "message text"
+// scripts/lib/chat-utils.ts
+export async function runChatLoop(config: {
+  flow: any;
+  flowName: string;
+  stableKey: string;
+  description?: string;
+  examplePrompts?: string[];
+});
+
+// Individual scripts are simple configurations
+// scripts/chat.ts
+runChatLoop({
+  flow: basicChat,
+  flowName: "Basic Chat",
+  stableKey: "basic-chat",
+  description: "Simple conversational AI",
+});
+```
+
+### Flow Implementation Pattern
+
+```typescript
+export const myFlow = flow({
+  name: "My Flow",
+  stableKey: "my-flow",
+  onExecution: async ({ configVars, executionId }, params) => {
+    // 1. Parse standardized input
+    const input = parseFlowInput(params.onTrigger.results.body.data);
+
+    // 2. Setup agent with tools
+    const runner = await setupAgent({
+      systemPrompt: configVars.SYSTEM_PROMPT,
+      openAIKey: configVars.OPENAI_API_KEY,
+      tools: [
+        /* your tools */
+      ],
+    });
+
+    // 3. Handle message or approval
+    if (isApprovalInput(input)) {
+      await runner.runWithDecision(/*...*/);
+    } else {
+      await runner.run(/*...*/);
     }
-  ]
-}
-```
 
-## Extending
-
-### Adding a New Flow
-
-1. Create flow file in `src/flows/`:
-```typescript
-import { flow, util } from "@prismatic-io/spectral";
-import { createAgent, runAgent } from "../agents";
-
-export const myCustomFlow = flow({
-  name: "My Custom Flow",
-  stableKey: "my-custom-flow",
-  description: "Description of what this flow does",
-  onExecution: async ({ configVars }, params) => {
-    // Your implementation
+    // 4. Return standardized output
+    return {
+      data: buildFlowOutput(runner.storage.getLastSavedState(), executionId),
+    };
   },
 });
 ```
 
-2. Export from `src/flows/index.ts`:
-```typescript
-export { myCustomFlow } from "./myCustomFlow";
-```
-
-3. Add tests in `src/test/index.test.ts`
-
-### Creating Custom Tools
-
-Tools follow OpenAI's tool interface:
-
-```typescript
-import { tool } from '@openai/agents';
-import { z } from 'zod';
-
-const myCustomTool = tool({
-    name: 'my_tool',
-    description: 'What this tool does',
-    parameters: z.object({
-        input: z.string().describe('Tool input'),
-    }),
-    async execute({ input }) {
-        // Tool implementation
-        return `Result: ${input}`;
-    },
-});
-```
-
-### Wrapping Your API as Tools
-
-Transform your REST API endpoints into agent tools:
-
-```typescript
-import { tool } from '@openai/agents';
-import { z } from 'zod';
-
-const API_BASE_URL = 'https://your-api.com';
-
-const getCustomerData = tool({
-    name: 'get_customer_data',
-    description: 'Retrieve customer information',
-    parameters: z.object({
-        customerId: z.string().describe('The customer ID'),
-    }),
-    async execute({ customerId }) {
-        const response = await fetch(`${API_BASE_URL}/customers/${customerId}`, {
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-            },
-        });
-        if (!response.ok) {
-            throw new Error(`Failed to fetch customer: ${response.statusText}`);
-        }
-        return await response.json();
-    },
-});
-
-// Export all your API tools
-const apiTools = {
-    getCustomerData,
-    updateCustomer,
-    listOrders,
-    // ... more tools
-};
-
-export default apiTools;
-```
-
-### Building Agent Tools
-
-Create specialized agents for specific tasks:
-
-```typescript
-// 1. Define specialized agent
-const classifier = new Agent({
-  name: "Classifier",
-  instructions: "Classify text into categories: positive, negative, neutral",
-});
-
-// 2. Convert to tool
-const classifierTool = classifier.asTool({
-  toolName: "classify_sentiment",
-  toolDescription: "Classify the sentiment of text",
-});
-
-// 3. Use in parent agent
-const agent = await createAgent({
-  tools: [classifierTool, webSearchTool()]
-});
-```
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 openai-agent/
+├── scripts/                      # Interactive chat scripts
+│   ├── lib/
+│   │   └── chat-utils.ts        # Shared chat utilities
+│   ├── chat.ts                  # Basic chat
+│   ├── chat-api.ts              # API tools chat
+│   ├── chat-approval.ts         # Approval flow chat
+│   ├── chat-routing.ts          # Agent routing chat
+│   ├── chat-tools.ts            # Agent as tools chat
+│   ├── chat-hosted.ts           # Hosted tools chat
+│   └── chat-integrations.ts     # Integrations chat
 ├── src/
-│   ├── index.ts                 # Integration entry point
-│   ├── configPages.ts           # UI configuration
-│   ├── flows/
-│   │   ├── basicChat.ts         # Basic conversational flow
-│   │   ├── hostedTools.ts       # Flow with OpenAI tools
-│   │   ├── agentAsTools.ts      # Agent composition pattern
-│   │   ├── apiAgent.ts          # API wrapping demonstration
-│   │   ├── humanApprovalFlow.ts # Human-in-the-loop approvals
-│   │   └── agentRouting.ts      # Agent handoff routing
-│   ├── agents/
-│   │   ├── agentFactory.ts      # Agent creation utilities
-│   │   └── tools/
-│   │       ├── hosted.ts        # OpenAI hosted tools
-│   │       ├── agents.ts        # Agent-as-tool examples
-│   │       └── api.ts           # API tool definitions
-│   └── test/
-│       └── index.test.ts        # Flow tests
+│   ├── flows/                   # Prismatic flows
+│   │   ├── basicChat.ts
+│   │   ├── apiAgent.ts
+│   │   ├── humanApprovalFlow.ts
+│   │   ├── agentRouting.ts
+│   │   ├── integrationsAsTools.ts
+│   │   ├── agentAsTools.ts
+│   │   ├── hostedTools.ts
+│   │   └── utils/
+│   │       └── flowHelpers.ts   # Flow utilities
+│   ├── agents/                  # Agent configuration
+│   │   ├── setup.ts             # Agent setup utilities
+│   │   ├── state/               # State management
+│   │   ├── types/               # TypeScript types
+│   │   └── tools/               # Tool definitions
+│   │       ├── api.ts           # API tools
+│   │       ├── agents.ts        # Agent tools
+│   │       ├── approvalTool.ts  # Approval handling
+│   │       └── prismaticTools.ts # Prismatic tools
+│   ├── prismatic/               # Prismatic API client
+│   │   ├── api/                # API functions
+│   │   ├── auth/               # Authentication
+│   │   ├── client/             # Client setup
+│   │   └── types.ts            # Type definitions
+│   ├── types/                   # Shared types
+│   │   └── flow.types.ts       # Flow interfaces
+│   └── test/                    # Tests
+├── .spectral/                   # Prismatic config
+│   └── prism.json              # Integration ID
 ├── package.json
-├── tsconfig.json
-└── esbuild.config.js
+└── README.md
 ```
 
-## Configuration
+## 🔑 Configuration
 
-### Required Config Variables
-- `OPENAI_API_KEY`: Your OpenAI API key
-- `SYSTEM_PROMPT`: Instructions for agent behavior
+### Environment Variables
 
-### Agent Configuration Type
-```typescript
-interface AgentConfiguration {
-  systemPrompt: string;
-  openAIKey: string;
-  tools?: Tool[];
-}
-```
-
-## Testing
-
-Run unit tests:
 ```bash
-npm test           # Run all tests
-npm run test:ui    # Run with Vitest UI
+# Required for all flows
+OPENAI_API_KEY=sk-proj-...
+
+# Optional: Enable Prismatic mode
+PRISMATIC_REFRESH_TOKEN=your-refresh-token
+
+# Optional: For integrationsAsTools flow
+CUSTOMER_EXTERNAL_ID=customer-123
+
+# Optional: Custom system prompt
+SYSTEM_PROMPT="You are a helpful assistant"
 ```
 
-Test structure:
+### Prismatic Deployment
+
+1. **Import the integration**:
+
+```bash
+npm run import
+# Creates .spectral/prism.json with integration ID
+```
+
+2. **Deploy system instance**:
+
+- Navigate to Prismatic UI
+- Deploy a system instance
+- Configure OpenAI API key
+
+3. **Test with chat scripts**:
+
+```bash
+export PRISMATIC_REFRESH_TOKEN=your-token
+npm run chat  # Automatically uses webhook mode
+```
+
+## 🧩 Extending
+
+### Adding a New Flow
+
+1. Create flow in `src/flows/`:
+
 ```typescript
-describe("flow name", () => {
-  test("test description", async () => {
-    const result = await invokeFlow(flowName, {
-      configVars: { /* config */ },
-      payload: { /* test payload */ }
+import { flow } from "@prismatic-io/spectral";
+import { setupAgent } from "../agents/setup";
+import { parseFlowInput, buildFlowOutput } from "./utils/flowHelpers";
+
+export const myFlow = flow({
+  name: "My Flow",
+  stableKey: "my-flow",
+  onExecution: async ({ configVars, executionId }, params) => {
+    const input = parseFlowInput(params.onTrigger.results.body.data);
+
+    const runner = await setupAgent({
+      systemPrompt: configVars.SYSTEM_PROMPT,
+      openAIKey: configVars.OPENAI_API_KEY.fields.apiKey,
+      tools: [
+        /* your tools */
+      ],
     });
-    console.log(JSON.stringify(result, null, 2));
-  });
+
+    await runner.run(input.message, input.conversationId);
+
+    return {
+      data: buildFlowOutput(runner.storage.getLastSavedState(), executionId),
+    };
+  },
 });
 ```
 
-## Development
+2. Add to `src/flows/index.ts`
 
-### Local Development
-```bash
-npm run lint       # Run ESLint
-npm run format     # Format with Prettier
-npm run build      # Build for Prismatic
-```
+3. Create chat script in `scripts/`:
 
-### Debugging
-Use `runAgentWithDebug` for detailed execution traces:
 ```typescript
-const result = await runAgentWithDebug(agent, input);
+#!/usr/bin/env node
+import { runChatLoop } from "./lib/chat-utils";
+import { myFlow } from "../src/flows/myFlow";
+
+runChatLoop({
+  flow: myFlow,
+  flowName: "My Flow",
+  stableKey: "my-flow",
+  description: "What my flow does",
+});
 ```
 
-## Resources
+### Creating Custom Tools
 
-- [OpenAI Agents SDK](https://github.com/openai/agent-sdk)
+```typescript
+import { tool } from "@openai/agents";
+import { z } from "zod";
+
+const myTool = tool({
+  name: "my_tool",
+  description: "What this tool does",
+  parameters: z.object({
+    input: z.string().describe("Tool input"),
+  }),
+  async execute({ input }) {
+    // Implementation
+    return `Result: ${input}`;
+  },
+  needsApproval: true, // Optional: require approval
+});
+```
+
+### Wrapping Your API
+
+```typescript
+// src/agents/tools/myapi.ts
+const API_BASE = "https://api.example.com";
+
+const getResource = tool({
+  name: "get_resource",
+  description: "Fetch a resource",
+  parameters: z.object({
+    id: z.string(),
+  }),
+  async execute({ id }) {
+    const response = await fetch(`${API_BASE}/resources/${id}`);
+    return await response.json();
+  },
+});
+
+export default { getResource };
+```
+
+## 🧪 Testing
+
+### Unit Tests
+
+```bash
+npm test           # Run all tests
+npm run test:ui    # Vitest UI
+```
+
+### Interactive Testing
+
+```bash
+# Test each flow interactively
+npm run chat
+npm run chat:api
+npm run chat:routing
+# ... etc
+```
+
+### Webhook Testing
+
+```bash
+# Test deployed instance
+curl -X POST https://your-webhook-url \
+  -H "Content-Type: application/json" \
+  -d '{
+    "conversationId": "test-123",
+    "message": "Hello, how are you?"
+  }'
+```
+
+## 📚 Resources
+
+- [OpenAI Agents SDK](https://github.com/openai/openai-agents-js)
 - [Prismatic Documentation](https://prismatic.io/docs)
-- [Prismatic CNI Guide](https://prismatic.io/docs/code-native-integrations)
+
+## 🤝 Contributing
+
+This is reference architecture for Prismatic customers. Feel free to:
+
+- Fork and adapt for your use case
+- Submit issues for bugs or questions
 
 ---
 

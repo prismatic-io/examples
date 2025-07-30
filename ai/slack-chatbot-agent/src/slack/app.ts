@@ -1,35 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { LogLevel } from "@slack/web-api";
+import { LogLevel, WebClient } from "@slack/web-api";
 import { Connection, util } from "@prismatic-io/spectral";
-import { App as SlackApp, Middleware, Assistant } from "@slack/bolt";
+import { App as SlackApp, Assistant } from "@slack/bolt";
 import { PrismaticWebhookReceiver } from "./webhookReceiver";
+import filterBotMessages from "./middleware/filterBotMessage";
+export interface ToolApprovalArgs {
+  approved: boolean;
+  previousExecutionId: string;
+  userId: string;
+  conversationId: string;
+  channelId: string;
+  client: WebClient;
+  updateMessage: (text: string) => Promise<void>;
+}
 
-// Custom middleware to filter bot messages
-const filterBotMessages: Middleware<any> = async ({
-  message,
-  next,
-  logger,
-}) => {
-  // Log all incoming messages for debugging
-  logger.info("Incoming message event:", {
-    user: message?.user,
-    bot_id: message?.bot_id,
-    subtype: message?.subtype,
-    text: message?.text?.substring(0, 50) + "...",
-    channel: message?.channel,
-    ts: message?.ts,
-  });
-
-  // Filter out bot messages
-  if (message?.bot_id || message?.subtype === "bot_message") {
-    return;
-  }
-
-  await next();
-};
+export interface ActionHandlers {
+  onToolApproval?: (args: ToolApprovalArgs) => Promise<void>;
+  // onHomeTab?: (args: any) => Promise<void>;
+  // onShortcut?: (args: any) => Promise<void>;
+  // onCommand?: (args: any) => Promise<void>;
+}
 
 export interface AppOptions {
   assistant?: Assistant;
+  actionHandlers?: ActionHandlers;
 }
 
 export function App(
@@ -47,7 +40,6 @@ export function App(
 
   const app = new SlackApp({
     token: util.types.toString(connection.token.access_token),
-    signingSecret: util.types.toString(connection.fields.signingSecret),
     logLevel: process.env.DEBUG === "true" ? LogLevel.DEBUG : LogLevel.INFO,
     ignoreSelf: true, // Built-in middleware to ignore own bot events
     processBeforeResponse: false,
@@ -60,7 +52,43 @@ export function App(
     app.assistant(options.assistant);
   }
 
-  // Initialize the receiver with the app
+  if (options?.actionHandlers?.onToolApproval) {
+    const toolApprovalHandler = options.actionHandlers.onToolApproval;
+
+    app.action(/^(approve|deny)_tool_.*/, async ({ ack, body, client }) => {
+      // Fixme: Narrow types for the type of action we're targeting
+      const actionBody = body as any;
+
+      const actionId = actionBody.actions[0].action_id;
+      const [decision, , previousExecutionId] = actionId.split("_");
+      const approved = decision === "approve";
+      const userId = actionBody.user.id;
+      const conversationId = actionBody.message.thread_ts;
+
+      console.log(
+        `[Approval Action] User ${userId} ${decision}d tool for execution ${previousExecutionId}`,
+      );
+
+      // Call the handler with all context
+      await toolApprovalHandler({
+        approved,
+        previousExecutionId,
+        userId,
+        conversationId,
+        channelId: actionBody.channel.id,
+        client,
+        updateMessage: async (text: string) => {
+          await client.chat.update({
+            channel: actionBody.channel.id,
+            ts: actionBody.message.ts,
+            blocks: [],
+            text,
+          });
+        },
+      });
+    });
+  }
+
   receiver.init(app);
 
   return receiver;

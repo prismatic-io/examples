@@ -1,7 +1,7 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { createAgent, runAgent } from "../agents";
-import { AgentInputItem } from "@openai/agents";
-import openAiHostedTools from "../agents/tools/hosted";
+import { setupAgent } from "../agents/setup";
+import { createHostedTools } from "../agents/tools/openaiHostedTools";
+import { parseFlowInput, buildFlowOutput } from "./utils/flowHelpers";
 
 export const hostedTools = flow({
   name: "Agent Chat Handler",
@@ -13,21 +13,33 @@ export const hostedTools = flow({
       payload,
     });
   },
-  onExecution: async ({ configVars }, params) => {
+  onExecution: async ({ configVars, executionId }, params) => {
     const openaiConnection = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
 
-    const incomingMessage = params.onTrigger.results.body.data as { messages: { role: string, content: string }[] }
+    const input = parseFlowInput(params.onTrigger.results.body.data);
 
-    // Setup OpenAI hosted tools like web search and code interpreter
-    const tools = openAiHostedTools();
+    // Setup agent with OpenAI's hosted tools
+    // These are tools that OpenAI provides and hosts (e.g., web_search)
+    const runner = await setupAgent({
+      systemPrompt: configVars.SYSTEM_PROMPT,
+      openAIKey: openaiConnection,
+      tools: createHostedTools(),  // Returns array of OpenAI-hosted tools like web_search
+    });
 
-    const agent = await createAgent({ systemPrompt: configVars.SYSTEM_PROMPT, openAIKey: openaiConnection, tools })
-    const result = await runAgent(agent, incomingMessage.messages as AgentInputItem[])
+    if (!input.message) {
+      throw new Error("Message is required for hosted tools");
+    }
+
+    await runner.run(
+      input.message,
+      input.conversationId,
+      input.previousExecutionId,
+    );
 
     return {
-      data: result
+      data: buildFlowOutput(runner.storage.getLastSavedState(), executionId),
     };
   },
 });

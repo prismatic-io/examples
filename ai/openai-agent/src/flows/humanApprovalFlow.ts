@@ -1,7 +1,7 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { createAgent, runAgentWithApproval } from "../agents";
-import { AgentInputItem } from "@openai/agents";
+import { setupAgent } from "../agents/setup";
 import apiTools from "../agents/tools/api";
+import { parseFlowInput, buildFlowOutput, isApprovalInput } from "./utils/flowHelpers";
 
 export const humanApprovalFlow = flow({
   name: "Human Approval Flow",
@@ -14,20 +14,12 @@ export const humanApprovalFlow = flow({
       payload,
     });
   },
-  onExecution: async ({ configVars }, params) => {
+  onExecution: async ({ configVars, executionId }, params) => {
     const openaiConnection = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
 
-    const incomingData = params.onTrigger.results.body.data as {
-      messages?: { role: string; content: string }[];
-      state?: string;
-      toolApprovals?: Array<{
-        callId: string;
-        decision: 'approved' | 'rejected';
-        reason?: string;
-      }>;
-    };
+    const input = parseFlowInput(params.onTrigger.results.body.data);
 
     const systemPrompt = `${configVars.SYSTEM_PROMPT}
 
@@ -35,46 +27,46 @@ You are an API assistant that helps users interact with their data.
 
 IMPORTANT: You MUST use the available tools to fulfill user requests. Do not just describe what you would do - actually use the tools.
 
-Available tools:
-- get_current_user_info: Get information about the currently logged in user
-- get_users_posts: Get all posts from the current user
-- get_post: Get a specific post by its ID
-- create_post: Create a new post with a title and body
-- update_post: Update an existing post's title and body
-- get_post_comments: Get all comments for a specific post
-
 When a user asks you to create or update a post, use the appropriate tool immediately. Do not ask for confirmation - the system will handle approval if needed.`;
 
-    const agent = await createAgent({
+    // Setup agent with explicit API tools
+    // This demonstrates the approval flow - create_post and update_post require human approval
+    const runner = await setupAgent({
       systemPrompt,
       openAIKey: openaiConnection,
       tools: [
+        // Read-only tools (no approval needed)
         apiTools.getCurrentUserInfo,
         apiTools.getPosts,
         apiTools.getPost,
+        apiTools.getPostComments,
+        
+        // Write tools (require approval - see needsApproval: true in tools/api.ts)
         apiTools.createPost,
         apiTools.updatePost,
-        apiTools.getPostComments,
-      ]
+      ],
     });
 
-    // Prepare messages - either from request or empty array for resume
-    const messages = (incomingData.messages || []) as AgentInputItem[];
-
-    // Run agent with approval handling
-    const result = await runAgentWithApproval(
-      agent,
-      messages,
-      incomingData.state && incomingData.toolApprovals
-        ? {
-          serializedState: incomingData.state,
-          toolApprovals: incomingData.toolApprovals,
-        }
-        : undefined
-    );
-    // console.log(JSON.stringify(result, null, 2))
+    if (isApprovalInput(input) && input.previousExecutionId) {
+      // Resume with approval decision
+      await runner.resume(
+        input.conversationId,
+        input.previousExecutionId,
+        input.approval,
+      );
+    } else if (input.message) {
+      // New message
+      await runner.run(
+        input.message,
+        input.conversationId,
+        input.previousExecutionId,
+      );
+    } else {
+      throw new Error("Either 'message' or approval decision required");
+    }
+    
     return {
-      data: result
+      data: buildFlowOutput(runner.storage.getLastSavedState(), executionId),
     };
   },
 });

@@ -24,7 +24,6 @@ export const configPages = {
           },
         },
       }),
-
     },
   }),
   Prompts: configPage({
