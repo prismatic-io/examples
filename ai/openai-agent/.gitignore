@@ -2,3 +2,4 @@ node_modules/
 dist/
 .env
 prism-mcp/
+tmp/agent-state

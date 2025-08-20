@@ -1,8 +1,7 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { createAgent, runAgent } from "../agents";
-import { AgentInputItem } from "@openai/agents";
-
-import toolAgents from "../agents/tools/agents";
+import { setupAgent } from "../agents/setup";
+import agentTools from "../agents/tools/agents";
+import { parseFlowInput, buildFlowOutput } from "./utils/flowHelpers";
 
 export const agentAsTools = flow({
   name: "Agent as Tools",
@@ -14,24 +13,35 @@ export const agentAsTools = flow({
       payload,
     });
   },
-  onExecution: async ({ configVars }, params) => {
+  onExecution: async ({ configVars, executionId }, params) => {
     const openaiConnection = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
 
-    const incomingMessage = params.onTrigger.results.body.data as { messages: { role: string, content: string }[] }
+    const input = parseFlowInput(params.onTrigger.results.body.data);
 
-    const summarizerTool = toolAgents.summarizer
-    const agent = await createAgent({
-      systemPrompt: `${configVars.SYSTEM_PROMPT} \n Use the summarizer tool to when requested by the user to summarize text`,
+    // Setup agent with specialized agent tools
+    // These are helper agents that can be called as tools
+    const runner = await setupAgent({
+      systemPrompt: `${configVars.SYSTEM_PROMPT} \n Use the summarizer tool when requested by the user to summarize text`,
       openAIKey: openaiConnection,
-      tools: [summarizerTool]
-    })
+      tools: [
+        agentTools.summarizer,  // Text summarization agent tool
+      ],
+    });
 
-    const result = await runAgent(agent, incomingMessage.messages as AgentInputItem[])
+    if (!input.message) {
+      throw new Error("Message is required for agent tools");
+    }
+
+    await runner.run(
+      input.message,
+      input.conversationId,
+      input.previousExecutionId,
+    );
 
     return {
-      data: result
+      data: buildFlowOutput(runner.storage.getLastSavedState(), executionId),
     };
   },
 });

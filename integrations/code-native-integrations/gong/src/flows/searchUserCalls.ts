@@ -15,26 +15,26 @@ export const searchUserCallsFlow = flow({
         userEmail: {
           type: "string",
           format: "email",
-          description: "Email address of the user to search for"
+          description: "Email address of the user to search for",
         },
         fromDate: {
           type: "string",
           format: "date-time",
-          description: "Start date (ISO format). Defaults to 30 days ago"
+          description: "Start date (ISO format). Defaults to 30 days ago",
         },
         toDate: {
           type: "string",
           format: "date-time",
-          description: "End date (ISO format). Defaults to now"
+          description: "End date (ISO format). Defaults to now",
         },
         includeTranscripts: {
           type: "boolean",
           default: false,
-          description: "Whether to include transcript snippets in the response"
-        }
+          description: "Whether to include transcript snippets in the response",
+        },
       },
-      required: ["userEmail"]
-    }
+      required: ["userEmail"],
+    },
   },
   endpointSecurityType: "customer_optional",
   onExecution: async (context, params) => {
@@ -49,8 +49,9 @@ export const searchUserCallsFlow = flow({
       userEmail: string;
       includeTranscripts?: boolean;
       fromDate?: string;
-      toDate?: string
+      toDate?: string;
     };
+
     const { userEmail, includeTranscripts = false } = inputData;
     let { fromDate, toDate } = inputData;
 
@@ -63,7 +64,7 @@ export const searchUserCallsFlow = flow({
 
     const client = createGongClient(
       credentials.fields.accessKey as string,
-      credentials.fields.secretKey as string
+      credentials.fields.secretKey as string,
     );
 
     try {
@@ -78,22 +79,21 @@ export const searchUserCallsFlow = flow({
             searchCriteria: {
               userEmail,
               fromDate,
-              toDate
+              toDate,
             },
             user: null,
-            message: `No user found with email: ${userEmail}`
-          }
+            message: `No user found with email: ${userEmail}`,
+          },
         };
       }
-
       // Get extensive call data filtered by user ID
-      const response = await getCallsExtensive(client, fromDate, toDate, [user.id]);
-
+      const response = await getCallsExtensive(client, fromDate, toDate, [
+        user.id,
+      ]);
       // All calls are already filtered by the API
       const userCalls = response.calls;
-
       // Format the response
-      const formattedCalls = userCalls.map(call => ({
+      const formattedCalls = userCalls.map((call) => ({
         id: call.metaData.id,
         title: call.metaData.title,
         scheduled: call.metaData.scheduled,
@@ -103,11 +103,11 @@ export const searchUserCallsFlow = flow({
         participants: call.parties.map((party: any) => ({
           name: party.name,
           email: party.emailAddress,
-          affiliation: party.affiliation
+          affiliation: party.affiliation,
         })),
-        userRole: call.parties.find((p: any) =>
-          p.emailAddress?.toLowerCase() === userEmail.toLowerCase()
-        )?.affiliation
+        userRole: call.parties.find(
+          (p: any) => p.emailAddress?.toLowerCase() === userEmail.toLowerCase(),
+        )?.affiliation,
       }));
 
       return {
@@ -117,20 +117,24 @@ export const searchUserCallsFlow = flow({
           searchCriteria: {
             userEmail,
             fromDate,
-            toDate
+            toDate,
           },
           user: {
             id: user.id,
             email: user.emailAddress,
-            name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.emailAddress,
-            active: user.active
-          }
-        }
+            name:
+              `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+              user.emailAddress,
+            active: user.active,
+          },
+        },
       };
     } catch (error) {
-      throw new Error(`Failed to search user calls: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to search user calls: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
-  }
+  },
 });
 
 export default searchUserCallsFlow;

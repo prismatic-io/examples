@@ -1,5 +1,5 @@
 {
-  "name": "slack-chatbot-agent",
+  "name": "slack-openai-agent-chatbot",
   "scripts": {
     "build": "node esbuild.config.js",
     "import": "npm run build && prism integrations:import",
@@ -16,11 +16,11 @@
     ]
   },
   "dependencies": {
+    "@msgpack/msgpack": "^3.1.2",
     "@openai/agents": "^0.0.12",
     "@prismatic-io/spectral": "10.5.13",
     "@slack/bolt": "^4.4.0",
     "@slack/web-api": "^7.9.3",
-    "@tavily/core": "^0.5.10",
     "bufferutil": "^4.0.9",
     "jsonwebtoken": "^9.0.2",
     "utf-8-validate": "^6.0.5",
@@ -32,6 +32,7 @@
     "@component-manifests/slack": "*",
     "@prismatic-io/eslint-config-spectral": "2.0.1",
     "@vitest/ui": "^3.2.4",
+    "dotenv": "^17.2.1",
     "esbuild": "^0.25.8",
     "fs-extra": "^11.3.0",
     "prettier": "3.4.2",

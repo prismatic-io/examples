@@ -1,6 +1,6 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { createAgent, runAgent } from "../agents";
-import { AgentInputItem } from "@openai/agents";
+import { setupAgent } from "../agents/setup";
+import { parseFlowInput, buildFlowOutput } from "./utils/flowHelpers";
 
 export const basicChat = flow({
   name: "Basic Chat",
@@ -12,17 +12,33 @@ export const basicChat = flow({
       payload,
     });
   },
-  onExecution: async ({ configVars }, params) => {
+  onExecution: async ({ configVars, executionId }, params) => {
     const openaiConnection = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
 
-    const incomingMessage = params.onTrigger.results.body.data as { messages: { role: string, content: string }[] }
-    const agent = await createAgent({ systemPrompt: configVars.SYSTEM_PROMPT, openAIKey: openaiConnection })
-    const result = await runAgent(agent, incomingMessage.messages as AgentInputItem[])
+    const input = parseFlowInput(params.onTrigger.results.body.data);
+
+    // Setup agent with no tools - pure conversation
+    // This flow demonstrates a basic chat agent without any tool capabilities
+    const runner = await setupAgent({
+      systemPrompt: configVars.SYSTEM_PROMPT,
+      openAIKey: openaiConnection,
+      tools: [], // Explicitly no tools - just conversation
+    });
+
+    if (!input.message) {
+      throw new Error("Message is required for basic chat");
+    }
+
+    await runner.run(
+      input.message,
+      input.conversationId,
+      input.previousExecutionId,
+    );
 
     return {
-      data: result
+      data: buildFlowOutput(runner.storage.getLastSavedState(), executionId),
     };
   },
 });

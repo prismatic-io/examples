@@ -23,12 +23,12 @@ export const configPages = {
             clientId: {
               value: process.env.SLACK_CLIENT_ID || "",
               permissionAndVisibilityType: "organization",
-              visibleToOrgDeployer: true,
+              visibleToOrgDeployer: false,
             },
             clientSecret: {
               value: process.env.SLACK_CLIENT_SECRET || "",
               permissionAndVisibilityType: "organization",
-              visibleToOrgDeployer: true,
+              visibleToOrgDeployer: false,
             },
             isUser: {
               value: false,
@@ -49,7 +49,7 @@ export const configPages = {
             signingSecret: {
               value: process.env.SLACK_SIGNING_SECRET || "",
               permissionAndVisibilityType: "organization",
-              visibleToOrgDeployer: true,
+              visibleToOrgDeployer: false,
             },
             tokenUrl: {
               value: "https://slack.com/api/oauth.v2.access",
@@ -71,32 +71,16 @@ export const configPages = {
             type: "password",
             required: true,
             shown: true,
-            default: "",
+            default: process.env.OPENAI_API_KEY || "",
           },
         },
       }),
-      TAVILY_API_KEY: connectionConfigVar({
-        label: "Tavily Search API Key",
+      PRISMATIC_REFRESH_TOKEN: configVar({
+        label: "Prismatic Refresh Token",
         iconPath: "./assets/icon.png",
-        stableKey: "a249ac69-48f2-4e99-123009u5",
-        dataType: "connection",
-        inputs: {
-          apiKey: {
-            label: "API Key",
-            placeholder: "sk-proj-Csg...",
-            type: "password",
-            required: true,
-            shown: true,
-            default: "",
-          },
-        },
-      }),
-      PRISMATIC_SIGNING_KEY: configVar({
-        label: "Prismatic Signing Key",
-        iconPath: "./assets/icon.png",
-        stableKey: "abc123asdf-signing-key-prismatic-asdf",
+        stableKey: "abc123asdf-refresh-token-prismatic-asdf",
         dataType: "string",
-        defaultValue: process.env.PRISMATIC_SIGNING_KEY || "",
+        defaultValue: process.env.PRISMATIC_REFRESH_TOKEN || "",
       }),
     },
   }),
@@ -109,7 +93,7 @@ export const configPages = {
         dataType: "string",
         description: "The agent's system prompt",
         defaultValue:
-          "You are a helpful assistant. When users ask questions, use the webSearch tool to find accurate information. Never make assumptions or provide answers without verifying with search results. Never summarize tool use.",
+          "You are a helpful assistant that provides accurate and helpful responses. Always be clear, concise, and respectful in your communication.",
       }),
     },
   }),
