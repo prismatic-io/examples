@@ -1,0 +1,511 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: OpenAI Connection
+      - type: configVar
+        value: Salesforce Connection
+    name: Configuration
+defaultInstanceProfile: Default Instance Profile
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Enrich Incoming Lead
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: "3580510077493.9233984518851"
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: New Lead Trigger
+      - action:
+          key: createWebSearchTool
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs:
+          city:
+            type: value
+            value: ""
+          country:
+            type: value
+            value: ""
+          name:
+            type: value
+            value: Web Search
+          region:
+            type: value
+            value: ""
+          searchContextSize:
+            type: value
+            value: high
+          timezone:
+            type: value
+            value: ""
+        name: Setup Web Research Tool
+      - action:
+          key: createAgent
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs:
+          handoffDescription:
+            type: value
+            value: ""
+          instructions:
+            type: value
+            value: >-
+              When provided a new lead, attempt to research them based on their
+              domain. Look for their industry, employee count, and the problem
+              the company solves.
+
+              Score the lead based on the information you find to identify if
+              its a fit for Prismatic.
+
+
+              Key scoring metrics:
+
+              B2B SaaS company + 7 points
+
+              Integration Needs + 3 points
+
+              Services company -10 points
+          mcpServers:
+            type: complex
+            value: []
+          modelName:
+            type: value
+            value: gpt-5-mini-2025-08-07
+          name:
+            type: value
+            value: Lead Researcher
+          outputSchema:
+            type: value
+            value: |-
+              {
+                  "type": "object",
+                  "properties": {
+                      "company": {
+                          "type": "string"
+                      },
+                      "employeeCount": {
+                          "type": "number"
+                      },
+                      "vertical": {
+                          "type": "string"
+                      },
+                      "score": {
+                          "type": "number"
+                      },
+                      "companyDescription": {
+                          "type": "string"
+                      }
+                  },
+                  "required": ["employeeCount", "vertical", "score", "companyDescription"],
+                  "additionalFields": false
+              }
+          outputSchemaName:
+            type: value
+            value: output
+          outputSchemaStrict:
+            type: value
+            value: "false"
+          tools:
+            type: complex
+            value:
+              - type: reference
+                value: setupWebResearchTool.results
+        name: Create Lead Research Agent
+      - action:
+          key: runAgent
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs:
+          agentConfig:
+            type: reference
+            value: createLeadResearchAgent.results
+          handoffs:
+            type: complex
+            value: []
+          history:
+            type: value
+            value: ""
+          maxTurns:
+            type: value
+            value: "10"
+          openaiConnection:
+            type: configVar
+            value: OpenAI Connection
+          previousResponseId:
+            type: value
+            value: ""
+          userInput:
+            type: template
+            value: "Analyze this lead: {{$newLeadTrigger.results.body.data}}"
+        name: Research and Enrich Lead
+      - action:
+          key: createLead
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs:
+          city:
+            type: value
+            value: ""
+          company:
+            type: reference
+            value: researchAndEnrichLead.results.finalOutput.company
+          connection:
+            type: configVar
+            value: Salesforce Connection
+          description:
+            type: reference
+            value: researchAndEnrichLead.results.finalOutput.companyDescription
+          dynamicValues:
+            type: value
+            value: ""
+          email:
+            type: reference
+            value: newLeadTrigger.results.body.data.email
+          employeeCount:
+            type: reference
+            value: researchAndEnrichLead.results.finalOutput.employeeCount
+          fieldValues:
+            type: complex
+            value: []
+          firstName:
+            type: reference
+            value: newLeadTrigger.results.body.data.firstName
+          lastName:
+            type: reference
+            value: newLeadTrigger.results.body.data.firstName
+          leadSource:
+            type: value
+            value: ""
+          leadStatus:
+            type: value
+            value: Open
+          phone:
+            type: value
+            value: ""
+          postalCode:
+            type: value
+            value: ""
+          rating:
+            type: value
+            value: ""
+          revenue:
+            type: value
+            value: ""
+          state:
+            type: value
+            value: ""
+          street:
+            type: value
+            value: ""
+          title:
+            type: value
+            value: ""
+          version:
+            type: value
+            value: "63.0"
+          website:
+            type: value
+            value: ""
+        name: Create Lead
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Check for Duplicates
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Check for Duplicates Trigger
+      - action:
+          key: query
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Salesforce Connection
+          queryString:
+            type: template
+            value: >-
+              SELECT Id, Name, Website FROM Account WHERE Name like
+              '{{$checkForDuplicatesTrigger.results.body.data.company}}%'
+          version:
+            type: value
+            value: "63.0"
+        name: Find Accounts
+      - action:
+          key: classifyAndBranch
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        branches:
+          - name: Duplicate
+            steps:
+              - action:
+                  key: writeLog
+                  component:
+                    isPublic: true
+                    key: log
+                    version: LATEST
+                description: ""
+                inputs:
+                  level:
+                    type: value
+                    value: warn
+                  message:
+                    type: value
+                    value: Duplicate Detected. Skipping...
+                name: Log Duplicate detected
+          - name: Not a Duplicate
+            steps:
+              - action:
+                  key: createLead
+                  component:
+                    isPublic: true
+                    key: salesforce
+                    version: LATEST
+                description: ""
+                inputs:
+                  city:
+                    type: value
+                    value: ""
+                  company:
+                    type: reference
+                    value: checkForDuplicatesTrigger.results.body.data.company
+                  connection:
+                    type: configVar
+                    value: Salesforce Connection
+                  description:
+                    type: value
+                    value: ""
+                  dynamicValues:
+                    type: value
+                    value: ""
+                  email:
+                    type: reference
+                    value: checkForDuplicatesTrigger.results.body.data.email
+                  employeeCount:
+                    type: value
+                    value: ""
+                  fieldValues:
+                    type: complex
+                    value: []
+                  firstName:
+                    type: reference
+                    value: checkForDuplicatesTrigger.results.body.data.firstName
+                  lastName:
+                    type: reference
+                    value: checkForDuplicatesTrigger.results.body.data.lastName
+                  leadSource:
+                    type: value
+                    value: ""
+                  leadStatus:
+                    type: value
+                    value: Open
+                  phone:
+                    type: value
+                    value: ""
+                  postalCode:
+                    type: value
+                    value: ""
+                  rating:
+                    type: value
+                    value: ""
+                  revenue:
+                    type: value
+                    value: ""
+                  state:
+                    type: value
+                    value: ""
+                  street:
+                    type: value
+                    value: ""
+                  title:
+                    type: value
+                    value: ""
+                  version:
+                    type: value
+                    value: "63.0"
+                  website:
+                    type: value
+                    value: ""
+                name: Create Lead
+          - name: Else
+            steps:
+              - action:
+                  key: writeLog
+                  component:
+                    isPublic: true
+                    key: log
+                    version: LATEST
+                description: ""
+                inputs:
+                  level:
+                    type: value
+                    value: error
+                  message:
+                    type: value
+                    value: Failed to classify.
+                name: Log Classify Failure
+        description: ""
+        inputs:
+          branches:
+            type: complex
+            value:
+              - name: Duplicate
+                type: value
+                value: >-
+                  The name, domain, or other firmographics suggest it is a
+                  duplicate account with >75% accuracy
+              - name: Not a Duplicate
+                type: value
+                value: >-
+                  The name, domain, or other firmographics suggest it is NOT a
+                  duplicate account with >75% accuracy
+          classificationInstructions:
+            type: value
+            value: >-
+              Consider the provided account and list of possible duplicates
+              provided. Use your best judgement to identify if there is a
+              duplicate using all of the information at hand.
+          inputText:
+            type: template
+            value: |-
+              Account: {{$checkForDuplicatesTrigger.results.body.data}}
+              Possible Duplicates: {{$findAccounts.results.records}}
+          model:
+            type: value
+            value: gpt-5-mini-2025-08-07
+          openaiConnection:
+            type: configVar
+            value: OpenAI Connection
+        name: "Agent: Classify and Branch"
+name: Salesforce
+requiredConfigVars:
+  - connection:
+      key: openAiApiKey
+      component:
+        isPublic: true
+        key: openai
+        version: LATEST
+    dataType: connection
+    inputs:
+      apiKey:
+        type: value
+        value: ""
+      organization:
+        type: value
+        value: ""
+    key: OpenAI Connection
+    meta:
+      isVisibleToCustomerDeployer: true
+      isVisibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: salesforce
+        version: LATEST
+    dataType: connection
+    inputs:
+      authorizeUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://login.salesforce.com/services/oauth2/authorize"
+      clientId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      revokeUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://login.salesforce.com/services/oauth2/revoke"
+      tokenUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://login.salesforce.com/services/oauth2/token"
+    key: Salesforce Connection
+    meta:
+      visibleToCustomerDeployer: true
+      visibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
