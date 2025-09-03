@@ -1,0 +1,432 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: Dropbox Connection
+      - type: configVar
+        value: OpenAI Connection
+    name: Configuration
+  - elements:
+      - type: configVar
+        value: Import Folder
+    name: Settings
+    tagline: ""
+    userLevelConfigured: false
+defaultInstanceProfile: Default Instance Profile
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Import Receipts from PDFs
+    retryConfig:
+      delayMinutes: 1
+      maxAttempts: 1
+      usesExponentialBackoff: false
+    steps:
+      - action:
+          key: schedule
+          component:
+            isPublic: true
+            key: schedule-triggers
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Trigger
+        schedule:
+          meta:
+            scheduleType: minute
+            timeZone: ""
+          type: value
+          value: "*/5 * * * *"
+      - action:
+          key: listFolder
+          component:
+            isPublic: true
+            key: dropbox
+            version: LATEST
+        description: Check for new files to import
+        inputs:
+          cursor:
+            type: value
+            value: ""
+          debug:
+            type: value
+            value: "false"
+          dropboxConnection:
+            type: configVar
+            value: Dropbox Connection
+          limit:
+            type: value
+            value: ""
+          path:
+            type: configVar
+            value: Import Folder
+          recursive:
+            type: value
+            value: "false"
+          teamMemberId:
+            type: value
+            value: ""
+          userType:
+            type: value
+            value: ""
+        name: List Import Folder
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ""
+        inputs:
+          items:
+            type: reference
+            value: listImportFolder.results.result.entries
+        name: Loop Over Files
+        steps:
+          - action:
+              key: downloadFile
+              component:
+                isPublic: true
+                key: dropbox
+                version: LATEST
+            description: ""
+            inputs:
+              debug:
+                type: value
+                value: "false"
+              download_as_zip:
+                type: value
+                value: "false"
+              dropboxConnection:
+                type: configVar
+                value: Dropbox Connection
+              path:
+                type: reference
+                value: loopOverFiles.currentItem.path_lower
+            name: Download File
+          - action:
+              key: uploadFile
+              component:
+                isPublic: true
+                key: openai
+                version: LATEST
+            description: ""
+            inputs:
+              connection:
+                type: configVar
+                value: OpenAI Connection
+              file:
+                type: reference
+                value: downloadFile.results.data
+              filename:
+                type: reference
+                value: loopOverFiles.currentItem.name
+              purpose:
+                type: value
+                value: assistants
+              timeout:
+                type: value
+                value: "10000"
+            name: Upload File
+          - action:
+              key: classifyAndBranch
+              component:
+                isPublic: true
+                key: openai
+                version: LATEST
+            branches:
+              - name: Needs Processing
+                steps:
+                  - action:
+                      key: createAgent
+                      component:
+                        isPublic: true
+                        key: openai
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      handoffDescription:
+                        type: value
+                        value: ""
+                      instructions:
+                        type: value
+                        value: >-
+                          You are an expert at analyzing PDFs and extracting
+                          receipt and invoice information.
+                      mcpServers:
+                        type: complex
+                        value: []
+                      modelName:
+                        type: value
+                        value: gpt-5-mini-2025-08-07
+                      name:
+                        type: value
+                        value: PDF Analysis Expert
+                      outputSchema:
+                        type: value
+                        value: |-
+                          {
+                              "$schema": "http://json-schema.org/draft-07/schema#",
+                              "type": "object",
+                              "title": "Receipt",
+                              "required": ["receiptId", "date", "items", "subtotal",
+                            "total"],
+                              "properties": {
+                                "receiptId": {
+                                  "type": "string",
+                                  "description": "Unique identifier for the receipt"
+                                },
+                                "date": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "description": "Date and time of the transaction"
+                                },
+                                "store": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": { "type": "string" },
+                                    "address": { "type": "string" },
+                                    "phone": { "type": "string" }
+                                  }
+                                },
+                                "items": {
+                                  "type": "array",
+                                  "minItems": 1,
+                                  "items": {
+                                    "type": "object",
+                                    "required": ["name", "quantity", "price"],
+                                    "properties": {
+                                      "name": { "type": "string" },
+                                      "quantity": { "type": "number", "minimum": 1 },
+                                      "price": { "type": "number", "minimum": 0 }
+                                    }
+                                  }
+                                },
+                                "subtotal": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "tax": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "total": {
+                                  "type": "number",
+                                  "minimum": 0
+                                },
+                                "paymentMethod": {
+                                  "type": "string",
+                                  "enum": ["cash", "credit", "debit", "other"]
+                                }
+                              }
+                            }
+                      outputSchemaName:
+                        type: value
+                        value: output
+                      outputSchemaStrict:
+                        type: value
+                        value: "false"
+                      tools:
+                        type: complex
+                        value: []
+                    name: "Agent: Create PDF Analysis Expert"
+                  - action:
+                      key: runAgent
+                      component:
+                        isPublic: true
+                        key: openai
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      agentConfig:
+                        type: reference
+                        value: agentCreatePdfAnalysisExpert.results
+                      fileIds:
+                        type: complex
+                        value:
+                          - type: reference
+                            value: uploadFile.results.id
+                      handoffs:
+                        type: complex
+                        value: []
+                      history:
+                        type: value
+                        value: ""
+                      maxTurns:
+                        type: value
+                        value: "10"
+                      openaiConnection:
+                        type: configVar
+                        value: OpenAI Connection
+                      previousResponseId:
+                        type: value
+                        value: ""
+                      userInput:
+                        type: value
+                        value: Analyze this PDF for receipt information.
+                    name: "Agent: Run Data Extraction on PDF"
+              - name: Else
+                steps: []
+            description: ""
+            inputs:
+              agentMcpServers:
+                type: complex
+                value: []
+              agentTools:
+                type: complex
+                value: []
+              branches:
+                type: complex
+                value:
+                  - name: Needs Processing
+                    type: value
+                    value: The analyzed file is an invoice or receipt.
+              classificationInstructions:
+                type: value
+                value: >-
+                  Analyze the provided file. Determine if it is an invoice or
+                  receipt that should be processed.
+
+
+                  If you are unable to determine it, return the "Else" branch.
+
+                  Always return the required output schema.
+              fileIds:
+                type: complex
+                value:
+                  - type: reference
+                    value: uploadFile.results.id
+              inputText:
+                type: template
+                value: Analyze this file
+              model:
+                type: value
+                value: gpt-5-2025-08-07
+              openaiConnection:
+                type: configVar
+                value: OpenAI Connection
+            name: "Agent: Classify and Branch"
+name: Dropbox
+requiredConfigVars:
+  - connection:
+      key: oauth
+      component:
+        isPublic: true
+        key: dropbox
+        version: LATEST
+    dataType: connection
+    inputs:
+      clientId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: q8nuxj1yacwaf97
+      clientSecret:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: odcten9k5038673
+    key: Dropbox Connection
+    meta:
+      visibleToCustomerDeployer: true
+      visibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataSource:
+      key: listFolders
+      component:
+        isPublic: true
+        key: dropbox
+        version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    description: Folder to check for files to import
+    inputs:
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Dropbox Connection
+      cursor:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      entryFilter:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: all
+      limit:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      path:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: /
+      recursive:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "false"
+      teamMemberId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      userType:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+    key: Import Folder
+    orgOnly: false
+  - connection:
+      key: openAiApiKey
+      component:
+        isPublic: true
+        key: openai
+        version: LATEST
+    dataType: connection
+    inputs:
+      apiKey:
+        type: value
+        value: ""
+      organization:
+        type: value
+        value: ""
+    key: OpenAI Connection
+    meta:
+      isVisibleToCustomerDeployer: true
+      isVisibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
