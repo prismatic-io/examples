@@ -1,0 +1,157 @@
+{
+    "service": "inventory-management",
+    "environment": "production",
+    "host": "inv-prod-server-03",
+    "logs": [
+        {
+            "timestamp": "2025-08-20T09:15:23.456Z",
+            "level": "INFO",
+            "logger": "InventoryService",
+            "message": "Starting inventory management service v3.7.2"
+        },
+        {
+            "timestamp": "2025-08-20T09:15:23.789Z",
+            "level": "INFO",
+            "logger": "DatabaseConnection",
+            "message": "Connected to MongoDB cluster 'prod-cluster-01' at mongodb://10.2.4.11:27017"
+        },
+        {
+            "timestamp": "2025-08-20T09:15:24.123Z",
+            "level": "INFO",
+            "logger": "MessageQueue",
+            "message": "Connected to RabbitMQ broker at amqp://mq.internal.corp:5672"
+        },
+        {
+            "timestamp": "2025-08-20T09:15:24.456Z",
+            "level": "INFO",
+            "logger": "WarehouseAPI",
+            "message": "Initializing connection to WarehouseSync API v2.1"
+        },
+        {
+            "timestamp": "2025-08-20T09:15:24.678Z",
+            "level": "INFO",
+            "logger": "CacheManager",
+            "message": "Redis cache initialized at redis://cache.internal.corp:6379"
+        },
+        {
+            "timestamp": "2025-08-20T09:15:25.234Z",
+            "level": "INFO",
+            "logger": "InventoryService",
+            "message": "Service ready on port 3000"
+        },
+        {
+            "timestamp": "2025-08-20T09:15:45.567Z",
+            "level": "INFO",
+            "logger": "InventoryController",
+            "message": "Received stock update request for SKU: PROD-78234-XL",
+            "context": {
+                "sku": "PROD-78234-XL",
+                "request_id": "req-8f9d3a2b"
+            }
+        },
+        {
+            "timestamp": "2025-08-20T09:15:45.678Z",
+            "level": "INFO",
+            "logger": "InventoryValidator",
+            "message": "Validating stock adjustment: -45 units",
+            "context": {
+                "adjustment": -45,
+                "sku": "PROD-78234-XL"
+            }
+        },
+        {
+            "timestamp": "2025-08-20T09:15:45.789Z",
+            "level": "INFO",
+            "logger": "WarehouseAPI",
+            "message": "Fetching current stock levels from warehouse"
+        },
+        {
+            "timestamp": "2025-08-20T09:15:46.234Z",
+            "level": "ERROR",
+            "logger": "InventoryUpdater",
+            "message": "Failed to update inventory for warehouse_id: WH-EAST-001",
+            "context": {
+                "warehouse_id": "WH-EAST-001",
+                "sku": "PROD-78234-XL"
+            }
+        },
+        {
+            "timestamp": "2025-08-20T09:15:46.235Z",
+            "level": "ERROR",
+            "logger": "InventoryUpdater",
+            "message": "Critical error in inventory synchronization",
+            "exception": {
+                "type": "com.inventory.exception.StockSyncException",
+                "message": "Unable to reconcile stock levels with warehouse",
+                "stackTrace": [
+                    "com.inventory.sync.WarehouseConnector.fetchRealTimeStock(WarehouseConnector.java:234)",
+                    "com.inventory.service.InventoryUpdater.synchronizeStock(InventoryUpdater.java:156)",
+                    "com.inventory.service.InventoryService.updateStockLevel(InventoryService.java:89)",
+                    "com.inventory.controller.InventoryController.processStockUpdate(InventoryController.java:445)",
+                    "sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+                    "sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)",
+                    "sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+                    "java.lang.reflect.Method.invoke(Method.java:498)",
+                    "org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:190)",
+                    "org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:138)"
+                ],
+                "causedBy": {
+                    "type": "java.net.SocketTimeoutException",
+                    "message": "Read timed out",
+                    "stackTrace": [
+                        "java.net.SocketInputStream.socketRead0(Native Method)",
+                        "java.net.SocketInputStream.socketRead(SocketInputStream.java:116)",
+                        "java.net.SocketInputStream.read(SocketInputStream.java:171)",
+                        "java.net.SocketInputStream.read(SocketInputStream.java:141)",
+                        "org.apache.http.impl.io.SessionInputBufferImpl.streamRead(SessionInputBufferImpl.java:137)",
+                        "org.apache.http.impl.io.SessionInputBufferImpl.fillBuffer(SessionInputBufferImpl.java:153)",
+                        "org.apache.http.impl.conn.DefaultHttpResponseParser.parseHead(DefaultHttpResponseParser.java:141)",
+                        "org.apache.http.impl.conn.DefaultHttpResponseParser.parseHead(DefaultHttpResponseParser.java:56)",
+                        "org.apache.http.impl.io.AbstractMessageParser.parse(AbstractMessageParser.java:259)",
+                        "com.inventory.sync.WarehouseConnector.executeRequest(WarehouseConnector.java:189)"
+                    ]
+                }
+            }
+        },
+        {
+            "timestamp": "2025-08-20T09:15:46.456Z",
+            "level": "WARN",
+            "logger": "InventoryController",
+            "message": "Attempting fallback to cached data for SKU: PROD-78234-XL",
+            "context": {
+                "sku": "PROD-78234-XL",
+                "fallback_strategy": "cache"
+            }
+        },
+        {
+            "timestamp": "2025-08-20T09:15:46.567Z",
+            "level": "ERROR",
+            "logger": "CacheManager",
+            "message": "Cache miss for key: inventory:PROD-78234-XL:WH-EAST-001",
+            "context": {
+                "cache_key": "inventory:PROD-78234-XL:WH-EAST-001"
+            }
+        },
+        {
+            "timestamp": "2025-08-20T09:15:46.678Z",
+            "level": "CRITICAL",
+            "logger": "InventoryService",
+            "message": "Unable to complete stock update - manual intervention required",
+            "context": {
+                "warehouse_id": "WH-EAST-001",
+                "sku": "PROD-78234-XL",
+                "attempted_adjustment": -45
+            }
+        },
+        {
+            "timestamp": "2025-08-20T09:15:46.789Z",
+            "level": "INFO",
+            "logger": "AlertManager",
+            "message": "Sending critical alert to operations team",
+            "context": {
+                "alert_type": "critical",
+                "destination": "ops-team"
+            }
+        }
+    ]
+}

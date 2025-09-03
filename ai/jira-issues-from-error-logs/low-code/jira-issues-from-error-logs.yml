@@ -1,0 +1,607 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: OpenAI Connection
+      - type: configVar
+        value: Jira Connection
+    name: Configuration
+  - elements:
+      - type: configVar
+        value: Project
+    name: Project Settings
+    tagline: ""
+    userLevelConfigured: false
+  - elements:
+      - type: configVar
+        value: Issue Type
+    name: Issue Settings
+    tagline: ""
+    userLevelConfigured: false
+defaultInstanceProfile: Default Instance Profile
+definitionVersion: 7
+description: ""
+documentation: |-
+  Trigger Payload:
+
+
+  ```javascript
+  {
+    "service": "inventory-management",
+    "environment": "production",
+    "host": "inv-prod-server-03",
+    "logs": [
+      {
+        "timestamp": "2025-08-20T09:15:23.456Z",
+        "level": "INFO",
+        "logger": "InventoryService",
+        "message": "Starting inventory management service v3.7.2"
+      },
+      {
+        "timestamp": "2025-08-20T09:15:23.789Z",
+        "level": "INFO",
+        "logger": "DatabaseConnection",
+        "message": "Connected to MongoDB cluster 'prod-cluster-01' at mongodb://10.2.4.11:27017"
+      },
+      {
+        "timestamp": "2025-08-20T09:15:24.123Z",
+        "level": "INFO",
+        "logger": "MessageQueue",
+        "message": "Connected to RabbitMQ broker at amqp://mq.internal.corp:5672"
+      },
+      {
+        "timestamp": "2025-08-20T09:15:24.456Z",
+        "level": "INFO",
+        "logger": "WarehouseAPI",
+        "message": "Initializing connection to WarehouseSync API v2.1"
+      },
+      {
+        "timestamp": "2025-08-20T09:15:24.678Z",
+        "level": "INFO",
+        "logger": "CacheManager",
+        "message": "Redis cache initialized at redis://cache.internal.corp:6379"
+      },
+      {
+        "timestamp": "2025-08-20T09:15:25.234Z",
+        "level": "INFO",
+        "logger": "InventoryService",
+        "message": "Service ready on port 3000"
+      },
+      {
+        "timestamp": "2025-08-20T09:15:45.567Z",
+        "level": "INFO",
+        "logger": "InventoryController",
+        "message": "Received stock update request for SKU: PROD-78234-XL",
+        "context": {
+          "sku": "PROD-78234-XL",
+          "request_id": "req-8f9d3a2b"
+        }
+      },
+      {
+        "timestamp": "2025-08-20T09:15:45.678Z",
+        "level": "INFO",
+        "logger": "InventoryValidator",
+        "message": "Validating stock adjustment: -45 units",
+        "context": {
+          "adjustment": -45,
+          "sku": "PROD-78234-XL"
+        }
+      },
+      {
+        "timestamp": "2025-08-20T09:15:45.789Z",
+        "level": "INFO",
+        "logger": "WarehouseAPI",
+        "message": "Fetching current stock levels from warehouse"
+      },
+      {
+        "timestamp": "2025-08-20T09:15:46.234Z",
+        "level": "ERROR",
+        "logger": "InventoryUpdater",
+        "message": "Failed to update inventory for warehouse_id: WH-EAST-001",
+        "context": {
+          "warehouse_id": "WH-EAST-001",
+          "sku": "PROD-78234-XL"
+        }
+      },
+      {
+        "timestamp": "2025-08-20T09:15:46.235Z",
+        "level": "ERROR",
+        "logger": "InventoryUpdater",
+        "message": "Critical error in inventory synchronization",
+        "exception": {
+          "type": "com.inventory.exception.StockSyncException",
+          "message": "Unable to reconcile stock levels with warehouse",
+          "stackTrace": [
+            "com.inventory.sync.WarehouseConnector.fetchRealTimeStock(WarehouseConnector.java:234)",
+            "com.inventory.service.InventoryUpdater.synchronizeStock(InventoryUpdater.java:156)",
+            "com.inventory.service.InventoryService.updateStockLevel(InventoryService.java:89)",
+            "com.inventory.controller.InventoryController.processStockUpdate(InventoryController.java:445)",
+            "sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+            "sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)",
+            "sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+            "java.lang.reflect.Method.invoke(Method.java:498)",
+            "org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:190)",
+            "org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:138)"
+          ],
+          "causedBy": {
+            "type": "java.net.SocketTimeoutException",
+            "message": "Read timed out",
+            "stackTrace": [
+              "java.net.SocketInputStream.socketRead0(Native Method)",
+              "java.net.SocketInputStream.socketRead(SocketInputStream.java:116)",
+              "java.net.SocketInputStream.read(SocketInputStream.java:171)",
+              "java.net.SocketInputStream.read(SocketInputStream.java:141)",
+              "org.apache.http.impl.io.SessionInputBufferImpl.streamRead(SessionInputBufferImpl.java:137)",
+              "org.apache.http.impl.io.SessionInputBufferImpl.fillBuffer(SessionInputBufferImpl.java:153)",
+              "org.apache.http.impl.conn.DefaultHttpResponseParser.parseHead(DefaultHttpResponseParser.java:141)",
+              "org.apache.http.impl.conn.DefaultHttpResponseParser.parseHead(DefaultHttpResponseParser.java:56)",
+              "org.apache.http.impl.io.AbstractMessageParser.parse(AbstractMessageParser.java:259)",
+              "com.inventory.sync.WarehouseConnector.executeRequest(WarehouseConnector.java:189)"
+            ]
+          }
+        }
+      },
+      {
+        "timestamp": "2025-08-20T09:15:46.456Z",
+        "level": "WARN",
+        "logger": "InventoryController",
+        "message": "Attempting fallback to cached data for SKU: PROD-78234-XL",
+        "context": {
+          "sku": "PROD-78234-XL",
+          "fallback_strategy": "cache"
+        }
+      },
+      {
+        "timestamp": "2025-08-20T09:15:46.567Z",
+        "level": "ERROR",
+        "logger": "CacheManager",
+        "message": "Cache miss for key: inventory:PROD-78234-XL:WH-EAST-001",
+        "context": {
+          "cache_key": "inventory:PROD-78234-XL:WH-EAST-001"
+        }
+      },
+      {
+        "timestamp": "2025-08-20T09:15:46.678Z",
+        "level": "CRITICAL",
+        "logger": "InventoryService",
+        "message": "Unable to complete stock update - manual intervention required",
+        "context": {
+          "warehouse_id": "WH-EAST-001",
+          "sku": "PROD-78234-XL",
+          "attempted_adjustment": -45
+        }
+      },
+      {
+        "timestamp": "2025-08-20T09:15:46.789Z",
+        "level": "INFO",
+        "logger": "AlertManager",
+        "message": "Sending critical alert to operations team",
+        "context": {
+          "alert_type": "critical",
+          "destination": "ops-team"
+        }
+      }
+    ]
+  }
+  ```
+endpointType: flow_specific
+flows:
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Create Jira Issue for Error Logs
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: Error Log Trigger
+      - action:
+          key: createAgent
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs:
+          handoffDescription:
+            type: value
+            value: ""
+          instructions:
+            type: value
+            value: >-
+              You are a log analyzer that creates Jira issues from system
+              errors.
+
+
+              ## Your Task
+
+              1. Identify the main error in the logs
+
+              2. Create a Jira issue with essential information
+
+              3. Focus only on ERROR and CRITICAL level logs
+
+
+              ## Output Format
+
+              Return a JSON object with these fields:
+
+              ```json
+
+              {
+                "title": "Brief description of the error (max 100 chars)",
+                "description": "What happened, when it happened, and the error message/stack trace",
+                "priority": "High|Medium|Low",
+                "issue_type": "Bug",
+                "severity": 1-5 (1=minimal impact, 5=system critical),
+                "confidence": 0.0-1.0 (confidence this needs a Jira ticket)
+              }
+
+              ```
+
+
+              ## Priority Rules
+
+              - CRITICAL logs or customer-facing errors → High
+
+              - ERROR logs → Medium
+
+              - WARN logs → Low
+
+
+              ## Severity Scale
+
+              1. **Minimal** - Cosmetic issue, no functional impact
+
+              2. **Minor** - Small feature affected, easy workaround exists
+
+              3. **Moderate** - Feature degraded, some users impacted
+
+              4. **Major** - Feature broken, many users affected
+
+              5. **Critical** - System down, data loss, or security issue
+
+
+              ## Confidence Score
+
+              Rate 0.0 to 1.0 based on:
+
+              - Clear error with stack trace → 0.8-1.0
+
+              - Timeout or connection issue → 0.6-0.8
+
+              - Warning that might be transient → 0.3-0.5
+
+              - Unclear if action needed → 0.0-0.3
+
+
+              ## Description Format
+
+              Keep it simple:
+
+              - What broke
+
+              - When it happened
+
+              - The error message
+
+              - Key stack trace lines (if present)
+
+
+              That's it. Keep the title clear, include the essential details,
+              and make it actionable.
+          mcpServers:
+            type: complex
+            value: []
+          modelName:
+            type: value
+            value: gpt-5-mini-2025-08-07
+          name:
+            type: value
+            value: Log Analysis Expert
+          outputSchema:
+            type: value
+            value: |-
+              {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "title": "JiraIssueOutput",
+                "type": "object",
+                "required": [
+                  "title",
+                  "description",
+                  "priority",
+                  "issue_type",
+                  "severity",
+                  "confidence"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": "Brief description of the error"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Detailed description including what happened, when, and error details"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": ["High", "Medium", "Low"],
+                    "description": "Issue priority level"
+                  },
+                  "issue_type": {
+                    "type": "string",
+                    "enum": ["Bug"],
+                    "description": "Type of Jira issue. Always capitalized"
+                  },
+                  "severity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "Impact severity (1=minimal, 5=critical)"
+                  },
+                  "confidence": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "description": "Confidence score that this needs a Jira ticket"
+                  }
+                },
+                "additionalProperties": false
+              }
+          outputSchemaName:
+            type: value
+            value: output
+          outputSchemaStrict:
+            type: value
+            value: "false"
+          tools:
+            type: complex
+            value: []
+        name: Create Log Analyzer
+      - action:
+          key: runAgent
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs:
+          agentConfig:
+            type: reference
+            value: createLogAnalyzer.results
+          fileIds:
+            type: complex
+            value: []
+          handoffs:
+            type: complex
+            value: []
+          history:
+            type: value
+            value: ""
+          maxTurns:
+            type: value
+            value: "10"
+          openaiConnection:
+            type: configVar
+            value: OpenAI Connection
+          previousResponseId:
+            type: value
+            value: ""
+          userInput:
+            type: template
+            value: "Analyze the following logs: {{$errorLogTrigger.results.body.data}}"
+        name: Extract Jira Issue Inputs
+      - action:
+          key: createIssue
+          component:
+            isPublic: true
+            key: atlassian-jira
+            version: LATEST
+        description: ""
+        inputs:
+          ADFdescription:
+            type: value
+            value: ""
+          assignee:
+            type: value
+            value: ""
+          description:
+            type: reference
+            value: extractJiraIssueInputs.results.finalOutput.description
+          dueDate:
+            type: value
+            value: ""
+          dynamicValues:
+            type: value
+            value: ""
+          fieldValues:
+            type: complex
+            value: []
+          fixVersions:
+            type: value
+            value: ""
+          issueType:
+            type: value
+            value: ""
+          issueTypeId:
+            type: configVar
+            value: Issue Type
+          jiraConnection:
+            type: configVar
+            value: Jira Connection
+          labels:
+            type: complex
+            value: []
+          priority:
+            type: value
+            value: ""
+          projectId:
+            type: configVar
+            value: Project
+          reporter:
+            type: value
+            value: ""
+          summary:
+            type: reference
+            value: extractJiraIssueInputs.results.finalOutput.title
+          versions:
+            type: value
+            value: ""
+        name: Create Issue
+name: Jira
+requiredConfigVars:
+  - connection:
+      key: openAiApiKey
+      component:
+        isPublic: true
+        key: openai
+        version: LATEST
+    dataType: connection
+    inputs:
+      apiKey:
+        type: value
+        value: ""
+      organization:
+        type: value
+        value: ""
+    key: OpenAI Connection
+    meta:
+      isVisibleToCustomerDeployer: true
+      isVisibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: atlassian-jira
+        version: LATEST
+    dataType: connection
+    inputs:
+      apiSiteOverride:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      authorizeUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: >-
+          https://auth.atlassian.com/authorize?audience=api.atlassian.com&prompt=consent
+      clientId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      scopes:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: >-
+          write:jira-work manage:jira-project read:me read:account
+          read:jira-work
+      tokenUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://auth.atlassian.com/oauth/token"
+      version:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "3"
+    key: Jira Connection
+    meta:
+      visibleToCustomerDeployer: true
+      visibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataSource:
+      key: selectProject
+      component:
+        isPublic: true
+        key: atlassian-jira
+        version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    inputs:
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Jira Connection
+    key: Project
+    orgOnly: false
+  - dataSource:
+      key: selectIssueType
+      component:
+        isPublic: true
+        key: atlassian-jira
+        version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    inputs:
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Jira Connection
+      projectIds:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Project
+      returnIssueTypeName:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "false"
+    key: Issue Type
+    orgOnly: false
