@@ -5,7 +5,7 @@ import { z } from "zod";
  * Test tool that requires human approval before execution
  */
 export const deployTool = tool({
-  name: "deploy_to_production",
+  name: "deploy_to_environment",
   description: "Deploy code to production environment. Requires approval.",
   parameters: z.object({
     version: z.string().describe("Version to deploy (e.g., v1.2.3)"),

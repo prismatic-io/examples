@@ -7,7 +7,7 @@ export { configPages } from "./configPages";
 export { componentRegistry } from "./componentRegistry";
 
 const slackAgent = integration({
-  name: "Slack Agent",
+  name: "Simplified Slack Agent",
   description: "",
   iconPath: "icon.png",
   flows,

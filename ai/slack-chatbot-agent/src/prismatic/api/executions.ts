@@ -5,7 +5,6 @@ import {
   StepResult,
 } from "../types";
 import { decode } from "@msgpack/msgpack";
-import fetch from "node-fetch";
 
 /**
  * Get execution result details

@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 /**
  * Execute a GraphQL query against the Prismatic API
  * @param apiUrl - The API endpoint URL
@@ -29,12 +27,15 @@ export async function executeGraphQLQuery(
   });
 
   if (!response.ok) {
-    const result = await response.json();
+    const result = (await response.json()) as { errors: string[] };
     const gqlErrors = result.errors;
     throw new Error(`GraphQL request failed: ${JSON.stringify(gqlErrors)}`);
   }
 
-  const result = await response.json();
+  const result = (await response.json()) as {
+    data: unknown;
+    errors?: string[];
+  };
 
   if (result.errors) {
     throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);

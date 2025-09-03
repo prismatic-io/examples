@@ -1,10 +1,23 @@
-import { flow, util } from "@prismatic-io/spectral";
+import { CustomerAttributes, flow, util } from "@prismatic-io/spectral";
 import { Assistant } from "@slack/bolt";
+import {
+  Agent,
+  run,
+  RunState,
+  setDefaultOpenAIKey,
+  user,
+  Tool,
+} from "@openai/agents";
 import { ack } from "../slack/acknowledge";
 import { App, ActionHandlers } from "../slack/app";
-import { findPreviousExecutionId } from "../slack/util";
-import { setupAgent } from "../agents/setup";
 import { createApprovalBlocks } from "../slack/blocks/approvalBlocks";
+import { createOrganizationClient, getAgentFlows } from "../prismatic";
+import {
+  createFlowTools,
+  getApprovalTools,
+} from "../agents/tools/prismaticTools";
+import { createHostedTools } from "../agents/tools/openaiHostedTools";
+import { ConversationState } from "../types";
 
 export const eventHandler = flow({
   name: "Slack Message Handler",
@@ -35,7 +48,7 @@ export const eventHandler = flow({
     });
   },
   onExecution: async (context, params) => {
-    const { configVars, customer, integration } = context;
+    const { configVars, customer, integration, instanceState } = context;
 
     // Check if this is a retry and skip processing
     if (context.executionState.isRetry) {
@@ -43,27 +56,33 @@ export const eventHandler = flow({
       return {
         data: {
           result: "Skipped - retry event",
-          agentState: null,
         },
       };
     }
 
     const connection = configVars["Slack Connection"];
-    const openaiConnection = util.types.toString(
+    const openaiKey = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
     const prismaticRefreshToken = util.types.toString(
       configVars.PRISMATIC_REFRESH_TOKEN,
     );
 
-    const agentRunner = await setupAgent({
-      openAIKey: openaiConnection,
-      systemPrompt: configVars.SYSTEM_PROMPT,
-      customer:
-        customer.externalId !== "testCustomerExternalId" ? customer : undefined,
+    // Set OpenAI API key globally
+    setDefaultOpenAIKey(openaiKey);
+
+    // Build tools directly
+    const tools = await buildTools(
+      customer.externalId !== "testCustomerExternalId" ? customer : undefined,
       prismaticRefreshToken,
-      includeApprovalTools: true, // Enable approval tools for testing
-      excludeIntegrationId: integration.id,
+      integration.id,
+    );
+
+    // Create agent directly - no abstractions
+    const agent = new Agent({
+      name: "Slack Assistant",
+      instructions: configVars.SYSTEM_PROMPT,
+      tools,
     });
 
     const executionId = params.onTrigger.results.executionId;
@@ -87,39 +106,57 @@ export const eventHandler = flow({
         const userInput = message.text;
 
         try {
-          const previousExecutionId = await findPreviousExecutionId(
-            client,
-            message.channel,
-            message.thread_ts,
-          );
+          // Get stored state for this conversation
+          const convState = (instanceState[conversationId] ||
+            {}) as ConversationState;
+          const lastResponseId = convState.lastResponseId;
 
-          const result = await agentRunner.run(
-            userInput,
-            conversationId,
-            previousExecutionId,
-          );
+          // Run the agent with the message
+          const result = await run(agent, [user(userInput)], {
+            previousResponseId: lastResponseId,
+          });
 
-          if (result.needsApproval) {
-            const state = agentRunner.storage.getLastSavedState();
-            if (!state?.pendingApproval) {
-              throw new Error("No agent state found for approval handling.");
-            }
+          // Handle interruptions
+          if (result.interruptions && result.interruptions.length > 0) {
+            const firstInterruption = result.interruptions[0];
 
+            // Store state in instanceState
+            instanceState[conversationId] = {
+              state: result.state.toString(),
+              lastResponseId: result.lastResponseId,
+              pendingInterruption: {
+                functionId: firstInterruption.rawItem.id!,
+                name: firstInterruption.rawItem.name,
+                arguments: firstInterruption.rawItem.arguments,
+              },
+            } as ConversationState;
+
+            // Post approval block
             await client.chat.postMessage({
               channel: message.channel,
               thread_ts: message.thread_ts,
               blocks: createApprovalBlocks(
-                state.pendingApproval.toolName,
-                state.pendingApproval.arguments,
+                firstInterruption.rawItem.name,
+                firstInterruption.rawItem.arguments,
                 executionId,
               ),
-              text: `Approval required for tool: ${state.pendingApproval.toolName}`,
+              text: `Approval required for tool: ${firstInterruption.rawItem.name}`,
+              metadata: {
+                event_type: "tool_approval",
+                event_payload: { conversationId },
+              },
             });
           } else {
+            // Store lastResponseId for next message
+            instanceState[conversationId] = {
+              lastResponseId: result.lastResponseId,
+            } as ConversationState;
+
+            // Post response
             await client.chat.postMessage({
               channel: message.channel,
               thread_ts: message.thread_ts,
-              text: result?.finalOutput || "Something went wrong",
+              text: result.finalOutput || "I couldn't generate a response.",
               metadata: {
                 event_type: "execution_id",
                 event_payload: { execution_id: executionId },
@@ -150,41 +187,83 @@ export const eventHandler = flow({
         client,
         updateMessage,
       }) => {
-        await updateMessage(
-          approved
-            ? `✅ Tool execution approved by <@${userId}>`
-            : `❌ Tool execution denied by <@${userId}>`,
-        );
-
         try {
-          console.log(
-            `[Action Handler] Resuming agent with ${approved ? "approval" : "denial"} for execution ${previousExecutionId}`,
-          );
-          const result = await agentRunner.resume(
-            conversationId,
-            previousExecutionId,
-            { approved },
+          // Get stored state for this conversation
+          const convState = instanceState[conversationId] as ConversationState;
+          if (!convState?.state) {
+            await updateMessage(
+              "❌ Approval state expired. Please start over.",
+            );
+            return;
+          }
+
+          // Deserialize and apply decision
+          let agentState = await RunState.fromString(agent, convState.state);
+          const interrupts = agentState.getInterruptions();
+          const interrupt = interrupts[0];
+
+          if (!interrupt) {
+            await updateMessage("❌ No pending approval found.");
+            return;
+          }
+
+          if (approved) {
+            agentState.approve(interrupt);
+          } else {
+            agentState.reject(interrupt);
+          }
+
+          // Update message to show decision
+          await updateMessage(
+            approved
+              ? `✅ Tool execution approved by <@${userId}>`
+              : `❌ Tool execution denied by <@${userId}>`,
           );
 
-          if (result.needsApproval) {
-            const state = agentRunner.storage.getLastSavedState();
-            if (state?.pendingApproval) {
-              await client.chat.postMessage({
-                channel: channelId,
-                thread_ts: conversationId,
-                blocks: createApprovalBlocks(
-                  state.pendingApproval.toolName,
-                  state.pendingApproval.arguments,
-                  executionId,
-                ),
-                text: `Another approval required: ${state.pendingApproval.toolName}`,
-              });
-            }
-          } else {
+          // Continue execution
+          const result = await run(agent, agentState);
+
+          // Handle next interruption or final response
+          if (result.interruptions && result.interruptions.length > 0) {
+            const nextInterruption = result.interruptions[0];
+
+            // Store next state
+            instanceState[conversationId] = {
+              state: result.state.toString(),
+              lastResponseId: result.lastResponseId,
+              pendingInterruption: {
+                functionId: nextInterruption.rawItem.id!,
+                name: nextInterruption.rawItem.name,
+                arguments: nextInterruption.rawItem.arguments,
+              },
+            } as ConversationState;
+
+            // Post next approval
             await client.chat.postMessage({
               channel: channelId,
               thread_ts: conversationId,
-              text: result?.finalOutput || "Something went wrong",
+              blocks: createApprovalBlocks(
+                nextInterruption.rawItem.name,
+                nextInterruption.rawItem.arguments,
+                executionId,
+              ),
+              text: `Another approval required: ${nextInterruption.rawItem.name}`,
+              metadata: {
+                event_type: "tool_approval",
+                event_payload: { conversationId },
+              },
+            });
+          } else {
+            // Store only lastResponseId for future messages
+            instanceState[conversationId] = {
+              lastResponseId: result.lastResponseId,
+            } as ConversationState;
+
+            // Post final response
+            await client.chat.postMessage({
+              channel: channelId,
+              thread_ts: conversationId,
+              text: result.finalOutput || "Task completed.",
               metadata: {
                 event_type: "execution_id",
                 event_payload: {
@@ -196,7 +275,7 @@ export const eventHandler = flow({
         } catch (error) {
           console.error("[Action Handler] Error:", error);
           await client.chat.postMessage({
-            channel: conversationId,
+            channel: channelId,
             thread_ts: conversationId,
             text: `❌ Error processing approval: ${(error as Error).message}`,
           });
@@ -210,10 +289,43 @@ export const eventHandler = flow({
 
     return {
       data: {
-        agentState: agentRunner.storage.getLastSavedState(),
+        result: "Event processed successfully",
       },
     };
   },
 });
+
+/**
+ * Build tools array based on configuration
+ */
+async function buildTools(
+  customer?: CustomerAttributes,
+  prismaticRefreshToken?: string,
+  excludeIntegrationId?: string,
+): Promise<Tool[]> {
+  let tools: Tool[] = [];
+
+  // Add Prismatic tools if configured
+  if (customer?.externalId && prismaticRefreshToken) {
+    console.log(
+      "[Tools] Setting up Prismatic tools for Customer",
+      customer.externalId,
+    );
+
+    const orgClient = await createOrganizationClient(prismaticRefreshToken);
+    const flows = await getAgentFlows(
+      orgClient,
+      customer.externalId,
+      excludeIntegrationId,
+    );
+    tools = createFlowTools(flows);
+  }
+
+  // Add hosted tools
+  tools = tools.concat(createHostedTools());
+  tools = tools.concat(getApprovalTools());
+
+  return tools;
+}
 
 export default eventHandler;
