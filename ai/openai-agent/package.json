@@ -10,6 +10,7 @@
     "format": "prettier . --write",
     "chat": "tsx scripts/chat.ts",
     "chat:api": "tsx scripts/chat-api.ts",
+    "chat:approvals": "tsx scripts/chat-approvals.ts",
     "chat:integrations": "tsx scripts/chat-integrations.ts",
     "chat:routing": "tsx scripts/chat-routing.ts",
     "chat:tools": "tsx scripts/chat-tools.ts",
@@ -23,7 +24,7 @@
     ]
   },
   "dependencies": {
-    "@openai/agents": "^0.0.12",
+    "@openai/agents": "^0.0.17",
     "@prismatic-io/spectral": "10.5.13",
     "bufferutil": "^4.0.9",
     "jsonwebtoken": "^9.0.2",
@@ -35,6 +36,7 @@
   "devDependencies": {
     "@component-manifests/slack": "*",
     "@prismatic-io/eslint-config-spectral": "2.0.1",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.0",
     "@vitest/ui": "^3.2.4",
     "esbuild": "^0.25.8",

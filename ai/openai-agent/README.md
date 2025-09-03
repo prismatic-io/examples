@@ -1,6 +1,6 @@
 # OpenAI Agent Integration for Prismatic
 
-A reference implementation for building OpenAI agents on Prismatic's Code-Native Integration platform. This repository demonstrates best practices for creating conversational AI integrations with tool usage, approval flows, and agent routing patterns.
+A reference implementation for building OpenAI agents on Prismatic's Code-Native Integration platform. This repository demonstrates best practices for creating conversational AI integrations with tool usage and agent routing patterns.
 
 ## 🚀 Quick Start
 
@@ -23,15 +23,14 @@ npm run import
 
 ## 📚 Overview
 
-This integration provides seven production-ready flows that showcase different OpenAI Agent SDK patterns:
+This integration provides six production-ready flows that showcase different OpenAI Agent SDK patterns:
 
 1. **Basic Chat** - Simple conversational agent
 2. **API Agent** - Wraps your API endpoints as AI tools
-3. **Human Approval** - Human-in-the-loop for sensitive operations
-4. **Agent Routing** - Dynamic routing to specialized agents
-5. **Integrations as Tools** - Use deployed Prismatic integrations as tools
-6. **Agent as Tools** - Compose specialized agents as reusable tools
-7. **Hosted Tools** - OpenAI's built-in web search and code interpreter
+3. **Agent Routing** - Dynamic routing to specialized agents
+4. **Integrations as Tools** - Use deployed Prismatic integrations as tools
+5. **Agent as Tools** - Compose specialized agents as reusable tools
+6. **Hosted Tools** - OpenAI's built-in web search and code interpreter
 
 ## 🎯 Interactive Testing
 
@@ -45,13 +44,13 @@ Test flows locally without deployment:
 # Basic conversational AI
 npm run chat
 
-# API tools with approval flow
+# API tools demonstration
 npm run chat:api
 
 # Agent routing demonstration
 npm run chat:routing
 
-# Test all available scripts
+# Test other available scripts
 npm run chat:tools        # Agent composition
 npm run chat:hosted       # OpenAI hosted tools
 npm run chat:integrations # Prismatic integrations as tools
@@ -88,48 +87,25 @@ npm run chat
 
 ### 2. API Agent (`apiAgent`)
 
-Demonstrates wrapping REST APIs as AI tools. Includes approval flow for write operations.
+Demonstrates wrapping REST APIs as AI tools for data access and manipulation.
 
 **Available tools**:
 
 - `get_current_user_info` - Fetch user details
 - `get_users_posts` - List user posts
 - `get_post` - Get specific post
-- `create_post` ⚠️ - Create post (requires approval)
-- `update_post` ⚠️ - Update post (requires approval)
 - `get_post_comments` - Fetch comments
 
-**Use cases**: API orchestration, data access, CRUD operations
+**Use cases**: API orchestration, data access, read operations
 
 **Test it**:
 
 ```bash
 npm run chat:api
-# Try: "Create a post about AI"
-# The tool will pause for your approval
+# Try: "Show me the latest posts"
 ```
 
-### 3. Human Approval Flow (`humanApprovalFlow`)
-
-Implements human-in-the-loop approval for sensitive operations.
-
-**Key features**:
-
-- Interrupt/resume pattern
-- State serialization
-- Approval UI formatting
-- Conversation continuity
-
-**Use cases**: Financial transactions, data modifications, compliance workflows
-
-**Test it**:
-
-```bash
-npm run chat:approval
-# Try: "Update post 1 with new content"
-```
-
-### 4. Agent Routing (`agentRouting`)
+### 3. Agent Routing (`agentRouting`)
 
 Intelligent routing to specialized agents using handoff patterns.
 
@@ -148,7 +124,7 @@ npm run chat:routing
 # Try: "Where is my order ORD-12345?"
 ```
 
-### 5. Integrations as Tools (`integrationsAsTools`)
+### 4. Integrations as Tools (`integrationsAsTools`)
 
 Uses deployed Prismatic integrations as AI tools. Dynamically loads available integrations for a customer.
 
@@ -161,7 +137,7 @@ npm run chat:integrations
 
 **Use cases**: Customer-specific tools, multi-tenant scenarios, dynamic tool loading
 
-### 6. Agent as Tools (`agentAsTools`)
+### 5. Agent as Tools (`agentAsTools`)
 
 Demonstrates composing specialized agents as reusable tools.
 
@@ -178,7 +154,7 @@ npm run chat:tools
 # Try: "Summarize this text: [paste long text]"
 ```
 
-### 7. Hosted Tools (`hostedTools`)
+### 6. Hosted Tools (`hostedTools`)
 
 Leverages OpenAI's built-in hosted tools.
 
@@ -198,32 +174,27 @@ npm run chat:hosted
 
 ## 🏗️ Architecture
 
-### Standardized Flow Input/Output
+### Flow Input/Output Types
 
-All flows use a standardized format for consistency:
+Flows use simple request/response types:
 
 ```typescript
 // Input
-interface FlowInput {
+interface ChatRequest {
+  message?: string | null;
   conversationId: string;
-  message: string | null;
-  previousExecutionId?: string;
-  approval?: {
-    approved: boolean;
-    feedback?: string;
-  };
+  lastResponseId?: string;
+  interruptions?: Interruption[];
+  state?: string;
 }
 
 // Output
-interface FlowOutput {
-  agentState: {
-    finalOutput?: string;
-    pendingApproval?: {
-      toolName: string;
-      arguments: any;
-    };
-  };
-  executionId: string;
+interface ChatResponse {
+  response?: string;
+  conversationId: string;
+  lastResponseId: string;
+  interruptions?: Interruption[];
+  state?: string;
 }
 ```
 
@@ -257,29 +228,35 @@ runChatLoop({
 export const myFlow = flow({
   name: "My Flow",
   stableKey: "my-flow",
-  onExecution: async ({ configVars, executionId }, params) => {
-    // 1. Parse standardized input
-    const input = parseFlowInput(params.onTrigger.results.body.data);
+  onExecution: async ({ configVars }, params) => {
+    // 1. Set OpenAI key
+    setDefaultOpenAIKey(configVars.OPENAI_API_KEY.fields.apiKey);
 
-    // 2. Setup agent with tools
-    const runner = await setupAgent({
-      systemPrompt: configVars.SYSTEM_PROMPT,
-      openAIKey: configVars.OPENAI_API_KEY,
+    // 2. Create agent directly
+    const agent = new Agent({
+      name: "Assistant",
+      instructions: configVars.SYSTEM_PROMPT,
       tools: [
         /* your tools */
       ],
     });
 
-    // 3. Handle message or approval
-    if (isApprovalInput(input)) {
-      await runner.runWithDecision(/*...*/);
-    } else {
-      await runner.run(/*...*/);
-    }
+    // 3. Get input
+    const { message, conversationId, lastResponseId } = params.onTrigger.results
+      .body.data as ChatRequest;
 
-    // 4. Return standardized output
+    // 4. Run agent
+    const result = await run(agent, [user(message)], {
+      previousResponseId: lastResponseId,
+    });
+
+    // 5. Return response
     return {
-      data: buildFlowOutput(runner.storage.getLastSavedState(), executionId),
+      data: {
+        response: result.finalOutput,
+        lastResponseId: result.lastResponseId,
+        conversationId,
+      },
     };
   },
 });
@@ -294,7 +271,6 @@ openai-agent/
 │   │   └── chat-utils.ts        # Shared chat utilities
 │   ├── chat.ts                  # Basic chat
 │   ├── chat-api.ts              # API tools chat
-│   ├── chat-approval.ts         # Approval flow chat
 │   ├── chat-routing.ts          # Agent routing chat
 │   ├── chat-tools.ts            # Agent as tools chat
 │   ├── chat-hosted.ts           # Hosted tools chat
@@ -303,29 +279,25 @@ openai-agent/
 │   ├── flows/                   # Prismatic flows
 │   │   ├── basicChat.ts
 │   │   ├── apiAgent.ts
-│   │   ├── humanApprovalFlow.ts
 │   │   ├── agentRouting.ts
 │   │   ├── integrationsAsTools.ts
 │   │   ├── agentAsTools.ts
 │   │   ├── hostedTools.ts
 │   │   └── utils/
 │   │       └── flowHelpers.ts   # Flow utilities
-│   ├── agents/                  # Agent configuration
-│   │   ├── setup.ts             # Agent setup utilities
-│   │   ├── state/               # State management
-│   │   ├── types/               # TypeScript types
+│   ├── agents/                  # Agent tools
 │   │   └── tools/               # Tool definitions
 │   │       ├── api.ts           # API tools
 │   │       ├── agents.ts        # Agent tools
-│   │       ├── approvalTool.ts  # Approval handling
-│   │       └── prismaticTools.ts # Prismatic tools
+│   │       ├── hosted.ts        # Hosted tools
+│   │       ├── prismaticHostedTools.ts # Prismatic hosted tools
+│   │       └── prismaticTools.ts # Prismatic integration tools
 │   ├── prismatic/               # Prismatic API client
 │   │   ├── api/                # API functions
 │   │   ├── auth/               # Authentication
 │   │   ├── client/             # Client setup
 │   │   └── types.ts            # Type definitions
-│   ├── types/                   # Shared types
-│   │   └── flow.types.ts       # Flow interfaces
+│   ├── types.ts                 # Core types (ChatRequest, ChatResponse)
 │   └── test/                    # Tests
 ├── .spectral/                   # Prismatic config
 │   └── prism.json              # Integration ID
@@ -381,27 +353,40 @@ npm run chat  # Automatically uses webhook mode
 
 ```typescript
 import { flow } from "@prismatic-io/spectral";
-import { setupAgent } from "../agents/setup";
-import { parseFlowInput, buildFlowOutput } from "./utils/flowHelpers";
+import { Agent, run, setDefaultOpenAIKey, user } from "@openai/agents";
+import { ChatRequest } from "../types";
 
 export const myFlow = flow({
   name: "My Flow",
   stableKey: "my-flow",
-  onExecution: async ({ configVars, executionId }, params) => {
-    const input = parseFlowInput(params.onTrigger.results.body.data);
+  onExecution: async ({ configVars }, params) => {
+    // Set API key
+    setDefaultOpenAIKey(configVars.OPENAI_API_KEY.fields.apiKey);
 
-    const runner = await setupAgent({
-      systemPrompt: configVars.SYSTEM_PROMPT,
-      openAIKey: configVars.OPENAI_API_KEY.fields.apiKey,
+    // Create agent
+    const agent = new Agent({
+      name: "My Assistant",
+      instructions: configVars.SYSTEM_PROMPT,
       tools: [
         /* your tools */
       ],
     });
 
-    await runner.run(input.message, input.conversationId);
+    // Get input
+    const { message, conversationId, lastResponseId } = params.onTrigger.results
+      .body.data as ChatRequest;
+
+    // Run agent
+    const result = await run(agent, [user(message)], {
+      previousResponseId: lastResponseId,
+    });
 
     return {
-      data: buildFlowOutput(runner.storage.getLastSavedState(), executionId),
+      data: {
+        response: result.finalOutput,
+        lastResponseId: result.lastResponseId,
+        conversationId,
+      },
     };
   },
 });
@@ -440,7 +425,6 @@ const myTool = tool({
     // Implementation
     return `Result: ${input}`;
   },
-  needsApproval: true, // Optional: require approval
 });
 ```
 
@@ -466,13 +450,6 @@ export default { getResource };
 ```
 
 ## 🧪 Testing
-
-### Unit Tests
-
-```bash
-npm test           # Run all tests
-npm run test:ui    # Vitest UI
-```
 
 ### Interactive Testing
 

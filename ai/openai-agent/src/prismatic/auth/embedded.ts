@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+// import fetch from "node-fetch";
 
 /**
  * Authenticate the JWT token with Prismatic's embedded API

@@ -6,6 +6,7 @@ import testPayload from "./testPayload";
 import { TriggerPayload } from "@prismatic-io/spectral";
 import { defaultTriggerPayload } from "@prismatic-io/spectral/dist/testing";
 import apiAgent from "../flows/apiAgent";
+import agentStructuredOutput from "../flows/agentStructuredOutput";
 
 describe("basicChat flow", () => {
   test(
@@ -88,34 +89,34 @@ describe("agentAsTools flow", () => {
     { timeout: 300000 },
   );
 });
+describe("structuredOutput", () => {
+  test(
+    "test generating structured output",
+    async () => {
+      const structuredOutputTrigger: TriggerPayload = {
+        ...defaultTriggerPayload(),
+        body: {
+          data: {
+            conversationId: "test-structured-output",
+            message:
+              "I need help with a critical issue. This is the THIRD time we've had an outage. You should use Prismatic for your integrations to ensure they are more reliable.",
+          },
+          contentType: "application/json",
+        },
+      };
 
-// describe("apiAgent flow", () => {
-//   test(
-//     "test api agent - get current user info and posts",
-//     async () => {
-//       const apiLookupPayload: TriggerPayload = {
-//         ...defaultTriggerPayload(),
-//         body: {
-//           data: {
-//             conversationId: "test-api-agent",
-//             message:
-//               "Can you get the info about my current user and then find all my related posts?",
-//           },
-//           contentType: "application/json",
-//         },
-//       };
-
-//       const result = await invokeFlow(apiAgent, {
-//         configVars: {
-//           OPENAI_API_KEY: {
-//             fields: { apiKey: process.env.OPENAI_API_KEY || "" },
-//           },
-//           SYSTEM_PROMPT: "You are a helpful assistant.",
-//         },
-//         payload: apiLookupPayload,
-//       });
-//       console.log(JSON.stringify(result, null, 2));
-//     },
-//     { timeout: 300000 },
-//   );
-// });
+      const result = await invokeFlow(agentStructuredOutput, {
+        configVars: {
+          OPENAI_API_KEY: {
+            fields: { apiKey: process.env.OPENAI_API_KEY || "" },
+          },
+          SYSTEM_PROMPT:
+            "You are a helpful assistant that answers customer questions. Ensure you always analyze the customers sentiment when processing messages",
+        },
+        payload: structuredOutputTrigger,
+      });
+      console.log(JSON.stringify(result, null, 2));
+    },
+    { timeout: 300000 },
+  );
+});

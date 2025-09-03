@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 /**
  * Exchange a refresh token for an access token
  * @param refreshToken - The refresh token
@@ -26,7 +24,7 @@ export async function exchangeRefreshToken(
     throw new Error(`Token refresh failed: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as { access_token?: string };
 
   if (!data.access_token) {
     throw new Error("No access token received from refresh endpoint");
