@@ -1,0 +1,43 @@
+{
+  "name": "slack",
+  "scripts": {
+    "build": "webpack",
+    "import": "npm run build && prism integrations:import",
+    "test": "jest",
+    "lint": "eslint --ext .ts .",
+    "lint-fix": "eslint --fix --quiet --ext .ts .",
+    "format": "prettier . --write"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@prismatic-io/eslint-config-spectral"
+    ]
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "10.6.3"
+  },
+  "devDependencies": {
+    "@component-manifests/branch": "*",
+    "@component-manifests/change-data-format": "*",
+    "@component-manifests/code": "*",
+    "@component-manifests/collection-tools": "*",
+    "@component-manifests/liquid-template": "*",
+    "@component-manifests/openai": "*",
+    "@component-manifests/persist-data": "*",
+    "@component-manifests/slack": "*",
+    "@component-manifests/text-manipulation": "*",
+    "@prismatic-io/eslint-config-spectral": "2.0.1",
+    "@slack/bolt": "^4.4.0",
+    "@slack/types": "^2.16.0",
+    "@types/jest": "29.5.12",
+    "copy-webpack-plugin": "12.0.2",
+    "jest": "29.7.0",
+    "prettier": "3.4.2",
+    "ts-jest": "29.1.2",
+    "ts-loader": "9.5.1",
+    "typescript": "5.5.3",
+    "webpack": "5.91.0",
+    "webpack-cli": "5.1.4"
+  }
+}

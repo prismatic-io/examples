@@ -1,0 +1,22 @@
+{
+    "detection_id": "DET-892734",
+    "timestamp": "2025-01-22T18:12:00Z",
+    "service": "payment-gateway",
+    "severity": "P1",
+    "anomaly_type": "service_degradation",
+    "title": "Payment Gateway Critical Latency",
+    "description": "Payment processing experiencing severe delays affecting customer transactions",
+    "metrics": {
+        "current_p95_response_time": "8200ms",
+        "baseline_p95_response_time": "500ms",
+        "error_rate": "15.2%",
+        "affected_transactions": 2341,
+        "duration_minutes": 8
+    },
+    "affected_regions": [
+        "us-east-1",
+        "us-west-2",
+        "eu-west-1"
+    ],
+    "team": "payments-team"
+}
