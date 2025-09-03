@@ -47,10 +47,12 @@ For information on the Prismatic platform, check out our [website](https://prism
 
 ## AI Agent Examples
 
-This repository includes production-ready examples of AI-powered integrations using OpenAI's Agent SDK:
+This repository includes production-ready examples of AI-powered integrations showcasing various use cases and patterns:
 
 ### [OpenAI Agent Integration](ai/openai-agent/)
+
 A comprehensive reference implementation featuring 7 production-ready flows that showcase advanced agent patterns:
+
 - **Basic Chat** - Simple conversational AI without tools
 - **API Agent** - Demonstrates wrapping REST APIs as AI tools with approval flows
 - **Human Approval** - Human-in-the-loop pattern for sensitive operations
@@ -62,7 +64,9 @@ A comprehensive reference implementation featuring 7 production-ready flows that
 Includes interactive chat scripts for local testing and comprehensive state management with both file-based and Prismatic-based storage backends.
 
 ### [Slack Chatbot Agent](ai/slack-chatbot-agent/)
+
 A production-ready Slack Assistant integration that demonstrates enterprise AI assistant patterns:
+
 - Implements Slack's Assistant framework with proper webhook handling and 3-second acknowledgment
 - Features approval flow UI with Slack blocks for tool execution authorization
 - Manages conversation state across message threads with execution tracking
@@ -70,7 +74,48 @@ A production-ready Slack Assistant integration that demonstrates enterprise AI a
 - Includes robust retry handling and state persistence
 - Supports both development (file-based) and production (Prismatic-based) state storage
 
-Both examples include comprehensive testing utilities, proper error handling, and production-ready architecture patterns for building intelligent integrations that can understand context, make decisions, and interact with various systems on behalf of users.
+### [Slack Incident Monitoring](ai/slack-acme-incident-monitoring/)
+
+An AI-powered incident management system that processes anomaly alerts:
+
+- Analyzes system anomalies and determines appropriate actions
+- Requests human approval through interactive Slack messages
+- Automatically creates incidents with on-call staff assignment
+
+### [Salesforce Lead Enricher and Router](ai/salesforce-lead-enricher-and-routing/)
+
+Intelligent lead processing with AI-powered enrichment and routing:
+
+- Detects and handles duplicate leads automatically
+- Enriches company data through AI web research
+- Scores leads based on business criteria
+- Creates qualified leads in Salesforce with intelligent routing
+
+### [Jira Issues from Error Logs](ai/jira-issues-from-error-logs/)
+
+Automated error log analysis and issue creation:
+
+- Analyzes system error logs using AI to identify critical problems
+- Automatically creates Jira issues for high-confidence errors
+- Reduces manual effort in error monitoring and issue tracking
+
+### [Dropbox PDF Receipt Extraction](ai/dropbox-extract-receipt-from-pdf/)
+
+Document processing and data extraction from PDFs:
+
+- Automatically processes PDF receipts from Dropbox
+- Uses AI to classify documents and extract structured data
+- Extracts items, prices, totals, and vendor information into JSON format
+
+### [Next.js AI Chatbot](ai/nextjs-chatbot/)
+
+A modern chat interface for AI-powered integrations:
+
+- Next.js application with Prismatic AI marketplace integration
+- Demonstrates building custom chat interfaces with marketplace tools
+- Shows how to embed AI capabilities in customer-facing applications
+
+All examples include comprehensive testing utilities, proper error handling, and production-ready architecture patterns for building intelligent integrations that can understand context, make decisions, and interact with various systems on behalf of users.
 
 ## License
 
