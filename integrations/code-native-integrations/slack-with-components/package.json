@@ -16,7 +16,6 @@
     ]
   },
   "dependencies": {
-    "@component-manifests/slack": "^2025.1.21-t-17.31.39",
     "@prismatic-io/spectral": "^10.6.3",
     "fast-xml-parser": "^5.2.5"
   },
