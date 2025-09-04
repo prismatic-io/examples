@@ -25,6 +25,7 @@
 import { HttpResponse, flow, util } from "@prismatic-io/spectral";
 import { XMLParser } from "fast-xml-parser";
 import axios from "axios";
+import slackActions from "../manifests/slack/actions";
 
 interface AccountNotification {
   notification: {
@@ -77,7 +78,7 @@ const sendMessagesFlow = flow({
       `Company: ${data.notification.account.company.name}\n` +
       `Location: ${data.notification.account.company.city}, ${data.notification.account.company.state}\n`;
 
-    await context.components.slack.postMessage({
+    await slackActions.postMessage.perform({
       channelName: util.types.toString(configVars["Select Slack Channel"]),
       connection: configVars["Slack OAuth Connection"],
       message,

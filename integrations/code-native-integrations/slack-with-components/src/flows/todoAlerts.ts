@@ -8,6 +8,7 @@
 
 import { flow, util } from "@prismatic-io/spectral";
 import axios from "axios";
+import slackActions from "../manifests/slack/actions";
 
 interface TodoItem {
   id: number;
@@ -34,7 +35,7 @@ export const todoAlertsFlow = flow({
       } else {
         logger.info(`Sending message for item ${item.id}`);
         try {
-          await context.components.slack.postMessage({
+          await slackActions.postMessage.perform({
             channelName: util.types.toString(
               configVars["Select Slack Channel"]
             ),

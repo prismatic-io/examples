@@ -1,9 +1,6 @@
-import {
-  configPage,
-  configVar,
-  connectionConfigVar,
-  dataSourceConfigVar,
-} from "@prismatic-io/spectral";
+import { configPage, configVar } from "@prismatic-io/spectral";
+import { slackOauth2 } from "./manifests/slack/connections/oauth2";
+import { slackSelectChannels } from "./manifests/slack/dataSources/selectChannels";
 import {
   SLACK_CLIENT_ID,
   SLACK_CLIENT_SECRET,
@@ -14,34 +11,46 @@ export const configPages = {
   Connections: configPage({
     tagline: "Authenticate with Slack",
     elements: {
-      "Slack OAuth Connection": connectionConfigVar({
-        stableKey: "slack-oauth-connection",
-        dataType: "connection",
-        connection: {
-          component: "slack",
-          key: "oauth2",
-          values: {
-            clientId: {
-              value: SLACK_CLIENT_ID,
-              permissionAndVisibilityType: "organization",
-              visibleToOrgDeployer: false,
-            },
-            clientSecret: {
-              value: SLACK_CLIENT_SECRET,
-              permissionAndVisibilityType: "organization",
-              visibleToOrgDeployer: false,
-            },
-            signingSecret: {
-              value: SLACK_SIGNING_SECRET,
-              permissionAndVisibilityType: "organization",
-              visibleToOrgDeployer: false,
-            },
-            scopes: {
-              value: "chat:write chat:write.public channels:read",
-              permissionAndVisibilityType: "organization",
-              visibleToOrgDeployer: false,
-            },
-          },
+      "Slack OAuth Connection": slackOauth2("slack-oauth-connection", {
+        clientId: {
+          value: SLACK_CLIENT_ID,
+          permissionAndVisibilityType: "organization",
+          visibleToOrgDeployer: false,
+        },
+        clientSecret: {
+          value: SLACK_CLIENT_SECRET,
+          permissionAndVisibilityType: "organization",
+          visibleToOrgDeployer: false,
+        },
+        signingSecret: {
+          value: SLACK_SIGNING_SECRET,
+          permissionAndVisibilityType: "organization",
+          visibleToOrgDeployer: false,
+        },
+        scopes: {
+          value: "chat:write chat:write.public channels:read",
+          permissionAndVisibilityType: "organization",
+          visibleToOrgDeployer: false,
+        },
+        // @ts-ignore (use default value; will be optional in future)
+        authorizeUrl: {
+          permissionAndVisibilityType: "organization",
+          visibleToOrgDeployer: false,
+        },
+        // @ts-ignore (use default value; will be optional in future)
+        isUser: {
+          permissionAndVisibilityType: "organization",
+          visibleToOrgDeployer: false,
+        },
+        // @ts-ignore (use default value; will be optional in future)
+        tokenUrl: {
+          permissionAndVisibilityType: "organization",
+          visibleToOrgDeployer: false,
+        },
+        // @ts-ignore
+        revokeUrl: {
+          permissionAndVisibilityType: "organization",
+          visibleToOrgDeployer: false,
         },
       }),
     },
@@ -49,16 +58,9 @@ export const configPages = {
   "Slack Config": configPage({
     tagline: "Select a Slack channel from a dropdown menu",
     elements: {
-      "Select Slack Channel": dataSourceConfigVar({
-        stableKey: "select-slack-channel",
-        dataSource: {
-          component: "slack",
-          key: "selectChannels",
-          values: {
-            connection: { configVar: "Slack OAuth Connection" },
-            includePublicChannels: { value: true },
-          },
-        },
+      "Select Slack Channel": slackSelectChannels("select-slack-channel", {
+        connection: { configVar: "Slack OAuth Connection" },
+        includePublicChannels: { value: true },
       }),
     },
   }),
