@@ -74,7 +74,6 @@ const createPost = tool({
 const updatePost = tool({
   name: "update_post",
   description: "Update an existing post",
-  needsApproval: true,
   parameters: z.object({
     postId: z.number().describe("The ID of the post to update"),
     title: z.string().describe("The new title of the post"),

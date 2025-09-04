@@ -12,8 +12,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Testing & Quality
 
-- Run unit tests: `npm test`
-- Run tests with UI: `npm run test:ui`
 - Run linting: `npm run lint`
 - Fix linting issues: `npm run lint-fix`
 - Format code: `npm run format`
@@ -41,23 +39,23 @@ This is a Prismatic Code-Native Integration (CNI) that implements a Slack AI ass
 
 2. **Connection Management**: Slack OAuth2 connection configured through Prismatic's connection system with required scopes stored in `configPages.ts`
 
-3. **Dynamic Tool Discovery**: When configured with a Prismatic signing key and refresh token, the agent dynamically discovers and exposes customer-specific integrations as AI tools using embedded user authentication
+3. **Dynamic Tool Discovery**: When configured with a Prismatic refresh token, the agent dynamically discovers and exposes customer-specific integrations as AI tools using embedded user authentication
 
-4. **State Management**: Conversation state tracked across executions using execution IDs stored in Slack message metadata
+4. **State Management**: Conversation state tracked using `instanceState` with serialized agent state for approval resumption
 
 ### Core Components
 
 - **Entry Point**: `src/index.ts` - Defines the integration with flows, config pages, and component registry
-- **Main Flow**: `src/flows/eventHandler.ts` - Handles webhook events with immediate acknowledgment and async processing
+- **Main Flow**: `src/flows/eventHandler.ts` - Handles webhook events with direct Agent SDK usage, immediate acknowledgment and async processing
 - **Prismatic Client**: `src/prismatic/` - Reusable client library for Prismatic API operations
   - `auth/` - JWT generation, embedded auth, and token refresh
   - `client/` - Customer and organization client factories with GraphQL operations
   - `api/` - Flow, integration, customer, and execution management functions
-- **OpenAI Agents**: `src/agents/index.ts` - Creates OpenAI agents with optional Prismatic flow tools
-- **State Storage**: `src/agents/state/` - Abstractions for conversation state persistence (file-based or Prismatic-based)
-- **Slack App**: `src/slack/app.ts` - Configures Bolt app with custom webhook receiver
-- **Assistant**: `src/slack/assistant.ts` - Implements Slack Assistant framework handlers with thread context
-- **Tools**: `src/agents/tools/prismaticTools.ts` - Converts Prismatic flows into OpenAI agent tools
+- **Slack App**: `src/slack/app.ts` - Configures Bolt app with custom webhook receiver and inline assistant handling
+- **Tools**: `src/agents/tools/` - Tool implementations
+  - `prismaticTools.ts` - Converts Prismatic flows into OpenAI agent tools and includes approval tools
+  - `approvalTools.ts` - Approval tool implementations
+  - `openaiHostedTools.ts` - OpenAI hosted tools integration
 
 ### Configuration System
 
@@ -72,10 +70,11 @@ All configuration is managed through `src/configPages.ts` and accessed via `conf
 
 ### Testing Approach
 
-Tests use Vitest with environment variables loaded from `.env`. Test files:
+The integration is tested through deployment and direct Slack interaction. Use the following commands:
 
-- `src/test/index.test.ts` - Validates webhook flow with mock Slack payloads
-- `src/test/prismatic.test.ts` - Tests Prismatic API interactions
+- Build and deploy: `npm run import`
+- Lint code: `npm run lint`
+- Format code: `npm run format`
 
 ### Deployment Notes
 

@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { CustomerClient, OrganizationClient, FlowConfig } from "../types";
 
 // Shared GraphQL query for fetching agent flows

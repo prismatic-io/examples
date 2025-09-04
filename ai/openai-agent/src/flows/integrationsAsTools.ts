@@ -1,8 +1,8 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { setupAgent } from "../agents/setup";
+import { Agent, run, setDefaultOpenAIKey, user } from "@openai/agents";
 import apiTools from "../agents/tools/api";
 import { createPrismaticTools } from "../agents/tools/prismaticHostedTools";
-import { parseFlowInput, buildFlowOutput } from "./utils/flowHelpers";
+import { ChatRequest } from "../types";
 
 export const integrationsAsTools = flow({
   name: "Integrations as Tools",
@@ -13,12 +13,13 @@ export const integrationsAsTools = flow({
       payload,
     });
   },
-  onExecution: async ({ configVars, executionId, customer }, params) => {
-    const openaiConnection = util.types.toString(
+  onExecution: async ({ configVars, customer }, params) => {
+    const openaiKey = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
 
-    const input = parseFlowInput(params.onTrigger.results.body.data);
+    // Set the OpenAI API key
+    setDefaultOpenAIKey(openaiKey);
 
     // Get customer ID from environment and current integration ID from runtime
     const customerExternalId = customer.externalId;
@@ -36,15 +37,13 @@ export const integrationsAsTools = flow({
       );
     }
 
-    const systemPrompt = `${configVars.SYSTEM_PROMPT}
+    // Create agent with both API tools and Prismatic tools
+    const agent = new Agent({
+      name: "Integration Assistant",
+      instructions: `${configVars.SYSTEM_PROMPT}
 
 You are an AI assistant with access to API operations and deployed customer integrations as tools.
-Use these tools to help users accomplish their tasks efficiently.`;
-
-    // Setup agent with both API tools and Prismatic tools
-    const runner = await setupAgent({
-      systemPrompt,
-      openAIKey: openaiConnection,
+Use these tools to help users accomplish their tasks efficiently.`,
       tools: [
         // Standard API tools
         apiTools.getCurrentUserInfo,
@@ -59,18 +58,26 @@ Use these tools to help users accomplish their tasks efficiently.`;
       ],
     });
 
-    if (!input.message) {
+    // Get the message from the payload
+    const { message, conversationId, lastResponseId } = params.onTrigger.results
+      .body.data as ChatRequest;
+
+    if (!message) {
       throw new Error("Message is required for integrations as tools");
     }
 
-    await runner.run(
-      input.message,
-      input.conversationId,
-      input.previousExecutionId,
-    );
+    // Run the agent with the message
+    const result = await run(agent, [user(message)], {
+      previousResponseId: lastResponseId,
+    });
 
+    // Return the response directly
     return {
-      data: buildFlowOutput(runner.storage.getLastSavedState(), executionId),
+      data: {
+        response: result.finalOutput,
+        lastResponseId: result.lastResponseId,
+        conversationId,
+      },
     };
   },
 });

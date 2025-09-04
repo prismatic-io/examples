@@ -1,0 +1,1681 @@
+category: ""
+configPages:
+  - elements:
+      - type: configVar
+        value: Slack Connection
+      - type: configVar
+        value: OpenAI Connection
+    name: Configuration
+  - elements:
+      - type: configVar
+        value: Alert Channel
+    name: Alert Channel
+    tagline: ""
+    userLevelConfigured: false
+defaultInstanceProfile: Default Instance Profile
+definitionVersion: 7
+description: ""
+documentation: ""
+endpointType: flow_specific
+flows:
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: New Incident Alert
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: webhook-triggers
+            version: LATEST
+        description: ""
+        inputs:
+          body:
+            type: value
+            value: ""
+          contentType:
+            type: value
+            value: ""
+          headers:
+            type: complex
+            value: []
+          statusCode:
+            type: value
+            value: ""
+        isTrigger: true
+        name: New Alert Detected Trigger
+      - action:
+          key: createFlowTool
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs:
+          flowName:
+            type: value
+            value: Create Incident
+          requiresApproval:
+            type: value
+            value: "true"
+          strictMode:
+            type: value
+            value: "false"
+          toolDescription:
+            type: value
+            value: Create a new incident using the provided description
+        name: "Agent: Create Incident Tool"
+      - action:
+          key: createFlowTool
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs:
+          flowName:
+            type: value
+            value: Get On Call Staff
+          requiresApproval:
+            type: value
+            value: "false"
+          strictMode:
+            type: value
+            value: "false"
+          toolDescription:
+            type: value
+            value: Get On Call Staff
+        name: "Agent: Get On Call Staff Tool"
+      - action:
+          key: createAgent
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs:
+          handoffDescription:
+            type: value
+            value: ""
+          instructions:
+            type: value
+            value: >+
+              You are the Acme Incident Assistant, an automated responder that
+              notifies on-call engineers when alerts are triggered and creates
+              incidents for those alerts.
+
+
+              ## Available Tools
+
+              - `get_on_call_staff`: Returns the current on-call engineer for a
+              given service/team
+
+              - `create_incident`: Creates a new incident with the alert details
+              (requires user approval)
+
+
+              ## Important Guidelines
+
+              - Keep messages concise but complete - engineers need to make
+              quick decisions
+
+              - You are not directly interfacing with a user. You are part of a
+              backend workflow that generates alerts and creates incidents.
+
+          mcpServers:
+            type: complex
+            value: []
+          modelName:
+            type: value
+            value: gpt-5-2025-08-07
+          name:
+            type: value
+            value: Acme SaaS Assistant
+          outputSchema:
+            type: value
+            value: |-
+              {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "title": "Incident Response Notification",
+                "description": "Schema for agent output after incident creation attempt (approved or rejected)",
+                "type": "object",
+                "required": [
+                  "message_type",
+                  "channel",
+                  "summary"
+                ],
+                "properties": {
+                  "message_type": {
+                    "type": "string",
+                    "enum": ["incident_created", "incident_rejected"],
+                    "description": "Type of notification message - indicates if incident was created or rejected"
+                  },
+                  "channel": {
+                    "type": "string",
+                    "description": "Slack channel to send the message to",
+                    "pattern": "^[#@].+",
+                    "examples": ["#incidents", "@U01A5A5HU0Y", "#platform-alerts"]
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "Brief summary of the outcome",
+                    "minLength": 10,
+                    "maxLength": 300,
+                    "examples": [
+                      "P1 incident created for payment-gateway: Critical latency affecting 2341 transactions",
+                      "Incident creation rejected for anomaly DET-892734: Known maintenance window"
+                    ]
+                  },
+                  "incident_id": {
+                    "type": "string",
+                    "description": "The unique incident identifier (only when message_type is incident_created)",
+                    "pattern": "^INC-[A-Z0-9-]+$",
+                    "examples": ["INC-2025-4892"]
+                  },
+                  "incident_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Direct link to view the incident (only when message_type is incident_created)",
+                    "examples": ["https://incidents.acme.io/incidents/INC-2025-4892"]
+                  },
+                  "incident_channel": {
+                    "type": "string",
+                    "description": "Dedicated Slack channel for this incident (only when message_type is incident_created)",
+                    "pattern": "^#[a-z0-9-]+$",
+                    "examples": ["#inc-2025-4892"]
+                  },
+                  "assignee_mention": {
+                    "type": "string",
+                    "description": "Slack user ID to mention (only when message_type is incident_created)",
+                    "pattern": "^U[A-Z0-9]{8,12}$",
+                    "examples": ["U01A5A5HU0Y"]
+                  },
+                  "anomaly_id": {
+                    "type": "string",
+                    "description": "The original anomaly detection ID (primarily for incident_rejected)",
+                    "pattern": "^DET-[0-9]+$",
+                    "examples": ["DET-892734"]
+                  },
+                  "rejection_reason": {
+                    "type": "string",
+                    "enum": [
+                      "false_positive",
+                      "duplicate",
+                      "known_issue",
+                      "scheduled_maintenance",
+                      "below_threshold",
+                      "manual_review",
+                      "other"
+                    ],
+                    "description": "Reason for rejection (only when message_type is incident_rejected)"
+                  },
+                  "details": {
+                    "type": "object",
+                    "description": "Structured details about the incident or anomaly",
+                    "properties": {
+                      "priority": {
+                        "type": "string",
+                        "enum": ["P1", "P2", "P3", "P4"]
+                      },
+                      "service": {
+                        "type": "string",
+                        "examples": ["payment-gateway"]
+                      },
+                      "status": {
+                        "type": "string",
+                        "examples": ["investigating", "monitoring", "acknowledged"]
+                      },
+                      "title": {
+                        "type": "string",
+                        "examples": ["Payment Gateway Critical Latency"]
+                      },
+                      "key_metrics": {
+                        "type": "array",
+                        "description": "Key metrics to highlight",
+                        "items": {
+                          "type": "string"
+                        },
+                        "examples": [
+                          ["Response time: 8200ms", "Error rate: 15.2%", "Duration: 8 minutes"]
+                        ]
+                      },
+                      "detected_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "examples": ["2025-01-22T18:12:00Z"]
+                      }
+                    }
+                  },
+                  "actions": {
+                    "type": "array",
+                    "description": "Suggested next actions for responders or alternative steps",
+                    "items": {
+                      "type": "string"
+                    },
+                    "examples": [
+                      ["Join the incident channel", "Review the runbook", "Check monitoring dashboard"],
+                      ["Continue monitoring", "Check again in 15 minutes", "Update alert thresholds"]
+                    ]
+                  },
+                  "rejected_by": {
+                    "type": "string",
+                    "description": "User ID who rejected the incident creation (only when message_type is incident_rejected)",
+                    "pattern": "^U[A-Z0-9]{8,12}$",
+                    "examples": ["U01A5A5HU0Y"]
+                  },
+                  "rejected_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Timestamp when rejected (only when message_type is incident_rejected)",
+                    "examples": ["2025-08-22T22:07:05.433Z"]
+                  },
+                  "thread_ts": {
+                    "type": "string",
+                    "description": "Optional thread timestamp to reply to an existing message",
+                    "pattern": "^[0-9]+\\.[0-9]+$",
+                    "examples": ["1706812345.123456"]
+                  }
+                },
+                "additionalProperties": false
+              }
+          outputSchemaName:
+            type: value
+            value: output
+          outputSchemaStrict:
+            type: value
+            value: "false"
+          tools:
+            type: complex
+            value:
+              - type: reference
+                value: agentCreateIncidentTool.results
+              - type: reference
+                value: agentGetOnCallStaffTool.results
+        name: "Agent: Create Assistant Agent"
+      - action:
+          key: transform
+          component:
+            isPublic: true
+            key: liquid-template
+            version: LATEST
+        description: ""
+        inputs:
+          data:
+            type: reference
+            value: newAlertDetectedTrigger.results.body
+          liquidTemplate:
+            type: value
+            value: |-
+              Generate a new incident alert for the on-call user.
+              Alert Detected:
+               {{ data | json }}
+        name: Setup Alert Input Prompt
+      - action:
+          key: runAgent
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs:
+          agentConfig:
+            type: reference
+            value: agentCreateAssistantAgent.results
+          fileIds:
+            type: complex
+            value: []
+          handoffs:
+            type: complex
+            value: []
+          history:
+            type: value
+            value: ""
+          maxTurns:
+            type: value
+            value: "10"
+          openaiConnection:
+            type: configVar
+            value: OpenAI Connection
+          previousResponseId:
+            type: value
+            value: ""
+          userInput:
+            type: reference
+            value: setupAlertInputPrompt.results
+        name: "Agent: Generate Alert"
+      - action:
+          key: branchOnExpression
+          component:
+            isPublic: true
+            key: branch
+            version: LATEST
+        branches:
+          - name: Has Interruption
+            steps:
+              - action:
+                  key: deserializeFromJson
+                  component:
+                    isPublic: true
+                    key: change-data-format
+                    version: LATEST
+                description: ""
+                inputs:
+                  data:
+                    type: reference
+                    value: agentGenerateAlert.results.pendingApprovals.0.arguments
+                name: Get Interrupted Tool Call Arguments
+              - action:
+                  key: addMultipleKeys
+                  component:
+                    isPublic: true
+                    key: collection-tools
+                    version: LATEST
+                description: ""
+                inputs:
+                  dynamicFields:
+                    type: value
+                    value: ""
+                  keyValueListInput:
+                    type: complex
+                    value:
+                      - name:
+                          type: value
+                          value: approvalRequest
+                        type: reference
+                        value: >-
+                          agentGenerateAlert.results.pendingApprovals.0.approvalRequest
+                  object:
+                    type: reference
+                    value: getInterruptedToolCallArguments.results
+                  objectPath:
+                    type: value
+                    value: ""
+                name: Add Approval Request to Interrupt Payload
+              - action:
+                  key: transform
+                  component:
+                    isPublic: true
+                    key: liquid-template
+                    version: LATEST
+                description: ""
+                inputs:
+                  data:
+                    type: reference
+                    value: addApprovalRequestToInterruptPayload.results
+                  liquidTemplate:
+                    type: value
+                    value: "{\n  \"blocks\": [\n    {\n      \"type\": \"header\",\n      \"text\": {\n        \"type\": \"plain_text\",\n        \"text\": \"\U0001F6A8 {{ priority }} Anomaly Detected\",\n        \"emoji\": true\n      }\n    },\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*{{ title }}*\"\n      }\n    },\n    {\n      \"type\": \"section\",\n      \"fields\": [\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Service:*\\n`{{ service }}`\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Detection ID:*\\n`{{ anomaly_id }}`\"\n        }\n      ]\n    },\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*\U0001F4CA Metrics*\"\n      },\n      \"fields\": [\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Response Time:*\\n`{{ metrics.response_time }}`\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Error Rate:*\\n`{{ metrics.error_rate }}`\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Affected Transactions:*\\n`{{ metrics.affected_count }} records`\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Duration:*\\n`{{ metrics.duration_minutes }} minutes`\"\n        }\n      ]\n    },\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*\U0001F30D Affected Regions:*\\n{% for region in scope | split: \", \" %} `{{ region }}`\\n{% endfor %}\"\n      }\n    },\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*\U0001F464 On-Call:* <@{{ assignee.id }}> ({{ assignee.name }})\"\n      }\n    },\n    {\n      \"type\": \"divider\"\n    },\n    {\n      \"type\": \"actions\",\n      \"elements\": [\n        {\n          \"type\": \"button\",\n          \"text\": {\n            \"type\": \"plain_text\",\n            \"text\": \"\U0001F6A8 Create Incident\",\n            \"emoji\": true\n          },\n          \"style\": \"danger\",\n          \"action_id\": \"create_incident\",\n          \"value\": \"{{anomaly_id}}:{{approvalRequest.functionId}}:true\"\n        },\n        {\n          \"type\": \"button\",\n          \"text\": {\n            \"type\": \"plain_text\",\n            \"text\": \"\U0001F440 Investigate\",\n            \"emoji\": true\n          },\n          \"style\": \"primary\",\n          \"action_id\": \"investigate_alert\",\n          \"value\": \"{{anomaly_id}}:{{approvalRequest.functionId}}:false\"\n        },\n        {\n          \"type\": \"button\",\n          \"text\": {\n            \"type\": \"plain_text\",\n            \"text\": \"\U0001F515 Ignore\",\n            \"emoji\": true\n          },\n          \"action_id\": \"ignore_alert\",\n          \"value\": \"{{anomaly_id}}:{{approvalRequest.functionId}}:false\"\n        }\n      ]\n    },\n    {\n      \"type\": \"context\",\n      \"elements\": [\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"Detection: `{{ anomaly_id }}` | Reporter: {{ reported_by }}\"\n        }\n      ]\n    }\n  ]\n}"
+                name: Render Approval Slack Block Message
+              - action:
+                  key: deserializeFromJson
+                  component:
+                    isPublic: true
+                    key: change-data-format
+                    version: LATEST
+                description: ""
+                inputs:
+                  data:
+                    type: reference
+                    value: renderApprovalSlackBlockMessage.results
+                name: Deserialize Slack Blocks for Sending to Slack
+              - action:
+                  key: postBlockMessage
+                  component:
+                    isPublic: true
+                    key: slack
+                    version: LATEST
+                description: ""
+                inputs:
+                  blocks:
+                    type: reference
+                    value: deserializeSlackBlocksForSendingToSlack.results
+                  channelName:
+                    type: configVar
+                    value: Alert Channel
+                  connection:
+                    type: configVar
+                    value: Slack Connection
+                  message:
+                    type: reference
+                    value: agentGenerateAlert.results.finalOutput
+                  messageId:
+                    type: reference
+                    value: newAlertDetectedTrigger.results.body.data.event.thread_ts
+                  username:
+                    type: value
+                    value: ""
+                name: Send Approval Request
+              - action:
+                  key: addKey
+                  component:
+                    isPublic: true
+                    key: collection-tools
+                    version: LATEST
+                description: ""
+                inputs:
+                  key:
+                    type: value
+                    value: agentConfig
+                  object:
+                    type: reference
+                    value: agentGenerateAlert.results
+                  objectPath:
+                    type: value
+                    value: ""
+                  value:
+                    type: reference
+                    value: agentCreateAssistantAgent.results
+                name: Prep Agent and RunResult for Storage
+              - action:
+                  key: saveCrossFlowValue
+                  component:
+                    isPublic: true
+                    key: persist-data
+                    version: LATEST
+                description: ""
+                inputs:
+                  dynamicValues:
+                    type: complex
+                    value: []
+                  keyInput:
+                    type: reference
+                    value: getInterruptedToolCallArguments.results.anomaly_id
+                  valueInput:
+                    type: reference
+                    value: prepAgentAndRunresultForStorage.results
+                name: Save Interrupted State for Approval Flow
+          - name: Else
+            steps:
+              - action:
+                  key: postMessage
+                  component:
+                    isPublic: true
+                    key: slack
+                    version: LATEST
+                description: ""
+                inputs:
+                  channelName:
+                    type: reference
+                    value: newAlertDetectedTrigger.results.body.data.event.channel
+                  connection:
+                    type: configVar
+                    value: Slack Connection
+                  message:
+                    type: reference
+                    value: agentGenerateAlert.results.finalOutput
+                  messageId:
+                    type: reference
+                    value: newAlertDetectedTrigger.results.body.data.event.thread_ts
+                  username:
+                    type: value
+                    value: ""
+                name: Post Response
+        description: ""
+        inputs:
+          conditions:
+            type: complex
+            value:
+              - name: Has Interruption
+                type: complex
+                value:
+                  - and
+                  - - isTrue
+                    - name: ""
+                      type: reference
+                      value: agentGenerateAlert.results.hasInterruptions
+        name: Branch on Run Result
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: false
+    name: Handle Slack Events and Interactions
+    steps:
+      - action:
+          key: webhook
+          component:
+            isPublic: true
+            key: slack
+            version: LATEST
+        branches:
+          - name: Notification
+            steps:
+              - action:
+                  key: branchOnValue
+                  component:
+                    isPublic: true
+                    key: branch
+                    version: LATEST
+                branches:
+                  - name: Incoming Interaction
+                    steps:
+                      - action:
+                          key: deserializeFormData
+                          component:
+                            isPublic: true
+                            key: change-data-format
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          data:
+                            type: reference
+                            value: handleApprovalsTrigger.results.body
+                        name: Deserialize URL-encoded Form
+                      - action:
+                          key: deserializeFromJson
+                          component:
+                            isPublic: true
+                            key: change-data-format
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          data:
+                            type: reference
+                            value: deserializeUrlEncodedForm.results.payload
+                        name: Deserialize Form Payload
+                      - action:
+                          key: split
+                          component:
+                            isPublic: true
+                            key: text-manipulation
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          separator:
+                            type: value
+                            value: ":"
+                          text:
+                            type: reference
+                            value: deserializeFormPayload.results.actions.0.value
+                        name: Get Action Response Value
+                      - action:
+                          key: getCrossFlowValue
+                          component:
+                            isPublic: true
+                            key: persist-data
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          defaultValueInput:
+                            type: value
+                            value: ""
+                          keyInput:
+                            type: reference
+                            value: getActionResponseValue.results.0
+                        name: Get Interrupted State for Anomaly Alert by ID
+                      - action:
+                          key: map
+                          component:
+                            isPublic: true
+                            key: collection-tools
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          contextInput:
+                            type: reference
+                            value: getActionResponseValue.results.2
+                          filterCodeInput:
+                            type: value
+                            value: "(item, index) => { return true; }"
+                          listInput:
+                            type: reference
+                            value: >-
+                              getInterruptedStateForAnomalyAlertById.results.pendingApprovals
+                          transformCodeInput:
+                            type: value
+                            value: |-
+                              (item, index, context) => {
+                                  const approved = context;
+                                  const pendingRequest = item.approvalRequest;
+                                  pendingRequest["approved"] = approved === "true" ? true : false;
+                                  return pendingRequest
+                               }
+                        name: Update Approval Requests
+                      - action:
+                          key: resumeRun
+                          component:
+                            isPublic: true
+                            key: openai
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          agentConfig:
+                            type: reference
+                            value: >-
+                              getInterruptedStateForAnomalyAlertById.results.agentConfig
+                          approvalResponses:
+                            type: reference
+                            value: updateApprovalRequests.results
+                          handoffs:
+                            type: complex
+                            value: []
+                          maxTurns:
+                            type: value
+                            value: "10"
+                          openaiConnection:
+                            type: configVar
+                            value: OpenAI Connection
+                          state:
+                            type: reference
+                            value: >-
+                              getInterruptedStateForAnomalyAlertById.results.state
+                        name: "Agent: Resume Run"
+                      - action:
+                          key: updateMessage
+                          component:
+                            isPublic: true
+                            key: slack
+                            version: LATEST
+                        description: ""
+                        inputs:
+                          channelId:
+                            type: reference
+                            value: deserializeFormPayload.results.channel.id
+                          connection:
+                            type: configVar
+                            value: Slack Connection
+                          message:
+                            type: reference
+                            value: agentResumeRun.results.finalOutput.summary
+                          messageId:
+                            type: reference
+                            value: deserializeFormPayload.results.message.ts
+                        name: Update Message With Agent Run Result
+                      - action:
+                          key: branchOnExpression
+                          component:
+                            isPublic: true
+                            key: branch
+                            version: LATEST
+                        branches:
+                          - name: Incident Created
+                            steps:
+                              - action:
+                                  key: transform
+                                  component:
+                                    isPublic: true
+                                    key: liquid-template
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  data:
+                                    type: reference
+                                    value: agentResumeRun.results.finalOutput
+                                  liquidTemplate:
+                                    type: value
+                                    value: " {\"blocks\": [\n      {\n        \"type\": \"header\",\n        \"text\": {\n          \"type\": \"plain_text\",\n          \"text\": \"✅ Incident Created Successfully\",\n          \"emoji\": true\n        }\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*{{ details.title }}*\\n{{ incident_id }} • {{ details.priority }} Priority\"\n        },\n        \"accessory\": {\n          \"type\": \"button\",\n          \"text\": {\n            \"type\": \"plain_text\",\n            \"text\": \"View Incident\",\n            \"emoji\": true\n          },\n          \"url\": \"{{ incident_url }}\",\n          \"action_id\": \"view_incident\"\n        }\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Summary:*\\n{{ summary }}\"\n        }\n      },\n      {\n        \"type\": \"section\",\n        \"fields\": [\n          {\n            \"type\": \"mrkdwn\",\n            \"text\": \"*Status:*\\n\U0001F50D {{ details.status }}\"\n          },\n          {\n            \"type\": \"mrkdwn\",\n            \"text\": \"*Service:*\\n`{{ details.service }}`\"\n          },\n          {\n            \"type\": \"mrkdwn\",\n            \"text\": \"*Incident Channel:*\\n<{{ incident_channel }}>\"\n          },\n          {\n            \"type\": \"mrkdwn\",\n            \"text\": \"*Assigned To:*\\n<@{{ assignee_mention }}>\"\n          }\n        ]\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*\U0001F4CA Key Metrics:*\"\n        }\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"{% for metric in details.key_metrics %}• {{ metric }}\\n{% endfor %}\"\n        }\n      },\n      {\n        \"type\": \"divider\"\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*\U0001F3AF Recommended Actions:*\"\n        }\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"{% for action in actions %}{{ forloop.index }}. {{ action }}\\n{% endfor %}\"\n        }\n      },\n      {\n        \"type\": \"divider\"\n      },\n      {\n        \"type\": \"actions\",\n        \"elements\": [\n          {\n            \"type\": \"button\",\n            \"text\": {\n              \"type\": \"plain_text\",\n              \"text\": \"Join Incident Channel\",\n              \"emoji\": true\n            },\n            \"style\": \"primary\",\n            \"url\": \"slack://channel?id={{ incident_channel | replace: '#', '' }}&team=TH0GJM0M8\",\n            \"action_id\": \"join_channel\"\n          },\n          {\n            \"type\": \"button\",\n            \"text\": {\n              \"type\": \"plain_text\",\n              \"text\": \"View Dashboard\",\n              \"emoji\": true\n            },\n            \"action_id\": \"view_dashboard\",\n            \"value\": \"{{ details.service }}\"\n          },\n          {\n            \"type\": \"button\",\n            \"text\": {\n              \"type\": \"plain_text\",\n              \"text\": \"View Runbook\",\n              \"emoji\": true\n            },\n            \"action_id\": \"view_runbook\",\n            \"value\": \"{{ details.service }}_{{ details.priority }}\"\n          }\n        ]\n      },\n      {\n        \"type\": \"context\",\n        \"elements\": [\n          {\n            \"type\": \"mrkdwn\",\n            \"text\": \"Incident: `{{ incident_id }}` | Channel: {{ channel }} | Message Type: {{ message_type }}\"\n          }\n        ]\n      }\n    ]\n }"
+                                name: Render Approval Response
+                              - action:
+                                  key: postBlockMessage
+                                  component:
+                                    isPublic: true
+                                    key: slack
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  blocks:
+                                    type: reference
+                                    value: renderApprovalResponse.results
+                                  channelName:
+                                    type: reference
+                                    value: deserializeFormPayload.results.channel.id
+                                  connection:
+                                    type: configVar
+                                    value: Slack Connection
+                                  message:
+                                    type: reference
+                                    value: agentResumeRun.results.finalOutput
+                                  messageId:
+                                    type: reference
+                                    value: updateMessageWithAgentRunResult.results.ts
+                                  username:
+                                    type: value
+                                    value: ""
+                                name: Post Message
+                          - name: Investigate
+                            steps:
+                              - action:
+                                  key: transform
+                                  component:
+                                    isPublic: true
+                                    key: liquid-template
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  data:
+                                    type: reference
+                                    value: agentResumeRun.results.finalOutput
+                                  liquidTemplate:
+                                    type: value
+                                    value: " {\n    \"blocks\": [\n      {\n        \"type\": \"header\",\n        \"text\": {\n          \"type\": \"plain_text\",\n          \"text\": \"⚠️ Incident Creation Not Approved\",\n          \"emoji\": true\n        }\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*{{ details.title }}*\\nAnomaly {{ anomaly_id }} • {{ details.priority }} Priority\"\n        }\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Summary:*\\n{{ summary }}\"\n        }\n      },\n      {\n        \"type\": \"section\",\n        \"fields\": [\n          {\n            \"type\": \"mrkdwn\",\n            \"text\": \"*Rejection Reason:*\\n{{ rejection_reason | replace: '_', ' ' | capitalize }}\"\n          },\n          {\n            \"type\": \"mrkdwn\",\n            \"text\": \"*Service:*\\n`{{ details.service }}`\"\n          },\n          {\n            \"type\": \"mrkdwn\",\n            \"text\": \"*Detection Time:*\\n{{ details.detected_at }}\"\n          },\n          {\n            \"type\": \"mrkdwn\",\n            \"text\": \"*Rejected At:*\\n{{ rejected_at }}\"\n          }\n        ]\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*\U0001F4CA Alert Metrics:*\"\n        }\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"{% for metric in details.key_metrics %}• {{ metric }}\\n{% endfor %}\"\n        }\n      },\n      {\n        \"type\": \"divider\"\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*⚡ Required Actions:*\"\n        }\n      },\n      {\n        \"type\": \"section\",\n        \"text\": {\n          \"type\": \"mrkdwn\",\n          \"text\": \"{% for action in actions %}{{ forloop.index }}. {{ action }}\\n{% endfor %}\"\n        }\n      },\n      {\n        \"type\": \"divider\"\n      },\n      {\n        \"type\": \"actions\",\n        \"elements\": [\n          {\n            \"type\": \"button\",\n            \"text\": {\n              \"type\": \"plain_text\",\n              \"text\": \"\U0001F6A8 Create Incident Now\",\n              \"emoji\": true\n            },\n            \"style\": \"danger\",\n            \"action_id\": \"create_incident_manual\",\n            \"value\": \"{{ anomaly_id }}_{{ details.priority }}_{{ details.service }}\"\n          },\n          {\n            \"type\": \"button\",\n            \"text\": {\n              \"type\": \"plain_text\",\n              \"text\": \"\U0001F4CA View Dashboard\",\n              \"emoji\": true\n            },\n            \"style\": \"primary\",\n            \"action_id\": \"view_dashboard\",\n            \"value\": \"{{ details.service }}\"\n          },\n          {\n            \"type\": \"button\",\n            \"text\": {\n              \"type\": \"plain_text\",\n              \"text\": \"✅ Acknowledge Alert\",\n              \"emoji\": true\n            },\n            \"action_id\": \"acknowledge_alert\",\n            \"value\": \"{{ anomaly_id }}\"\n          }\n        ]\n      },\n      {\n        \"type\": \"context\",\n        \"elements\": [\n          {\n            \"type\": \"mrkdwn\",\n            \"text\": \"Anomaly: `{{ anomaly_id }}` | Channel: {{ channel }} | Status: {{ details.status }} | Reason: {{ rejection_reason }}\"\n          }\n        ]\n      }\n    ]\n  }"
+                                name: Render Rejection Response
+                              - action:
+                                  key: createAgent
+                                  component:
+                                    isPublic: true
+                                    key: openai
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  handoffDescription:
+                                    type: value
+                                    value: ""
+                                  instructions:
+                                    type: value
+                                    value: >-
+                                      You are the Acme Alert Investigator, an
+                                      automated agent that analyzes rejected
+                                      alerts to determine if manual incident
+                                      creation is needed.
+
+
+                                      ## Available Tools
+
+                                      - None. This is for testing purposes so
+                                      fake your research.
+
+
+                                      ## Important Guidelines
+
+                                      - Quickly validate if the alert is a real
+                                      issue or false positive
+
+                                      - Provide clear recommendation: escalate,
+                                      monitor, or dismiss
+
+                                      - You are part of an automated workflow
+                                      following alert rejection
+                                  mcpServers:
+                                    type: complex
+                                    value: []
+                                  modelName:
+                                    type: value
+                                    value: gpt-5-mini-2025-08-07
+                                  name:
+                                    type: value
+                                    value: Alert Research Agent
+                                  outputSchema:
+                                    type: value
+                                    value: ""
+                                  outputSchemaName:
+                                    type: value
+                                    value: output
+                                  outputSchemaStrict:
+                                    type: value
+                                    value: "false"
+                                  tools:
+                                    type: complex
+                                    value: []
+                                name: "Agent: Create"
+                              - action:
+                                  key: runAgent
+                                  component:
+                                    isPublic: true
+                                    key: openai
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  agentConfig:
+                                    type: reference
+                                    value: agentCreate.results
+                                  fileIds:
+                                    type: complex
+                                    value: []
+                                  handoffs:
+                                    type: complex
+                                    value: []
+                                  history:
+                                    type: reference
+                                    value: agentResumeRun.results.history
+                                  maxTurns:
+                                    type: value
+                                    value: "10"
+                                  openaiConnection:
+                                    type: configVar
+                                    value: OpenAI Connection
+                                  previousResponseId:
+                                    type: value
+                                    value: ""
+                                  userInput:
+                                    type: value
+                                    value: >-
+                                      The user rejected creating an incident.
+                                      Now we must do a manual review of the
+                                      system and propose next steps. Keep your
+                                      response to short quick bullets.
+                                name: "Agent: Run Investigation"
+                              - action:
+                                  key: postMessage
+                                  component:
+                                    isPublic: true
+                                    key: slack
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  channelName:
+                                    type: reference
+                                    value: deserializeFormPayload.results.channel.id
+                                  connection:
+                                    type: configVar
+                                    value: Slack Connection
+                                  message:
+                                    type: reference
+                                    value: agentRunInvestigation.results.finalOutput
+                                  messageId:
+                                    type: reference
+                                    value: updateMessageWithAgentRunResult.results.ts
+                                  username:
+                                    type: value
+                                    value: ""
+                                name: Post Investigation Results
+                          - name: Else
+                            steps: []
+                        description: ""
+                        inputs:
+                          conditions:
+                            type: complex
+                            value:
+                              - name: Incident Created
+                                type: complex
+                                value:
+                                  - or
+                                  - - equal
+                                    - name: ""
+                                      type: reference
+                                      value: >-
+                                        agentResumeRun.results.finalOutput.message_type
+                                    - name: ""
+                                      type: value
+                                      value: incident_created
+                              - name: Investigate
+                                type: complex
+                                value:
+                                  - and
+                                  - - equal
+                                    - name: ""
+                                      type: reference
+                                      value: >-
+                                        agentResumeRun.results.finalOutput.message_type
+                                    - name: ""
+                                      type: value
+                                      value: incident_rejected
+                                  - - equal
+                                    - name: ""
+                                      type: reference
+                                      value: >-
+                                        agentResumeRun.results.finalOutput.rejection_reason
+                                    - name: ""
+                                      type: value
+                                      value: manual_review
+                        name: Branch on Next Action
+                  - name: Else
+                    steps:
+                      - action:
+                          key: branchOnExpression
+                          component:
+                            isPublic: true
+                            key: branch
+                            version: LATEST
+                        branches:
+                          - name: User Message
+                            steps:
+                              - action:
+                                  key: getInstanceValue
+                                  component:
+                                    isPublic: true
+                                    key: persist-data
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  defaultValueInput:
+                                    type: value
+                                    value: ""
+                                  keyInput:
+                                    type: reference
+                                    value: >-
+                                      handleApprovalsTrigger.results.body.data.event.thread_ts
+                                name: Get Thread's Last Response ID
+                              - action:
+                                  key: createAgent
+                                  component:
+                                    isPublic: true
+                                    key: openai
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  handoffDescription:
+                                    type: value
+                                    value: ""
+                                  instructions:
+                                    type: value
+                                    value: >-
+                                      You are the Acme Incident Assistant, an
+                                      automated responder that notifies on-call
+                                      engineers when alerts are triggered and
+                                      creates incidents for those alerts.
+
+
+                                      ## Available Tools
+
+                                      - `get_on_call_staff`: Returns the current
+                                      on-call engineer for a given service/team
+
+                                      - `create_incident`: Creates a new
+                                      incident with the alert details (requires
+                                      user approval)
+
+
+                                      ## Important Guidelines
+
+                                      - Keep messages concise but complete -
+                                      engineers need to make quick decisions
+
+                                      - You are not directly interfacing with a
+                                      user. You are part of a backend workflow
+                                      that generates alerts and creates
+                                      incidents.
+                                  mcpServers:
+                                    type: complex
+                                    value: []
+                                  modelName:
+                                    type: value
+                                    value: gpt-5-mini-2025-08-07
+                                  name:
+                                    type: value
+                                    value: Acme SaaS Incident Response Assistant
+                                  outputSchema:
+                                    type: value
+                                    value: ""
+                                  outputSchemaName:
+                                    type: value
+                                    value: output
+                                  outputSchemaStrict:
+                                    type: value
+                                    value: "false"
+                                  tools:
+                                    type: complex
+                                    value: []
+                                name: "Agent: Create Assistant Agent"
+                              - action:
+                                  key: runAgent
+                                  component:
+                                    isPublic: true
+                                    key: openai
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  agentConfig:
+                                    type: reference
+                                    value: agentCreateAssistantAgent.results
+                                  fileIds:
+                                    type: complex
+                                    value: []
+                                  handoffs:
+                                    type: complex
+                                    value: []
+                                  history:
+                                    type: value
+                                    value: ""
+                                  maxTurns:
+                                    type: value
+                                    value: "10"
+                                  openaiConnection:
+                                    type: configVar
+                                    value: OpenAI Connection
+                                  previousResponseId:
+                                    type: reference
+                                    value: getThreadSLastResponseId.results
+                                  userInput:
+                                    type: reference
+                                    value: >-
+                                      handleApprovalsTrigger.results.body.data.event.text
+                                name: "Agent: Run"
+                              - action:
+                                  key: postMessage
+                                  component:
+                                    isPublic: true
+                                    key: slack
+                                    version: LATEST
+                                description: ""
+                                inputs:
+                                  channelName:
+                                    type: reference
+                                    value: >-
+                                      handleApprovalsTrigger.results.body.data.event.channel
+                                  connection:
+                                    type: configVar
+                                    value: Slack Connection
+                                  message:
+                                    type: reference
+                                    value: agentRun.results.finalOutput
+                                  messageId:
+                                    type: reference
+                                    value: >-
+                                      handleApprovalsTrigger.results.body.data.event.thread_ts
+                                  username:
+                                    type: value
+                                    value: ""
+                                name: Post Assistant Response to User
+                              - action:
+                                  key: saveInstanceValue
+                                  component:
+                                    isPublic: true
+                                    key: persist-data
+                                    version: LATEST
+                                description: Used for looking up conversation history
+                                inputs:
+                                  dynamicValues:
+                                    type: complex
+                                    value: []
+                                  keyInput:
+                                    type: reference
+                                    value: >-
+                                      handleApprovalsTrigger.results.body.data.event.thread_ts
+                                  valueInput:
+                                    type: reference
+                                    value: >-
+                                      agentRun.results.state.lastModelResponse.responseId
+                                name: Save Last Model Response ID
+                          - name: Else
+                            steps: []
+                        description: ""
+                        inputs:
+                          conditions:
+                            type: complex
+                            value:
+                              - name: User Message
+                                type: complex
+                                value:
+                                  - and
+                                  - - equal
+                                    - name: ""
+                                      type: reference
+                                      value: >-
+                                        handleApprovalsTrigger.results.body.data.event.type
+                                    - name: ""
+                                      type: value
+                                      value: message
+                                  - - doesNotExist
+                                    - name: ""
+                                      type: reference
+                                      value: >-
+                                        handleApprovalsTrigger.results.body.data.event.bot_id
+                                  - - doesNotExist
+                                    - name: ""
+                                      type: reference
+                                      value: >-
+                                        handleApprovalsTrigger.results.body.data.event.subtype
+                        name: Branch on Message Type
+                description: Interactions are form url encoded. Events are json
+                inputs:
+                  branchValueMappings:
+                    type: complex
+                    value:
+                      - name: Incoming Interaction
+                        type: value
+                        value: application/x-www-form-urlencoded
+                  inputValue:
+                    type: reference
+                    value: handleApprovalsTrigger.results.headers.Content-Type
+                name: Branch on Event Type
+          - name: URL Verify
+            steps: []
+          - name: Management
+            steps: []
+        description: ""
+        inputs:
+          slackConnection:
+            type: configVar
+            value: Slack Connection
+        isTrigger: true
+        name: Handle Approvals Trigger
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: true
+    name: Get Incidents
+    schemas:
+      invoke:
+        $schema: "https://json-schema.org/draft/2020-12/schema"
+        properties: {}
+        title: GetIncidents
+        type: object
+    steps:
+      - action:
+          key: toolFlowTrigger
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Get Incidents Trigger
+      - action:
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: Simulate calling an Incidents API
+        inputs:
+          code:
+            type: value
+            value: |
+              /*
+                Access config variables by name through the configVars object. e.g.
+                  const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                Access previous steps' results through the stepResults object. Trigger
+                and step names are camelCased. If the step "Get Data from API" returned
+                {"foo": "bar", "baz": 123}, you could destructure that data with:
+                  const { foo, baz } = stepResults.getDataFromApi.results;
+
+                You can return string, number or complex object data. e.g.
+                  return { data: { foo: "Hello", bar: 123.45, baz: true } };
+              */
+
+              module.exports = async ({ logger, configVars }, stepResults) => {
+                function getActiveIncidents() {
+                // Simulated API call to Acme Incident Platform
+                return {
+                  status: "success",
+                  timestamp: new Date().toISOString(),
+                  data: {
+                    total_active: 3,
+                    incidents: [
+                      {
+                        id: "INC-1247",
+                        priority: "P1",
+                        title: "Database connection pool exhausted",
+                        status: "investigating",
+                        affected_service: "auth-service",
+                        created_at: "2025-01-22T01:45:00Z",
+                        assigned_to: "database-team",
+                        assignee: "Sarah Chen",
+                        duration_minutes: 17,
+                        impact: "Users experiencing login failures",
+                        last_update: "Team investigating connection leak in auth service"
+                      },
+                      {
+                        id: "INC-1246",
+                        priority: "P2",
+                        title: "Elevated API response times",
+                        status: "identified",
+                        affected_service: "api-gateway",
+                        created_at: "2025-01-22T00:30:00Z",
+                        assigned_to: "platform-team",
+                        assignee: "Mike Johnson",
+                        duration_minutes: 92,
+                        impact: "5% of requests experiencing >2s latency",
+                        last_update: "Root cause identified as inefficient database query"
+                      },
+                      {
+                        id: "INC-1245",
+                        priority: "P3",
+                        title: "Webhook delivery delays",
+                        status: "monitoring",
+                        affected_service: "webhook-processor",
+                        created_at: "2025-01-21T23:15:00Z",
+                        assigned_to: "platform-team",
+                        assignee: "Alex Kim",
+                        duration_minutes: 167,
+                        impact: "Customer webhooks delayed by ~30 seconds",
+                        last_update: "Temporary fix applied, monitoring for stability"
+                      }
+                    ]
+                  }
+                };
+              }
+                const incidents = getActiveIncidents()
+                return { data: incidents };
+              };
+        name: Get Incidents
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: true
+    name: Create Incident
+    schemas:
+      invoke:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        additionalProperties: false
+        description: Arguments for the create_incident tool call
+        properties:
+          anomaly_id:
+            description: Optional reference to the original anomaly detection
+            examples:
+              - DET-892734
+            pattern: "^DET-[0-9]+$"
+            type: string
+          assignee:
+            additionalProperties: false
+            description: The on-call engineer assigned to handle the incident
+            properties:
+              email:
+                description: Email address of the assignee
+                examples:
+                  - jake.hagle@prismatic.io
+                format: email
+                type: string
+              handle:
+                description: Slack username/handle
+                examples:
+                  - jake.hagle
+                pattern: "^[a-z0-9][a-z0-9._-]{0,79}$"
+                type: string
+              id:
+                description: Slack user ID
+                examples:
+                  - U01A5A5HU0Y
+                pattern: "^U[A-Z0-9]{8,12}$"
+                type: string
+              name:
+                description: Full name of the assignee
+                examples:
+                  - Jake Hagle
+                maxLength: 100
+                minLength: 1
+                type: string
+            required:
+              - id
+              - name
+              - handle
+              - email
+            type: object
+          description:
+            description: >-
+              Detailed description of the incident including key metrics and
+              impact
+            examples:
+              - >-
+                Payment Gateway Critical Latency - Payment processing
+                experiencing severe delays. P95 response time: 8200ms (baseline:
+                500ms), Error rate: 15.2%, 2341 transactions affected over 8
+                minutes
+            maxLength: 500
+            minLength: 10
+            type: string
+          metrics:
+            additionalProperties: true
+            description: Optional structured metrics data
+            properties:
+              affected_count:
+                minimum: 0
+                type: integer
+              duration_minutes:
+                minimum: 0
+                type: integer
+              error_rate:
+                pattern: "^[0-9.]+%$"
+                type: string
+              response_time:
+                type: string
+            type: object
+          priority:
+            description: Incident priority level
+            enum:
+              - P1
+              - P2
+              - P3
+              - P4
+            type: string
+          reported_by:
+            const: Acme Incident Assistant
+            description: System or entity that reported the incident
+            type: string
+          request_id:
+            description: Optional tracking ID for this incident request
+            examples:
+              - INC-REQ-892734
+            pattern: "^[A-Z0-9-]+$"
+            type: string
+          scope:
+            description: Geographic regions or components affected
+            examples:
+              - "us-east-1, us-west-2, eu-west-1"
+              - All regions
+              - Production environment
+              - Customer-facing APIs
+            maxLength: 200
+            minLength: 1
+            type: string
+          service:
+            description: The affected service identifier
+            examples:
+              - payment-gateway
+              - auth-service
+              - api-gateway
+              - database-cluster
+            maxLength: 100
+            minLength: 1
+            type: string
+          title:
+            description: >-
+              A clear title summarizing the issue. Do not include metrics in the
+              title unless its a summary.
+            type: string
+        required:
+          - description
+          - priority
+          - service
+          - scope
+          - assignee
+          - reported_by
+        title: Create Incident Arguments
+        type: object
+    steps:
+      - action:
+          key: toolFlowTrigger
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Create Incident Trigger
+      - action:
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: ""
+        inputs:
+          code:
+            type: value
+            value: |
+              /*
+                Access config variables by name through the configVars object. e.g.
+                  const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                Access previous steps' results through the stepResults object. Trigger
+                and step names are camelCased. If the step "Get Data from API" returned
+                {"foo": "bar", "baz": 123}, you could destructure that data with:
+                  const { foo, baz } = stepResults.getDataFromApi.results;
+
+                You can return string, number or complex object data. e.g.
+                  return { data: { foo: "Hello", bar: 123.45, baz: true } };
+              */
+
+              module.exports = async ({ logger, configVars }, stepResults) => {
+                function remapToIncidentCreated(prismaticPayload) {
+                  const data = prismaticPayload.results.body.data;
+                  const now = new Date().toISOString();
+
+                  // Generate incident ID from request ID or create new one
+                  const incidentId = data.request_id
+                    ? `INC-${data.request_id.split("-").slice(-2).join("-")}`
+                    : `INC-2025-${Math.floor(Math.random() * 10000)}`;
+
+                  return {
+                    status: "success",
+                    incident: {
+                      id: incidentId,
+                      title: data.title,
+                      description: data.description,
+                      priority: data.priority,
+                      status: "investigating",
+                      service: data.service,
+                      scope: data.scope,
+                      assignee: {
+                        id: data.assignee.id,
+                        name: data.assignee.name,
+                        handle: data.assignee.handle,
+                        email: data.assignee.email,
+                      },
+                      reported_by: data.reported_by,
+                      created_at: now,
+                      updated_at: now,
+                      incident_url: `https://incidents.acme.io/incidents/${incidentId}`,
+                      slack_channel: `#${incidentId.toLowerCase()}`,
+                      timeline: [
+                        {
+                          timestamp: now,
+                          action: "incident_created",
+                          actor: data.reported_by,
+                          message: "Incident created from anomaly detection",
+                        },
+                      ],
+                      metadata: {
+                        anomaly_id: data.anomaly_id,
+                        approval_request_id: data.request_id,
+                        approved_by: data.assignee.id,
+                        approved_at: new Date(Date.now() - 2000).toISOString(), // 2 seconds before creation
+                        metrics: data.metrics,
+                        execution_id: prismaticPayload.results.executionId,
+                      },
+                    },
+                    message: `Incident ${incidentId} has been successfully created and assigned to ${data.assignee.name}`,
+                  };
+                }
+
+                // Usage:
+                const transformedPayload = remapToIncidentCreated(
+                  stepResults.createIncidentTrigger,
+                );
+                return { data: transformedPayload };
+              };
+        name: Code Block
+  - description: ""
+    endpointSecurityType: customer_optional
+    isSynchronous: true
+    name: Get On Call Staff
+    schemas:
+      invoke:
+        $schema: "https://json-schema.org/draft/2020-12/schema"
+        properties: {}
+        title: GetOnCallStaff
+        type: object
+    steps:
+      - action:
+          key: toolFlowTrigger
+          component:
+            isPublic: true
+            key: openai
+            version: LATEST
+        description: ""
+        inputs: {}
+        isTrigger: true
+        name: Get On Call Staff Trigger
+      - action:
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: ""
+        inputs:
+          code:
+            type: value
+            value: |
+              /*
+                Access config variables by name through the configVars object. e.g.
+                  const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                Access previous steps' results through the stepResults object. Trigger
+                and step names are camelCased. If the step "Get Data from API" returned
+                {"foo": "bar", "baz": 123}, you could destructure that data with:
+                  const { foo, baz } = stepResults.getDataFromApi.results;
+
+                You can return string, number or complex object data. e.g.
+                  return { data: { foo: "Hello", bar: 123.45, baz: true } };
+              */
+
+              module.exports = async ({ logger, configVars }, stepResults) => {
+                return { data: {
+                  "user": "Jake Hagle",
+                  "email": "jake.hagle@prismatic.io"
+                } };
+              };
+        name: Code Block
+      - action:
+          key: getUser
+          component:
+            isPublic: true
+            key: slack
+            version: LATEST
+        description: ""
+        inputs:
+          connection:
+            type: configVar
+            value: Slack Connection
+          email:
+            type: reference
+            value: codeBlock.results.email
+        name: Get User By Email
+name: Slack
+requiredConfigVars:
+  - connection:
+      key: oauth2
+      component:
+        isPublic: true
+        key: slack
+        version: LATEST
+    dataType: connection
+    inputs:
+      authorizeUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://slack.com/oauth/v2/authorize"
+      clientId:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      clientSecret:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      isUser:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "false"
+      revokeUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://slack.com/api/auth.revoke"
+      scopes:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: >-
+          chat:write chat:write.public chat:write.customize channels:read
+          groups:read im:read mpim:read users:read users:read.email
+          channels:history im:history
+      signingSecret:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      tokenUrl:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "https://slack.com/api/oauth.v2.access"
+    key: Slack Connection
+    meta:
+      visibleToCustomerDeployer: true
+      visibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false
+  - dataSource:
+      key: selectChannels
+      component:
+        isPublic: true
+        key: slack
+        version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    description: The Slack channel to send alerts to
+    inputs:
+      connection:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: configVar
+        value: Slack Connection
+      includeImChannels:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "false"
+      includeMultiPartyImchannels:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "false"
+      includePrivateChannels:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "false"
+      includePublicChannels:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "true"
+      showIdInDropdown:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "false"
+    key: Alert Channel
+    orgOnly: false
+  - connection:
+      key: openAiApiKey
+      component:
+        isPublic: true
+        key: openai
+        version: LATEST
+    dataType: connection
+    inputs:
+      apiKey:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: ""
+      organization:
+        meta:
+          orgOnly: false
+          visibleToCustomerDeployer: true
+          visibleToOrgDeployer: true
+        type: value
+        value: ""
+    key: OpenAI Connection
+    meta:
+      visibleToCustomerDeployer: true
+      visibleToOrgDeployer: true
+    onPremiseConnectionConfig: disallowed
+    orgOnly: false

@@ -60,10 +60,11 @@ Production-ready webhook handler for Slack Assistant events with OpenAI agent pr
 - Workflow approval systems
 - Multi-step operations with state
 
-### Test It
+### Deploy & Test
 
 ```bash
-npm test  # Runs unit tests with mock Slack events
+npm run import  # Build and deploy to Prismatic
+# Test directly in Slack after deployment
 ```
 
 ## 🏗️ Architecture
@@ -84,24 +85,21 @@ flow({
   },
 
   onExecution: async (context, params) => {
-    // Phase 2: Async agent processing
-    const runner = await setupAgent({
-      openAIKey: configVars.OPENAI_API_KEY,
-      systemPrompt: configVars.SYSTEM_PROMPT,
-      customer: customer,
-      prismaticRefreshToken,
-      excludeIntegrationId: integration.id,
+    // Phase 2: Direct agent creation and processing
+    const agent = new Agent({
+      name: "Slack Assistant",
+      instructions: configVars.SYSTEM_PROMPT,
+      tools: await buildTools(customer, prismaticRefreshToken, integration.id),
     });
 
-    const result = await runner.run(
-      userInput,
-      conversationId,
-      previousExecutionId,
-    );
+    // Run agent with user input
+    const result = await run(agent, [user(userInput)], {
+      previousResponseId: lastResponseId,
+    });
 
-    if (result.needsApproval) {
+    if (result.interruptions && result.interruptions.length > 0) {
       // Display approval UI
-      await showApprovalBlocks(state.pendingApproval);
+      await showApprovalBlocks(result.interruptions[0]);
     } else {
       // Send response
       await client.chat.postMessage({
@@ -114,24 +112,25 @@ flow({
 
 ### State Management Pattern
 
-Conversation state with support for approval interruptions:
+Simplified conversation state using instanceState:
 
 ```typescript
-interface AgentState {
-  conversationId: string;
-  history: AgentInputItem[]; // Full conversation history
-  runState?: string; // Serialized for resumption
-  metadata: {
-    timestamp: number;
-    interrupted: boolean;
-    lastExecutionId?: string;
-  };
-  pendingApproval?: {
-    // Present when approval needed
-    toolName: string;
-    arguments: any;
+interface ConversationState {
+  lastResponseId?: string;
+  state?: string; // Serialized agent state for resumption
+  pendingInterruption?: {
+    functionId: string;
+    name: string;
+    arguments: unknown;
   };
 }
+
+// State is stored directly in instanceState
+instanceState[conversationId] = {
+  state: result.state.toString(),
+  lastResponseId: result.lastResponseId,
+  pendingInterruption: { /* ... */ }
+} as ConversationState;
 ```
 
 ### Approval Flow Sequence
@@ -145,27 +144,17 @@ interface AgentState {
 
 ## 📁 Project Structure
 
-```
+```text
 slack-chatbot-agent/
 ├── src/
 │   ├── flows/
-│   │   ├── eventHandler.ts      # Main webhook flow
+│   │   ├── eventHandler.ts      # Main webhook flow with inline agent
 │   │   └── index.ts              # Flow exports
 │   ├── agents/
-│   │   ├── index.ts              # Core agent logic
-│   │   ├── setup.ts              # Agent configuration
-│   │   ├── prompts.ts            # System prompts
-│   │   ├── state/                # State persistence
-│   │   │   ├── index.ts          # State factory
-│   │   │   ├── fileStorage.ts    # Development storage
-│   │   │   ├── prismaticStorage.ts # Production storage
-│   │   │   └── types.ts          # State interfaces
-│   │   ├── tools/
-│   │   │   ├── prismaticTools.ts # Dynamic tool creation
-│   │   │   ├── approvalTool.ts   # Approval examples
-│   │   │   └── openaiHostedTools.ts # OpenAI tools
-│   │   └── types/
-│   │       └── index.ts          # Agent types
+│   │   └── tools/
+│   │       ├── prismaticTools.ts # Dynamic tool creation + approval tools
+│   │       ├── approvalTools.ts  # Approval tool implementations
+│   │       └── openaiHostedTools.ts # OpenAI hosted tools
 │   ├── slack/
 │   │   ├── app.ts                # Bolt app setup
 │   │   ├── acknowledge.ts        # Webhook ACK logic
@@ -196,20 +185,16 @@ slack-chatbot-agent/
 │   │   │   └── index.ts
 │   │   ├── types.ts              # Prismatic types
 │   │   └── index.ts              # Main exports
+│   ├── types.ts                  # Core type definitions
 │   ├── configPages.ts            # Integration config
 │   ├── componentRegistry.ts      # Component setup
-│   ├── index.ts                  # Entry point
-│   └── test/
-│       ├── index.test.ts         # Flow tests
-│       ├── agent.test.ts         # Agent tests
-│       └── testPayload.ts        # Test fixtures
+│   └── index.ts                  # Entry point
 ├── assets/
 │   └── icon.png                  # Integration icon
 ├── package.json
 ├── tsconfig.json
 ├── vitest.config.ts
 ├── esbuild.config.js
-├── test.sh
 ├── CLAUDE.md                      # AI development guide
 └── README.md
 ```
@@ -244,7 +229,7 @@ SYSTEM_PROMPT="You are a helpful assistant"
 
 2. **Configure OAuth Scopes**:
 
-   ```
+   ```text
    app_mentions:read
    chat:write
    commands
@@ -297,7 +282,7 @@ npm run import
 Create new tools for the agent to use:
 
 ```typescript
-// src/agents/tools/custom.ts
+// src/agents/tools/customTools.ts
 import { tool } from "@openai/agents";
 import { z } from "zod";
 
@@ -316,8 +301,12 @@ export const customTool = tool({
   },
 });
 
-// Add to agent setup
-const tools = [...existingTools, customTool];
+// Add to buildTools function in eventHandler.ts
+async function buildTools(...) {
+  // ... existing tools
+  tools = tools.concat([customTool]);
+  return tools;
+}
 ```
 
 ### Customizing Approval Flow
@@ -353,82 +342,38 @@ export function createApprovalBlocks(
 }
 ```
 
-### Implementing Custom State Storage
+### Customizing State Management
 
-Create a custom storage backend:
+State is managed directly through instanceState:
 
 ```typescript
-// src/agents/state/customStorage.ts
-import { StateStorage, AgentState } from "./types";
+// In eventHandler.ts
+const convState = instanceState[conversationId] as ConversationState;
 
-export class CustomStorage implements StateStorage {
-  async save(state: AgentState): Promise<void> {
-    // Custom save logic
-    await myDatabase.save(state.conversationId, state);
-  }
+// Store state after agent run
+instanceState[conversationId] = {
+  state: result.state.toString(),
+  lastResponseId: result.lastResponseId,
+  pendingInterruption: {
+    functionId: interruption.rawItem.id,
+    name: interruption.rawItem.name,
+    arguments: interruption.rawItem.arguments,
+  },
+} as ConversationState;
 
-  async load(
-    conversationId: string,
-    executionId: string,
-  ): Promise<AgentState | null> {
-    // Custom load logic
-    return await myDatabase.load(conversationId);
-  }
-
-  getLastSavedState(): AgentState | null {
-    // Return cached state
-    return this.lastState;
-  }
-}
+// Resume from stored state
+const agentState = await RunState.fromString(agent, convState.state);
+const result = await run(agent, agentState);
 ```
 
 ## 🧪 Testing
 
-### Unit Tests
+### Development
 
 ```bash
-npm test           # Run all tests
-npm run test:ui    # Vitest UI
 npm run lint       # ESLint
 npm run format     # Prettier
-```
-
-### Test Coverage
-
-The test suite includes:
-
-- **Flow Tests** (`index.test.ts`): Webhook handling and Slack event processing
-- **Agent Tests** (`agent.test.ts`): Agent behavior, approval flows, and state management
-- **Mock Payloads** (`testPayload.ts`): Realistic Slack event fixtures
-
-### Example Test
-
-```typescript
-// Testing approval flow
-test("should handle approval interruption", async () => {
-  const agent = await setupAgent({
-    openAIKey: process.env.OPENAI_API_KEY!,
-    systemPrompt: "You are a helpful assistant.",
-    includeApprovalTools: true,
-  });
-
-  // Trigger approval-required tool
-  const result = await agent.run(
-    "Deploy v1 to production",
-    "test-conversation",
-  );
-
-  expect(result.needsApproval).toBe(true);
-
-  // Resume with approval
-  const approved = await agent.resume(
-    "test-conversation",
-    "test-execution-id",
-    { approved: true },
-  );
-
-  expect(approved.finalOutput).toContain("deployed");
-});
+npm run build      # Build the integration
 ```
 
 ### Slack Testing

@@ -1,64 +1,60 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { setupAgent } from "../agents/setup";
+import { Agent, run, setDefaultOpenAIKey, user } from "@openai/agents";
 import apiTools from "../agents/tools/api";
-import { parseFlowInput, buildFlowOutput, isApprovalInput } from "./utils/flowHelpers";
-
+import { ChatRequest, ChatResponse } from "../types";
 export const apiAgent = flow({
   name: "API Agent",
-  stableKey: "API-Agent",
-  description:
-    "Handles incoming messages and provides API interactions through an AI agent",
+  stableKey: "api-agent",
+  description: "Demonstrates wrapping REST APIs as AI tools for interaction",
   onTrigger: async (context, payload) => {
     return Promise.resolve({
       payload,
     });
   },
-  onExecution: async ({ configVars, executionId }, params) => {
-    const openaiConnection = util.types.toString(
+  onExecution: async ({ configVars }, params) => {
+    const openaiKey = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
 
-    const input = parseFlowInput(params.onTrigger.results.body.data);
+    // Set the OpenAI API key
+    setDefaultOpenAIKey(openaiKey);
 
-    const systemPrompt = `${configVars.SYSTEM_PROMPT}
+    // Create agent with API tools
+    const agent = new Agent({
+      name: "API Assistant",
+      instructions: `${configVars.SYSTEM_PROMPT}
 
-You are an API assistant that can help users interact with their data.
-Use these tools to help users manage their posts and access their data.`;
-
-    // Setup agent with all API tools for data management
-    const runner = await setupAgent({
-      systemPrompt,
-      openAIKey: openaiConnection,
+You are an API assistant that helps users interact with their data.
+Use the available tools to fulfill user requests.`,
       tools: [
-        apiTools.getCurrentUserInfo, // Get current user information
-        apiTools.getPosts, // Get all posts from current user
-        apiTools.getPost, // Get a specific post by ID
-        apiTools.createPost, // Create new post (requires approval)
-        apiTools.updatePost, // Update existing post (requires approval)
-        apiTools.getPostComments, // Get comments for a post
+        // Read-only tools
+        apiTools.getCurrentUserInfo,
+        apiTools.getPosts,
+        apiTools.getPost,
+        apiTools.getPostComments,
       ],
     });
 
-    if (isApprovalInput(input) && input.previousExecutionId) {
-      // Resume with approval decision
-      await runner.resume(
-        input.conversationId,
-        input.previousExecutionId,
-        input.approval,
-      );
-    } else if (input.message) {
-      // New message
-      await runner.run(
-        input.message,
-        input.conversationId,
-        input.previousExecutionId,
-      );
-    } else {
-      throw new Error("Either 'message' or approval decision required");
+    // Get the message from the payload
+    const { message, conversationId, lastResponseId } = params.onTrigger.results
+      .body.data as ChatRequest;
+
+    if (!message) {
+      throw new Error("Message is required for API agent");
     }
 
+    // Run the agent with the message
+    const result = await run(agent, [user(message)], {
+      previousResponseId: lastResponseId,
+    });
+
+    // Return the response directly
     return {
-      data: buildFlowOutput(runner.storage.getLastSavedState(), executionId),
+      data: {
+        response: result.finalOutput,
+        lastResponseId: result.lastResponseId,
+        conversationId: conversationId,
+      },
     };
   },
 });

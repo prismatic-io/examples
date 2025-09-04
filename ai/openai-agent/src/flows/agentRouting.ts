@@ -1,10 +1,15 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { Agent, handoff, run, tool, setDefaultOpenAIKey } from "@openai/agents";
+import {
+  Agent,
+  handoff,
+  run,
+  tool,
+  setDefaultOpenAIKey,
+  user,
+} from "@openai/agents";
 import { RECOMMENDED_PROMPT_PREFIX } from "@openai/agents-core/extensions";
-import { AgentInputItem } from "@openai/agents";
 import { z } from "zod";
-import { parseFlowInput, buildFlowOutput } from "./utils/flowHelpers";
-import { AgentState } from "../agents/state";
+import { ChatRequest } from "../types";
 
 const mockOrders: Record<string, any> = {
   "ORD-12345": {
@@ -83,16 +88,19 @@ export const agentRouting = flow({
       payload,
     });
   },
-  onExecution: async ({ configVars, executionId }, params) => {
-    const openaiConnection = util.types.toString(
+  onExecution: async ({ configVars }, params) => {
+    const openaiKey = util.types.toString(
       configVars.OPENAI_API_KEY.fields.apiKey,
     );
 
-    setDefaultOpenAIKey(openaiConnection);
+    // Set the OpenAI API key
+    setDefaultOpenAIKey(openaiKey);
 
-    const input = parseFlowInput(params.onTrigger.results.body.data);
+    // Get the message from the payload
+    const { message, lastResponseId, conversationId } = params.onTrigger.results
+      .body.data as ChatRequest;
 
-    if (!input.message) {
+    if (!message) {
       throw new Error("Message is required for agent routing");
     }
 
@@ -133,27 +141,18 @@ export const agentRouting = flow({
       handoffs: [orderLookupAgent, handoff(supportAgent)],
     });
 
-    // Build message history for the agent
-    const messages: AgentInputItem[] = [
-      { role: "user", content: input.message },
-    ];
+    // Run the triage agent with the message
+    const result = await run(triageAgent, [user(message)], {
+      previousResponseId: lastResponseId,
+    });
 
-    // Run the triage agent with the incoming messages
-    const result = await run(triageAgent, messages, {});
-
-    // Create agent state to maintain consistency with other flows
-    const agentState: AgentState = {
-      conversationId: input.conversationId,
-      finalOutput: result.finalOutput || undefined,
-      history: result.history,
-      metadata: {
-        lastExecutionId: executionId,
-        timestamp: Date.now(),
-      },
-    };
-
+    // Return the response directly
     return {
-      data: buildFlowOutput(agentState, executionId),
+      data: {
+        response: result.finalOutput,
+        lastResponseId: result.lastResponseId,
+        conversationId,
+      },
     };
   },
 });

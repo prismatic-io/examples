@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 /**
  * Authenticate the JWT token with Prismatic's embedded API
  * @param token - The JWT token to authenticate
