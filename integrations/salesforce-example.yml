@@ -4,8 +4,6 @@ configPages:
       - type: configVar
         value: Salesforce Connection
       - type: configVar
-        value: Truncated Instance ID
-      - type: configVar
         value: Acme API Endpoint
     name: Configuration
     tagline: ""
@@ -44,9 +42,9 @@ documentation: >-
   understands, and sends the request to Acme.
 
 
-  The subscription to a Salesforce Outbound Message and Workflow Rule are
-  performed on instance deploy automatically. Those resource are deleted on
-  instance removal.
+  The subscription to a Salesforce Flow and Outbound Message are performed on
+  instance deploy automatically. Those resources are deleted on instance
+  removal.
 
 
   ## Create Account from Acme
@@ -123,9 +121,6 @@ flows:
               connection:
                 type: configVar
                 value: Salesforce Connection
-              debug:
-                type: value
-                value: "false"
               queryString:
                 type: template
                 value: >-
@@ -165,9 +160,11 @@ flows:
                     value:
                       - and
                       - - isEmpty
-                        - type: reference
+                        - name: ""
+                          type: reference
                           value: salesforceQuery.results.records
-                        - type: value
+                        - name: ""
+                          type: value
                           value: ""
             name: Branch on Expression
           - action:
@@ -285,7 +282,7 @@ flows:
     name: Process Salesforce Outbound Messages
     steps:
       - action:
-          key: workflowTrigger
+          key: flowOutboundMessageTrigger
           component:
             isPublic: true
             key: salesforce
@@ -295,27 +292,21 @@ flows:
           connection:
             type: configVar
             value: Salesforce Connection
-          description:
-            type: value
-            value: Sync Account data to Acme
           fields:
             type: complex
             value: []
-          outboundMessageName:
-            type: template
-            value: "acme_{{#Truncated Instance ID}}"
-          recordType:
+          prefix:
+            type: value
+            value: acme
+          triggerObject:
             type: value
             value: Account
-          triggerType:
+          triggerOn:
             type: value
-            value: onAllChanges
+            value: Create or Update
           version:
             type: value
             value: "59.0"
-          workflowRuleName:
-            type: template
-            value: "acme_{{#Truncated Instance ID}}"
         isTrigger: true
         name: Process Salesforce Outbound Messages Trigger
       - action:
@@ -331,8 +322,7 @@ flows:
             value: Salesforce Connection
           recordId:
             type: reference
-            value: >-
-              processSalesforceOutboundMessagesTrigger.results.body.data.soapenv:Envelope.soapenv:Body.notifications.Notification.sObject.sf:Id
+            value: "processSalesforceOutboundMessagesTrigger.results.body.data[0].Id"
           recordType:
             type: value
             value: Account
@@ -508,9 +498,6 @@ flows:
           connection:
             type: configVar
             value: Salesforce Connection
-          debug:
-            type: value
-            value: "false"
           dynamicValues:
             type: reference
             value: createSalesforcePayload.results
@@ -571,51 +558,6 @@ requiredConfigVars:
         value: "https://login.salesforce.com/services/oauth2/token"
     key: Salesforce Connection
     onPremiseConnectionConfig: disallowed
-    orgOnly: false
-  - dataSource:
-      key: runCodeString
-      component:
-        isPublic: true
-        key: code
-        version: LATEST
-    dataType: string
-    defaultValue: ""
-    description: Used to name workflow rule and outbound message; hidden from customers
-    inputs:
-      code:
-        meta:
-          orgOnly: true
-          visibleToCustomerDeployer: false
-          visibleToOrgDeployer: false
-        type: value
-        value: |-
-          // The instance ID will be used to name the outbound message
-          // and workflow rule, which each have a maximum length of 40
-          // characters for their names.
-
-          module.exports = async (context) => {
-            // Get the first 20 characters of the instance ID
-            const truncated = context.instance.id.substring(0,20)
-            return { result: truncated };
-          };
-      connection:
-        meta:
-          orgOnly: true
-          visibleToCustomerDeployer: false
-          visibleToOrgDeployer: false
-        type: configVar
-        value: ""
-      contextValue:
-        meta:
-          orgOnly: true
-          visibleToCustomerDeployer: false
-          visibleToOrgDeployer: false
-        type: value
-        value: ""
-    key: Truncated Instance ID
-    meta:
-      visibleToCustomerDeployer: false
-      visibleToOrgDeployer: true
     orgOnly: false
   - dataSource:
       key: runCodeJsonForm
