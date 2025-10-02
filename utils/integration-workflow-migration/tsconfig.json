@@ -14,12 +14,6 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "include": [
-    "*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "deprecated-migrate.ts"
-  ]
+  "include": ["*.ts"],
+  "exclude": ["node_modules", "dist", "deprecated-migrate.ts"]
 }

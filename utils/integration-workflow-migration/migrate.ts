@@ -1,19 +1,12 @@
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import * as yaml from "js-yaml";
+import type { Flow, Input, IntegrationSchema, Step } from "./integrationSchema";
 import type {
-  IntegrationSchema,
-  Flow,
-  Step,
-  Input,
-  SimpleInput,
-} from "./integrationSchema";
-import type {
-  WorkflowDefinition,
-  YmlStep,
-  YmlBranch,
   StepErrorHandlingConfiguration,
+  WorkflowDefinition,
   WorkflowRetryConfiguration,
+  YmlStep,
 } from "./workflowSchema";
 
 interface MigrationReport {
@@ -44,7 +37,7 @@ function parseArguments(): { inputFile: string; outputDir: string } {
 
   if (args.length !== 2) {
     console.error(
-      "Usage: npm run migrate <input-yaml-file> <output-directory>",
+      "Usage: npm run migrate <input-yaml-file> <output-directory>"
     );
     console.error("Example: npm run migrate integration.yml ./output");
     process.exit(1);
@@ -92,7 +85,7 @@ function convertInputType(input: Input, report: MigrationReport): Input {
     if (input.type === "configVar") {
       report.removedConfigVars++;
       report.lossyTransformations.push(
-        `ConfigVar input converted to empty value: ${input.value}`,
+        `ConfigVar input converted to empty value: ${input.value}`
       );
       return {
         ...input,
@@ -104,7 +97,7 @@ function convertInputType(input: Input, report: MigrationReport): Input {
     if (input.type === "template") {
       report.removedTemplates++;
       report.lossyTransformations.push(
-        `Template input converted to empty value: ${input.value}`,
+        `Template input converted to empty value: ${input.value}`
       );
       return {
         ...input,
@@ -150,7 +143,7 @@ function convertStep(step: Step, report: MigrationReport): YmlStep {
       originalComponentKey: step.action.component.key,
     });
     report.lossyTransformations.push(
-      `Cross-flow action "${step.name}" converted to log message`,
+      `Cross-flow action "${step.name}" converted to log message`
     );
     return convertCrossFlowActionToLogStep(step);
   }
@@ -293,13 +286,13 @@ function sanitizeFileName(name: string): string {
 function writeWorkflowFile(
   workflow: WorkflowDefinition,
   outputDir: string,
-  integrationName: string,
+  integrationName: string
 ): void {
   const fileName = `${sanitizeFileName(workflow.name)}.yml`;
   const filePath = path.join(
     outputDir,
     sanitizeFileName(integrationName),
-    fileName,
+    fileName
   );
 
   const yamlContent = yaml.dump(workflow, {
@@ -316,13 +309,13 @@ function writeWorkflowFile(
 function writeReportFile(
   report: MigrationReport,
   outputDir: string,
-  integrationName: string,
+  integrationName: string
 ): void {
   const fileName = `${sanitizeFileName(report.flowName)}-migration-report.json`;
   const filePath = path.join(
     outputDir,
     sanitizeFileName(integrationName),
-    fileName,
+    fileName
   );
 
   ensureDirectoryExists(path.dirname(filePath));
@@ -332,12 +325,12 @@ function writeReportFile(
 function writeSummaryFile(
   summary: MigrationSummary,
   outputDir: string,
-  integrationName: string,
+  integrationName: string
 ): void {
   const filePath = path.join(
     outputDir,
     sanitizeFileName(integrationName),
-    "migration-summary.json",
+    "migration-summary.json"
   );
 
   ensureDirectoryExists(path.dirname(filePath));
@@ -371,17 +364,17 @@ function main(): void {
       if (report.status === "converted" && workflow) {
         summary.convertedFlows++;
         writeWorkflowFile(workflow, outputDir, integrationSchema.name);
-        console.log(`  ✓ Converted to workflow YAML`);
+        console.log("  ✓ Converted to workflow YAML");
 
         if (report.crossFlowActionsConverted > 0) {
           console.log(
-            `  ⚠ Converted ${report.crossFlowActionsConverted} cross-flow actions to log steps`,
+            `  ⚠ Converted ${report.crossFlowActionsConverted} cross-flow actions to log steps`
           );
         }
 
         if (report.removedConfigVars > 0 || report.removedTemplates > 0) {
           console.log(
-            `  ⚠ Removed ${report.removedConfigVars} config vars and ${report.removedTemplates} templates`,
+            `  ⚠ Removed ${report.removedConfigVars} config vars and ${report.removedTemplates} templates`
           );
         }
       } else {
@@ -394,23 +387,26 @@ function main(): void {
 
     writeSummaryFile(summary, outputDir, integrationSchema.name);
 
-    console.log(`\n=== Migration Complete ===`);
+    console.log("\n=== Migration Complete ===");
     console.log(`Total flows: ${summary.totalFlows}`);
     console.log(`Converted: ${summary.convertedFlows}`);
     console.log(`Skipped: ${summary.skippedFlows}`);
     console.log(
-      `Output directory: ${path.join(outputDir, sanitizeFileName(integrationSchema.name))}`,
+      `Output directory: ${path.join(
+        outputDir,
+        sanitizeFileName(integrationSchema.name)
+      )}`
     );
 
     if (summary.skippedFlows > 0) {
       console.log(
-        "\nSome flows were skipped. Check the migration reports for details.",
+        "\nSome flows were skipped. Check the migration reports for details."
       );
     }
   } catch (error) {
     console.error(
       "Migration failed:",
-      error instanceof Error ? error.message : String(error),
+      error instanceof Error ? error.message : String(error)
     );
     process.exit(1);
   }
