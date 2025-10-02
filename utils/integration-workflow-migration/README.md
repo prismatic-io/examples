@@ -174,3 +174,18 @@ npm run migrate
 ```
 
 The source code includes comprehensive TypeScript types and follows the existing schema definitions in `integrationSchema.ts` and `workflowSchema.ts`.
+
+## Importing workflows
+
+After generating a workflow YAML file, you can import it into the Prismatic platform using the CLI:
+
+```bash
+prism workflows:import --path output/my-integration/my-flow.yml
+```
+
+This will import the workflow as a _template_.
+If you would like to import the workflow directly for a specific customer, you can specify the `--customer` flag:
+
+```bash
+prism workflows:import --path output/my-integration/my-flow.yml --customer Q3VzEXAMPLE
+```
