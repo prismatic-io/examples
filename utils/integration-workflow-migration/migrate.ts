@@ -94,10 +94,10 @@ function convertInputType(input: Input, report: MigrationReport): Input {
       };
     }
 
-    if (input.type === "template") {
+    if (input.type === "template" && input.value.includes("{{#")) {
       report.removedTemplates++;
       report.lossyTransformations.push(
-        `Template input converted to empty value: ${input.value}`
+        `Template input with config variable converted to empty value: ${input.value}`
       );
       return {
         ...input,
