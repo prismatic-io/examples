@@ -1,0 +1,140 @@
+definitionVersion: 7
+name: "Sample E-commerce Integration"
+description: "Sample integration for testing migration"
+category: "ERP"
+defaultInstanceProfile: "Default Instance Profile"
+endpointType: "flow_specific"
+
+requiredConfigVars:
+  - key: "apiKey"
+    dataType: "string"
+    description: "API key for authentication"
+  - key: "baseUrl"
+    dataType: "string"
+    description: "Base URL for the API"
+
+configPages:
+  - name: "Authentication"
+    elements:
+      - type: "configVar"
+        value: "apiKey"
+      - type: "configVar"
+        value: "baseUrl"
+
+flows:
+  - name: "Customer Sync"
+    description: "Synchronizes customer data"
+    isSynchronous: false
+    retryConfig:
+      maxAttempts: 3
+      delayMinutes: 5
+      usesExponentialBackoff: true
+    steps:
+      - name: "HTTP Trigger"
+        description: "Receives webhook data"
+        action:
+          component:
+            key: "http"
+            version: 1
+            isPublic: true
+          key: "webhook"
+        isTrigger: true
+        inputs:
+          contentType:
+            type: "value"
+            value: "application/json"
+      - name: "Transform Data"
+        description: "Transform customer data"
+        action:
+          component:
+            key: "code"
+            version: 1
+            isPublic: true
+          key: "runCode"
+        inputs:
+          code:
+            type: "template"
+            value: "const apiKey = configVars.apiKey; return data;"
+          data:
+            type: "reference"
+            value: "trigger.results.body"
+      - name: "API Call"
+        description: "Call external API"
+        action:
+          component:
+            key: "http"
+            version: 1
+            isPublic: true
+          key: "httpRequest"
+        inputs:
+          url:
+            type: "configVar"
+            value: "baseUrl"
+          method:
+            type: "value"
+            value: "POST"
+          data:
+            type: "reference"
+            value: "transformData.results"
+
+  - name: "Management Flow"
+    description: "Management operations"
+    steps:
+      - name: "Management Trigger"
+        description: "Management trigger"
+        action:
+          component:
+            key: "management-triggers"
+            version: 1
+            isPublic: true
+          key: "instanceDeploy"
+        isTrigger: true
+      - name: "Setup"
+        description: "Initialize setup"
+        action:
+          component:
+            key: "code"
+            version: 1
+            isPublic: true
+          key: "runCode"
+        inputs:
+          code:
+            type: "value"
+            value: "console.log('Setup complete');"
+
+  - name: "Order Processing"
+    description: "Process orders with cross-flow actions"
+    steps:
+      - name: "Order Trigger"
+        description: "Receives order data"
+        action:
+          component:
+            key: "http"
+            version: 1
+            isPublic: true
+          key: "webhook"
+        isTrigger: true
+      - name: "Call Customer Sync"
+        description: "Trigger customer sync flow"
+        action:
+          component:
+            key: "cross-flow"
+            version: 1
+            isPublic: true
+          key: "triggerFlow"
+        inputs:
+          flowName:
+            type: "value"
+            value: "Customer Sync"
+      - name: "Process Order"
+        description: "Process the order"
+        action:
+          component:
+            key: "code"
+            version: 1
+            isPublic: true
+          key: "runCode"
+        inputs:
+          data:
+            type: "reference"
+            value: "trigger.results.body"
