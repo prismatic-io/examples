@@ -89,6 +89,20 @@ Steps with `component.key === "cross-flow"` are converted to:
   name: <Original Step Name>
 ```
 
+Triggers with `component.key === "cross-flow"` are converted to:
+
+```yaml
+- action:
+    component:
+      isPublic: true
+      key: webhook-triggers
+      version: LATEST
+    key: webhook
+  description: ""
+  inputs: {}
+  name: <Original Step Name>
+```
+
 ### 4. Schema Transformation
 
 - **Integration Schema**: `definitionVersion: 7` to **Workflow Definition**: `definitionVersion: 1`

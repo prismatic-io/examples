@@ -135,8 +135,24 @@ function convertCrossFlowActionToLogStep(step: Step): YmlStep {
   };
 }
 
-function convertStep(step: Step, report: MigrationReport): YmlStep {
-  if (isCrossFlowAction(step)) {
+function convertCrossFlowActionToUniversalWebhookTrigger(step: Step): YmlStep {
+  return {
+    name: step.name,
+    description: "",
+    action: {
+      component: {
+        isPublic: true,
+        key: "webhook-triggers",
+        version: "LATEST",
+      },
+      key: "webhook",
+    },
+    inputs: {},
+  };
+}
+
+function convertStep(step: Step, report: MigrationReport, isTrigger: boolean): YmlStep {
+  if (isCrossFlowAction(step) && !isTrigger) {
     report.crossFlowActionsConverted++;
     report.crossFlowActionDetails.push({
       originalName: step.name,
@@ -146,6 +162,16 @@ function convertStep(step: Step, report: MigrationReport): YmlStep {
       `Cross-flow action "${step.name}" converted to log message`
     );
     return convertCrossFlowActionToLogStep(step);
+  } else if (isCrossFlowAction(step)) {
+    report.crossFlowActionsConverted++;
+    report.crossFlowActionDetails.push({
+      originalName: step.name,
+      originalComponentKey: step.action.component.key,
+    });
+    report.lossyTransformations.push(
+      `Cross-flow action "${step.name}" converted to universal webhook trigger`
+    );
+    return convertCrossFlowActionToUniversalWebhookTrigger(step);
   }
 
   const convertedInputs: Record<string, any> = {};
@@ -206,13 +232,13 @@ function convertStep(step: Step, report: MigrationReport): YmlStep {
   }
 
   if (step.steps && step.steps.length > 0) {
-    ymlStep.steps = step.steps.map((s) => convertStep(s, report));
+    ymlStep.steps = step.steps.map((s) => convertStep(s, report, false));
   }
 
   if (step.branches && step.branches.length > 0) {
     ymlStep.branches = step.branches.map((branch) => ({
       name: branch.name,
-      steps: branch.steps.map((s) => convertStep(s, report)),
+      steps: branch.steps.map((s) => convertStep(s, report, false)),
     }));
   }
 
@@ -254,7 +280,7 @@ function convertFlowToWorkflow(flow: Flow): {
     };
   }
 
-  const convertedSteps = flow.steps.map((step) => convertStep(step, report));
+  const convertedSteps = flow.steps.map((step, index) => convertStep(step, report, index === 0));
 
   const workflow: WorkflowDefinition = {
     name: flow.name,
