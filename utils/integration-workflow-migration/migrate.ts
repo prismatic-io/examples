@@ -148,6 +148,7 @@ function convertCrossFlowActionToUniversalWebhookTrigger(step: Step): YmlStep {
       key: "webhook",
     },
     inputs: {},
+    isTrigger: true,
   };
 }
 

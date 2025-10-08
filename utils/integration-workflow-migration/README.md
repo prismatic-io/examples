@@ -101,6 +101,7 @@ Triggers with `component.key === "cross-flow"` are converted to:
   description: ""
   inputs: {}
   name: <Original Step Name>
+  isTrigger: true
 ```
 
 ### 4. Schema Transformation
