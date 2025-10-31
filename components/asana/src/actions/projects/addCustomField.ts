@@ -15,7 +15,10 @@ export const addCustomFieldToProject = action({
     description: "Add a new Custom Field to an existing Project",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/projects/${params.projectId}/addCustomFieldSetting`,
       {
@@ -25,7 +28,7 @@ export const addCustomFieldToProject = action({
           insert_before: params.insertBefore,
           is_important: params.isImportant,
         },
-      }
+      },
     );
     return { data };
   },

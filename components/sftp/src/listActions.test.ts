@@ -25,7 +25,8 @@ describe("listActions", () => {
       connection,
       path,
       pattern,
-      debug: false,
+      includeSubdirectories: false,
+      includeDirectories: false,
     });
     expect(result.data.sort()).toStrictEqual(expectedResults.sort());
   }, 20000);

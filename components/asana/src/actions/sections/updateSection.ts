@@ -15,7 +15,10 @@ export const updateSection = action({
     description: "Update the information and metadata of a project section",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.put(
       `/sections/${params.sectionId}`,
       {
@@ -25,7 +28,7 @@ export const updateSection = action({
           name: params.sectionName,
         },
       },
-      { params: { opt_fields: SECTION_OPT_FIELDS } }
+      { params: { opt_fields: SECTION_OPT_FIELDS } },
     );
     return { data };
   },

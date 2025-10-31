@@ -29,7 +29,10 @@ export const updateTask = action({
     description: "Update the information and metadata of the given task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
 
     const taskData = {
       data: {

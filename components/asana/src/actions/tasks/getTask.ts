@@ -9,7 +9,10 @@ export const getTask = action({
     description: "Get the information and metadata of a task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/tasks/${params.taskId}`, {
       params: {
         opt_fields: TASK_OPT_FIELDS,

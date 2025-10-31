@@ -16,7 +16,10 @@ export const updatePortfolio = action({
     description: "Update the information and metadata of the given portfolio",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.put(`/portfolios/${params.portfolioId}`, {
       data: {
         color: params.color || undefined,

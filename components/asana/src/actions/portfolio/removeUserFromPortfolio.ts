@@ -8,7 +8,10 @@ export const removeUserFromPortfolio = action({
     description: "Remove existing users from the given portfolio",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/portfolios/${params.portfolioId}/removeMembers`,
       {
@@ -21,7 +24,7 @@ export const removeUserFromPortfolio = action({
           opt_fields:
             "resource_type,gid,name,created_at,created_by,custom_field_settings,color,workspace,members",
         },
-      }
+      },
     );
     return { data };
   },

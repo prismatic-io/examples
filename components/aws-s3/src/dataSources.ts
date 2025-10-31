@@ -1,22 +1,13 @@
 import { dataSource } from "@prismatic-io/spectral";
 import { createS3Client } from "./auth";
 import { accessKeyInput } from "./inputs";
-import { awsRegions, dynamicAccessAllInputs } from "aws-utils";
+import {
+  dynamicAccessAllInputs,
+  selectRegion as selectRegionUtils,
+} from "aws-utils";
 import { ListBucketsCommand } from "@aws-sdk/client-s3"; // ES Modules import
 
-const selectRegion = dataSource({
-  display: {
-    label: "Select AWS Region",
-    description: "Select an AWS region",
-  },
-  dataSourceType: "picklist",
-  perform: async () => {
-    return Promise.resolve({
-      result: awsRegions.map((region) => ({ label: region, key: region })),
-    });
-  },
-  inputs: {},
-});
+const selectRegion = selectRegionUtils;
 
 const selectBucket = dataSource({
   display: {

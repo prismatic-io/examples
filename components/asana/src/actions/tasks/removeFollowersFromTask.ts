@@ -8,7 +8,10 @@ export const removeFollowersFromTask = action({
     description: "Remove followers from the given task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/tasks/${params.taskId}/removeFollowers`,
       {
@@ -21,7 +24,7 @@ export const removeFollowersFromTask = action({
           opt_fields:
             "resource_type,gid,created_at,followers,name,color,workspace",
         },
-      }
+      },
     );
     return { data };
   },

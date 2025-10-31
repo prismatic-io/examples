@@ -9,7 +9,10 @@ export const getPortfolio = action({
     description: "Get the information and metadata of a portfolio",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/portfolios/${params.portfolioId}`);
     return { data };
   },

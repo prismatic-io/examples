@@ -1,6 +1,6 @@
 import companyFilesActions from "./companyFiles";
-import employeeActions from "./employees";
 import employeeFilesActions from "./employeeFiles";
+import employeeActions from "./employees";
 import rawRequestActions from "./rawRequest";
 import tabularDataActions from "./tabularData";
 import timeOffActions from "./timeOff";

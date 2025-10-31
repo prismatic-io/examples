@@ -2,7 +2,7 @@ import { action, util } from "@prismatic-io/spectral";
 import { createSNSClient } from "../client";
 import { name, connectionInput } from "../inputs";
 import { awsRegion } from "aws-utils";
-import { CreateTopicResponse, CreateTopicCommand } from "@aws-sdk/client-sns";
+import { type CreateTopicResponse, CreateTopicCommand } from "@aws-sdk/client-sns";
 
 interface Response {
   data: CreateTopicResponse;
@@ -22,7 +22,7 @@ export const createTopic = action({
   perform: async (context, params) => {
     const sns = await createSNSClient({
       awsConnection: params.awsConnection,
-      awsRegion: util.types.toString(params.awsRegion),
+      awsRegion: params.awsRegion,
     });
     const createTopicParams = { Name: util.types.toString(params.name) };
     const command = new CreateTopicCommand(createTopicParams);

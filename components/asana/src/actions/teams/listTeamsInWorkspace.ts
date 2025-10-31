@@ -8,9 +8,12 @@ export const listTeams = action({
     description: "List all teams in the given workspace",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(
-      `/workspaces/${params.workspaceId}/teams`
+      `/workspaces/${params.workspaceId}/teams`,
     );
     return { data };
   },

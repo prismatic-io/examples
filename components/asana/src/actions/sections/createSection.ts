@@ -15,7 +15,10 @@ export const createSection = action({
     description: "Create a new section of a project",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/projects/${params.projectId}/sections`,
       {
@@ -25,7 +28,7 @@ export const createSection = action({
           name: params.sectionName,
         },
       },
-      { params: { opt_fields: SECTION_OPT_FIELDS } }
+      { params: { opt_fields: SECTION_OPT_FIELDS } },
     );
     return { data };
   },

@@ -1,5 +1,6 @@
-import { input } from "@prismatic-io/spectral";
+import { input, util } from "@prismatic-io/spectral";
 import { batchMessageEntriesExample } from "./constants/batchMessageEntriesExample";
+import { cleanStringInput } from "./utils";
 
 export const name = input({
   label: "Name",
@@ -16,6 +17,8 @@ export const topicArn = input({
   example: "arn:aws:sns:us-east-2:123456789012:MyExampleTopic",
   comments:
     "An Amazon SNS topic is a logical access point that acts as a communication channel.",
+  dataSource: "selectTopic",
+  clean: util.types.toString,
 });
 
 export const message = input({
@@ -61,6 +64,8 @@ export const subscriptionArn = input({
   example:
     "arn:aws:sns:us-east-2:123456789012:MyExampleTopic:00000000-00000000-00000000-00000000",
   comments: "The unique identifier for a topic subscription",
+  clean: util.types.toString,
+  dataSource: "selectSubscription",
 });
 
 export const phoneNumber = input({
@@ -97,7 +102,7 @@ export const maxItems = input({
   required: false,
   comments:
     "Provide an integer value for the maximum amount of items that will be returned. Provide a value from 1 to 50.",
-  example: `20`,
+  example: "20",
 });
 
 export const nextToken = input({
@@ -105,8 +110,9 @@ export const nextToken = input({
   type: "string",
   required: false,
   comments:
-    "Specify the pagination token that's returned by a previous request to retrieve the next page of results",
-  example: `lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E`,
+    "Specify the pagination token that's returned by a previous request to retrieve the next page of results.",
+  example: "lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E",
+  clean: cleanStringInput,
 });
 
 export const connectionInput = input({
@@ -124,3 +130,23 @@ export const publishBatchEntries = input({
   comments:
     "To add a Binary Message add a Template Field containing a Buffer from a previous field to the BinaryValue attribute. For MessageAttributes data types, see: https://docs.aws.amazon.com/sns/latest/dg/sns-message-attributes.html",
 });
+
+const fetchAll = input({
+  label: "Fetch All",
+  type: "boolean",
+  required: true,
+  default: "false",
+  clean: util.types.toBool,
+});
+
+export const fetchAllTopics = {
+  ...fetchAll,
+  comments:
+    "Turn this on to fetch all paginated topics. If turned off, only 100 topics will be returned.",
+};
+
+export const fetchAllSubscriptions = {
+  ...fetchAll,
+  comments:
+    "Turn this on to fetch all paginated subscriptions. If turned off, only 100 subscriptions will be returned.",
+};

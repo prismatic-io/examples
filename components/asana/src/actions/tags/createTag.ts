@@ -16,7 +16,10 @@ export const createTag = action({
     description: "Create a new tag",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/tags`,
       {
@@ -32,7 +35,7 @@ export const createTag = action({
         params: {
           opt_fields: TAG_OPT_FIELDS,
         },
-      }
+      },
     );
     return { data };
   },

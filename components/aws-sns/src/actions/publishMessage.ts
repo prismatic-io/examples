@@ -9,10 +9,10 @@ import {
 } from "../inputs";
 import {
   PublishCommand,
-  MessageAttributeValue,
-  PublishResponse,
+  type MessageAttributeValue,
+  type PublishResponse,
 } from "@aws-sdk/client-sns";
-import { KeyValuePair } from "@prismatic-io/spectral";
+import type { KeyValuePair } from "@prismatic-io/spectral";
 interface Response {
   data: PublishResponse;
 }
@@ -72,7 +72,7 @@ const getAttributeType = (input: unknown): MessageAttributeValue => {
 
 const attributeReducer = (kvpList: KeyValuePair<unknown>[] = []) => {
   return kvpList.reduce(
-    (result, { key, value }) => ({ ...result, [key]: getAttributeType(value) }),
+    (result, { key, value }) => Object.assign(result, { [key]: getAttributeType(value) }),
     {},
   );
 };
@@ -85,12 +85,12 @@ export const publishMessage = action({
   perform: async (context, params) => {
     const sns = await createSNSClient({
       awsConnection: params.awsConnection,
-      awsRegion: util.types.toString(params.awsRegion),
+      awsRegion: params.awsRegion,
     });
     const publishParams = {
       Message: util.types.toString(params.message),
       MessageAttributes: attributeReducer(params.messageAttributes),
-      TopicArn: util.types.toString(params.topicArn),
+      TopicArn: params.topicArn,
     };
     const command = new PublishCommand(publishParams);
     const response = await sns.send(command);

@@ -8,7 +8,10 @@ export const deleteStatus = action({
     description: "Delete a status update",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.delete(`/status_updates/${params.statusId}`);
     return { data };
   },

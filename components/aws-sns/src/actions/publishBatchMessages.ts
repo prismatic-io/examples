@@ -3,9 +3,9 @@ import { createSNSClient } from "../client";
 import { awsRegion } from "aws-utils";
 import { topicArn, connectionInput, publishBatchEntries } from "../inputs";
 import {
-  PublishBatchCommandOutput,
+  type PublishBatchCommandOutput,
   PublishBatchCommand,
-  PublishBatchRequestEntry,
+  type PublishBatchRequestEntry,
 } from "@aws-sdk/client-sns";
 interface Response {
   data: PublishBatchCommandOutput;
@@ -59,7 +59,7 @@ export const publishBatchMessages = action({
   perform: async (context, params) => {
     const sns = await createSNSClient({
       awsConnection: params.awsConnection,
-      awsRegion: util.types.toString(params.awsRegion),
+      awsRegion: params.awsRegion,
     });
     let parsedEntries = JSON.parse(params.publishBatchEntries);
     if (!Array.isArray(parsedEntries)) {
@@ -67,7 +67,7 @@ export const publishBatchMessages = action({
     }
     parsedEntries = processBinaryValueIfPresent(parsedEntries);
     const batchCommand = new PublishBatchCommand({
-      TopicArn: util.types.toString(params.topicArn),
+      TopicArn: params.topicArn,
       PublishBatchRequestEntries: parsedEntries,
     });
     const response = await sns.send(batchCommand);

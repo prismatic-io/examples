@@ -8,7 +8,10 @@ export const deleteTag = action({
     description: "Delete the information and metadata of the given tag",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.delete(`/tags/${params.tagId}`);
     return { data };
   },

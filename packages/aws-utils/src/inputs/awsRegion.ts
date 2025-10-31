@@ -17,5 +17,6 @@ export const awsRegion = input({
       };
     }),
   ],
+  dataSource: "selectRegion",
   clean: util.types.toString,
 });

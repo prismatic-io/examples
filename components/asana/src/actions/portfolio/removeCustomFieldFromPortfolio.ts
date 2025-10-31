@@ -8,14 +8,17 @@ export const removeCustomFieldFromPortfolio = action({
     description: "Remove a custom field from an existing portfolio",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/portfolios/${params.portfolioId}/removeCustomFieldSetting`,
       {
         data: {
           custom_field: params.fieldId,
         },
-      }
+      },
     );
     return { data };
   },

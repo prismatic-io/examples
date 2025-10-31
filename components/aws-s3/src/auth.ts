@@ -26,6 +26,7 @@ export const createS3Client = async ({
     dynamicSecretAccessKey,
     dynamicSessionToken,
   });
+
   try {
     return new S3Client({
       region,

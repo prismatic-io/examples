@@ -7,7 +7,7 @@ export const validateId = (value: unknown) => {
     return strValue;
   } else {
     throw new Error(
-      `Asana global IDs are numbers. "${strValue}" is not a valid Asana global ID.`
+      `Asana global IDs are numbers. "${strValue}" is not a valid Asana global ID.`,
     );
   }
 };
@@ -16,8 +16,9 @@ export const workspaceId = input({
   label: "Workspace ID",
   type: "string",
   example: "375893453",
-  comments: "The gid of the workspace",
+  comments: "The gid of the workspace. Required when account has multiple workspaces.",
   required: true,
+  dataSource: "selectWorkspace",
   clean: validateId,
 });
 
@@ -27,6 +28,7 @@ export const userId = input({
   example: "375893453",
   comments: "The global ID of a user",
   required: true,
+  dataSource: "selectUser",
   clean: validateId,
 });
 
@@ -214,6 +216,7 @@ export const projectId = input({
   comments: "Provide the unique identifier of the project.",
   example: "375893453",
   required: true,
+  dataSource: "selectProject",
   clean: validateId,
 });
 
@@ -223,6 +226,7 @@ export const taskId = input({
   example: "375893453",
   comments: "Provide the unique identifier for the task.",
   required: true,
+  dataSource: "selectTask",
   clean: validateId,
 });
 
@@ -259,6 +263,7 @@ export const teamId = input({
   example: "843750385",
   comments: "Provide the unique identifier of the team.",
   required: true,
+  dataSource: "selectTeam",
   clean: validateId,
 });
 
@@ -480,6 +485,7 @@ export const sectionId = input({
   example: "843750385",
   comments: "The unique identifier of the section",
   required: true,
+  dataSource: "selectSection",
   clean: validateId,
 });
 
@@ -489,6 +495,7 @@ export const tagId = input({
   example: "843750385",
   comments: "The unique identifier of the tag",
   required: true,
+  dataSource: "selectTag",
   clean: validateId,
 });
 
@@ -646,7 +653,7 @@ export const filter = input({
       },
     ],
     null,
-    2
+    2,
   ),
   required: false,
   comments: "Specify the filter parameters for the webhook in JSON format",

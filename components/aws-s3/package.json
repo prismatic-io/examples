@@ -20,7 +20,7 @@
     "@aws-sdk/lib-storage": "3.723.0",
     "@aws-sdk/s3-request-presigner": "3.723.0",
     "@aws-sdk/signature-v4-crt": "3.723.0",
-    "@prismatic-io/spectral": "10.3.5",
+    "@prismatic-io/spectral": "10.5.2",
     "aws-utils": "file:../../packages/aws-utils",
     "uuid": "^9.0.1"
   },

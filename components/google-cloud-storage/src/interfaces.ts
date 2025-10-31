@@ -1,4 +1,4 @@
 export interface Part {
-  PartNumber: string;
-  ETag: string;
+	PartNumber: string;
+	ETag: string;
 }

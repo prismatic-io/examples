@@ -1,8 +1,8 @@
-import { dataSource, Element } from "@prismatic-io/spectral";
+import { dataSource } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../client";
 import { connectionInput } from "../inputs";
-import { fetchMoreData } from "../util";
-import { DataSource } from "../types/Project";
+import { fetchMoreData, mapToLabelKey } from "../util";
+import type { DataSource } from "../types/Project";
 
 const selectWorkspace = dataSource({
   display: {
@@ -12,8 +12,8 @@ const selectWorkspace = dataSource({
   inputs: {
     connection: connectionInput,
   },
-  perform: async (context, params) => {
-    const client = await createAsanaClient(params.connection);
+  perform: async (_context, params) => {
+    const client = await createAsanaClient(params.connection, false);
     const data = await fetchMoreData<DataSource>(
       client,
       "/workspaces",
@@ -21,13 +21,10 @@ const selectWorkspace = dataSource({
       true,
       {
         limit: 100,
-      }
+      },
     );
 
-    const result = data.map<Element>(({ gid, name }) => ({
-      label: name,
-      key: gid,
-    }));
+    const result = mapToLabelKey(data);
     return { result };
   },
   dataSourceType: "picklist",

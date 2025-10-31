@@ -1,4 +1,4 @@
-import { KeyValuePair, util } from "@prismatic-io/spectral";
+import { type KeyValuePair, util } from "@prismatic-io/spectral";
 
 export const employeeFields = [
   "address1",

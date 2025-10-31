@@ -1,10 +1,9 @@
-import {
+import type {
   ActionContext,
   TriggerPayload,
   Connection,
-  trigger,
-  util,
 } from "@prismatic-io/spectral";
+import { trigger, util } from "@prismatic-io/spectral";
 import {
   createWebhook,
   deleteWebhook,
@@ -27,7 +26,7 @@ import {
 const performFunction = async (
   context: ActionContext,
   payload: TriggerPayload,
-  inputs: { asanaConnection: Connection }
+  inputs: { asanaConnection: Connection },
 ): Promise<{
   payload: TriggerPayload;
   branch: string;
@@ -52,9 +51,11 @@ const performFunction = async (
     });
   } else {
     // It's a normal notification or heartbeat. We need to validate HMAC
-    validateHmac(payload, headers["x-hook-signature"], [
-      util.types.toString(context.instanceState["webhookSecret"]),
-    ]);
+    if (!context.isSimulatedTestExecution) {
+      validateHmac(payload, headers["x-hook-signature"], [
+        util.types.toString(context.instanceState["webhookSecret"]),
+      ]);
+    }
 
     if (isHeartbeatData(payload.body.data)) {
       // Asana sent a "Heartbeat" event https://developers.asana.com/docs/webhook-heartbeat-events
@@ -112,43 +113,45 @@ const workspaceProjectsTrigger = trigger({
   synchronousResponseSupport: "invalid",
   scheduleSupport: "invalid",
   perform: performFunction,
-  onInstanceDeploy: async (
-    context,
-    {
-      triggerWhenAdded,
-      triggerWhenChanged,
-      triggerWhenDeleted,
-      triggerWhenRemoved,
-      triggerWhenUndeleted,
-      asanaConnection,
-      workspaceId,
-    }
-  ) => {
-    const endpoint = context.webhookUrls[context.flow.name];
+  webhookLifecycleHandlers: {
+    create: async (
+      context,
+      {
+        triggerWhenAdded,
+        triggerWhenChanged,
+        triggerWhenDeleted,
+        triggerWhenRemoved,
+        triggerWhenUndeleted,
+        asanaConnection,
+        workspaceId,
+      },
+    ) => {
+      const endpoint = context.webhookUrls[context.flow.name];
 
-    await createWebhook({
-      asanaConnection: asanaConnection,
-      endpoint,
-      resourceId: workspaceId,
-      filters: getFilters(
-        {
-          triggerWhenAdded,
-          triggerWhenChanged,
-          triggerWhenDeleted,
-          triggerWhenRemoved,
-          triggerWhenUndeleted,
-        },
-        "project"
-      ),
-    });
-  },
-  onInstanceDelete: async (context, params) => {
-    const endpoint = context.webhookUrls[context.flow.name];
-    await deleteWebhook({
-      asanaConnection: params.asanaConnection,
-      endpoint,
-      resourceId: params.workspaceId,
-    });
+      await createWebhook({
+        asanaConnection: asanaConnection,
+        endpoint,
+        resourceId: workspaceId,
+        filters: getFilters(
+          {
+            triggerWhenAdded,
+            triggerWhenChanged,
+            triggerWhenDeleted,
+            triggerWhenRemoved,
+            triggerWhenUndeleted,
+          },
+          "project",
+        ),
+      });
+    },
+    delete: async (context, params) => {
+      const endpoint = context.webhookUrls[context.flow.name];
+      await deleteWebhook({
+        asanaConnection: params.asanaConnection,
+        endpoint,
+        resourceId: params.workspaceId,
+      });
+    },
   },
 });
 
@@ -191,51 +194,53 @@ const projectTasksTrigger = trigger({
   synchronousResponseSupport: "invalid",
   scheduleSupport: "invalid",
   perform: performFunction,
-  onInstanceDeploy: async (
-    context,
-    {
-      triggerWhenAdded,
-      triggerWhenChanged,
-      triggerWhenDeleted,
-      triggerWhenRemoved,
-      triggerWhenUndeleted,
-      asanaConnection,
-      projectId,
-    }
-  ) => {
-    const endpoint = context.webhookUrls[context.flow.name];
+  webhookLifecycleHandlers: {
+    create: async (
+      context,
+      {
+        triggerWhenAdded,
+        triggerWhenChanged,
+        triggerWhenDeleted,
+        triggerWhenRemoved,
+        triggerWhenUndeleted,
+        asanaConnection,
+        projectId,
+      },
+    ) => {
+      const endpoint = context.webhookUrls[context.flow.name];
 
-    await createWebhook({
-      asanaConnection: asanaConnection,
-      endpoint,
-      resourceId: projectId,
-      filters: getFilters(
-        {
-          triggerWhenAdded,
-          triggerWhenChanged,
-          triggerWhenDeleted,
-          triggerWhenRemoved,
-          triggerWhenUndeleted,
-        },
-        "task"
-      ),
-    });
-  },
-  onInstanceDelete: async (context, params) => {
-    const endpoint = context.webhookUrls[context.flow.name];
-    await deleteWebhook({
-      asanaConnection: params.asanaConnection,
-      endpoint,
-      resourceId: params.projectId,
-    });
+      await createWebhook({
+        asanaConnection: asanaConnection,
+        endpoint,
+        resourceId: projectId,
+        filters: getFilters(
+          {
+            triggerWhenAdded,
+            triggerWhenChanged,
+            triggerWhenDeleted,
+            triggerWhenRemoved,
+            triggerWhenUndeleted,
+          },
+          "task",
+        ),
+      });
+    },
+    delete: async (context, params) => {
+      const endpoint = context.webhookUrls[context.flow.name];
+      await deleteWebhook({
+        asanaConnection: params.asanaConnection,
+        endpoint,
+        resourceId: params.projectId,
+      });
+    },
   },
 });
 
 const storiesTrigger = trigger({
   display: {
-    label: "Stories Trigger",
+    label: "Comments & Activity Trigger",
     description:
-      "Get notified when a story is created, updated, or deleted in a project.",
+      "Get notified when a comment or activity (task updates, changes, etc.) is created, updated, or deleted in a project.",
   },
   allowsBranching: true,
   staticBranchNames: ["Notification", "URL Verify"],
@@ -244,69 +249,71 @@ const storiesTrigger = trigger({
     projectId,
     triggerWhenAdded: {
       ...triggerWhenAdded,
-      comments: "Determines if the webhook will trigger when a story is added.",
+      comments: "Determines if the webhook will trigger when a comment or activity is added.",
     },
     triggerWhenChanged: {
       ...triggerWhenChanged,
       comments:
-        "Determines if the webhook will trigger when a story is changed.",
+        "Determines if the webhook will trigger when a comment or activity is changed.",
     },
     triggerWhenDeleted: {
       ...triggerWhenDeleted,
       comments:
-        "Determines if the webhook will trigger when a story is deleted.",
+        "Determines if the webhook will trigger when a comment or activity is deleted.",
     },
     triggerWhenRemoved: {
       ...triggerWhenRemoved,
       comments:
-        "Determines if the webhook will trigger when a story is removed.",
+        "Determines if the webhook will trigger when a comment or activity is removed.",
     },
     triggerWhenUndeleted: {
       ...triggerWhenUndeleted,
       comments:
-        "Determines if the webhook will trigger when a story is undeleted.",
+        "Determines if the webhook will trigger when a comment or activity is undeleted.",
     },
   },
   synchronousResponseSupport: "invalid",
   scheduleSupport: "invalid",
   perform: performFunction,
-  onInstanceDeploy: async (
-    context,
-    {
-      triggerWhenAdded,
-      triggerWhenChanged,
-      triggerWhenDeleted,
-      triggerWhenRemoved,
-      triggerWhenUndeleted,
-      asanaConnection,
-      projectId,
-    }
-  ) => {
-    const endpoint = context.webhookUrls[context.flow.name];
+  webhookLifecycleHandlers: {
+    create: async (
+      context,
+      {
+        triggerWhenAdded,
+        triggerWhenChanged,
+        triggerWhenDeleted,
+        triggerWhenRemoved,
+        triggerWhenUndeleted,
+        asanaConnection,
+        projectId,
+      },
+    ) => {
+      const endpoint = context.webhookUrls[context.flow.name];
 
-    await createWebhook({
-      asanaConnection: asanaConnection,
-      endpoint,
-      resourceId: projectId,
-      filters: getFilters(
-        {
-          triggerWhenAdded,
-          triggerWhenChanged,
-          triggerWhenDeleted,
-          triggerWhenRemoved,
-          triggerWhenUndeleted,
-        },
-        "story"
-      ),
-    });
-  },
-  onInstanceDelete: async (context, params) => {
-    const endpoint = context.webhookUrls[context.flow.name];
-    await deleteWebhook({
-      asanaConnection: params.asanaConnection,
-      endpoint,
-      resourceId: params.projectId,
-    });
+      await createWebhook({
+        asanaConnection: asanaConnection,
+        endpoint,
+        resourceId: projectId,
+        filters: getFilters(
+          {
+            triggerWhenAdded,
+            triggerWhenChanged,
+            triggerWhenDeleted,
+            triggerWhenRemoved,
+            triggerWhenUndeleted,
+          },
+          "story",
+        ),
+      });
+    },
+    delete: async (context, params) => {
+      const endpoint = context.webhookUrls[context.flow.name];
+      await deleteWebhook({
+        asanaConnection: params.asanaConnection,
+        endpoint,
+        resourceId: params.projectId,
+      });
+    },
   },
 });
 

@@ -1,6 +1,6 @@
 import { action } from "@prismatic-io/spectral";
 import { createOauthClient } from "../../client";
-import { connectionInput, debug, userId, view } from "../../inputs";
+import { connectionInput, userId, view } from "../../inputs";
 import { publishViewResponse } from "../../examplePayloads";
 import { debugLogger } from "../../utils";
 
@@ -9,7 +9,10 @@ export const publishView = action({
     label: "Publish View",
     description: "Publish a static view for a User.",
   },
-  perform: async (context, { connection, debug, userId, view }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, userId, view },
+  ) => {
     debugLogger({ connection, debug, userId, view });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -24,7 +27,6 @@ export const publishView = action({
     view,
     userId,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: publishViewResponse as unknown,

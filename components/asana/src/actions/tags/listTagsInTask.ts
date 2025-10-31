@@ -9,7 +9,10 @@ export const listTagsInTask = action({
     description: "List all tags in a given task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/tasks/${params.taskId}/tags`, {
       params: {
         limit: params.limit,

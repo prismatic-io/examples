@@ -1,5 +1,5 @@
 import { action, util, input } from "@prismatic-io/spectral";
-import { connection, debugInput } from "./inputs";
+import { connection } from "./inputs";
 import { getSftpClient } from "./client";
 
 const sourcePath = input({
@@ -27,11 +27,8 @@ const moveFile = action({
     label: "Move File",
     description: "Move a file on an SFTP server",
   },
-  perform: async (
-    context,
-    { connection, sourcePath, destinationPath, debug },
-  ) => {
-    const sftp = await getSftpClient(connection, debug);
+  perform: async (context, { connection, sourcePath, destinationPath }) => {
+    const sftp = await getSftpClient(connection, context.debug.enabled);
 
     try {
       await sftp.rename(sourcePath, destinationPath);
@@ -41,7 +38,7 @@ const moveFile = action({
 
     return null;
   },
-  inputs: { connection, sourcePath, destinationPath, debug: debugInput },
+  inputs: { connection, sourcePath, destinationPath },
 });
 
 export default moveFile;

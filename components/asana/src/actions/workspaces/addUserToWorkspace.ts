@@ -8,12 +8,15 @@ export const addUser = action({
     description: "Add a new user to the given workspace",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/workspaces/${params.workspaceId}/addUser`,
       {
         data: { user: params.userId },
-      }
+      },
     );
     return { data };
   },

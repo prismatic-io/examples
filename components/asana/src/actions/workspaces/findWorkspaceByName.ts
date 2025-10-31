@@ -25,15 +25,18 @@ export const findWorkspaceByName = action({
     description: "Find a workspace of a given name",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
-    let offset = undefined;
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
+    let offset: string | undefined;
     let stop = false;
     while (!stop) {
       const response: WorkspaceReturn = await client.get("/workspaces", {
         params: { offset },
       });
       const filteredData = response.data.data.filter(
-        (workspace) => params.workspaceName === workspace.name
+        (workspace) => params.workspaceName === workspace.name,
       );
       if (filteredData.length === 1) {
         return { data: filteredData[0] };

@@ -14,7 +14,6 @@ describe("postSlackMessage", () => {
   test("calls webhook send", async () => {
     const { result } = await invoke(postSlackMessage, {
       message: "foo",
-      debug: false,
       connection: createConnection(webhookUrlConnection, {
         webhookUrl: "https://hooks.slack.com/services/TXXXX/BXXXXX/XXXXXXX",
       }),

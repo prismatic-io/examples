@@ -16,7 +16,10 @@ export const listTasks = action({
     description: "Return a list of tasks",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/tasks`, {
       params: {
         limit: params.limit,

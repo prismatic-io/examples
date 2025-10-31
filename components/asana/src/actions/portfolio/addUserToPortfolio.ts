@@ -8,14 +8,17 @@ export const addUserToPortfolio = action({
     description: "Add existing users to the given portfolio",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/portfolios/${params.portfolioId}/addMembers`,
       {
         data: {
           members: params.members,
         },
-      }
+      },
     );
     return { data };
   },

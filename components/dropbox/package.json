@@ -17,7 +17,7 @@
     "integration-test": "jest --maxWorkers=4"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "10.2.2",
+    "@prismatic-io/spectral": "10.5.10",
     "cross-fetch": "3.1.5",
     "dropbox": "10.34.0",
     "lodash.isequal": "4.5.0",

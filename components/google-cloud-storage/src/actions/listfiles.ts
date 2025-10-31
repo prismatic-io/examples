@@ -1,51 +1,47 @@
-import {
-  bucketName,
-  prefix,
-  pageToken,
-  maxResults,
-  connectionInput,
-} from "../inputs";
+import type { File } from "@google-cloud/storage";
+import { util, action } from "@prismatic-io/spectral";
 import { googleStorageClient } from "../client";
-import { action, util } from "@prismatic-io/spectral";
+import { listFilesExamplePayload } from "../examplePayloads";
+import { listFilesInputs } from "../inputs";
+import { paginateGCSResults } from "../util";
 
 const listFilesV2 = action({
-  display: {
-    label: "List Files",
-    description: "List files in a Google Cloud Storage bucket",
-  },
-  inputs: {
-    connection: connectionInput,
-    bucketName,
-    prefix,
-    pageToken,
-    maxResults,
-  },
-  perform: async (context, params) => {
-    const storage = googleStorageClient(params.connection);
-    const [files, pagination] = await storage
-      .bucket(util.types.toString(params.bucketName))
-      .getFiles({
-        prefix: util.types.toString(params.prefix),
-        maxResults: util.types.toInt(params.maxResults) || undefined,
-        pageToken: util.types.toString(params.pageToken) || undefined,
-      });
-    return {
-      data: {
-        files: files.map((f) => f.name).filter((f) => !f.endsWith("/")), // Filter out directories; we just care about files
-        pagination,
-      },
-    };
-  },
-  examplePayload: {
-    data: {
-      files: ["path/to/foo.yaml", "path/to/bar.xml", "path/to/myfile.json"],
-      pagination: {
-        pageToken: "bXkvbGFzdC9wcm9jZXNzZWQvZmlsZS50eHQ=",
-        maxResults: 1000,
-        prefix: "path/to/",
-      },
-    },
-  },
+	display: {
+		label: "List Files",
+		description: "List files in a Google Cloud Storage bucket",
+	},
+	inputs: listFilesInputs,
+	perform: async (_context, params) => {
+		const storage = googleStorageClient(params.connection);
+		const bucket = storage.bucket(util.types.toString(params.bucketName));
+		const prefixValue = util.types.toString(params.prefix);
+
+		const result = await paginateGCSResults<File>(
+			async ({ maxResults, pageToken }) =>
+				bucket.getFiles({
+					prefix: prefixValue,
+					maxResults,
+					pageToken,
+				}),
+			params.fetchAll,
+			{
+				maxResults: params.maxResults,
+				pageToken: params.pageToken,
+			},
+		);
+
+		return {
+			data: {
+				files: result.items.map((f) => f.name).filter((f) => !f.endsWith("/")), // Filter out directories; we just care about files
+				pagination: {
+					pageToken: result.nextPageToken,
+					maxResults: params.maxResults,
+					prefix: prefixValue,
+				},
+			},
+		};
+	},
+	examplePayload: listFilesExamplePayload,
 });
 
 export default { listFilesV2 };

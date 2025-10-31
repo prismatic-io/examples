@@ -22,6 +22,18 @@ const getEmployeeTable = action({
     return { data };
   },
   inputs: { connection: connectionInput, employeeId, tableName },
+  examplePayload: {
+    data: [
+      {
+        id: "1",
+        employeeId: "42",
+        date: "2022-01-15",
+        location: "New York Office",
+        department: "Engineering",
+        jobTitle: "Senior Developer",
+      }
+    ],
+  },
 });
 
 // Wraps https://documentation.bamboohr.com/reference/metadata-get-a-list-of-tabular-fields-1
@@ -103,6 +115,11 @@ export const addEmployeeTableRow = action({
     tableName,
     tableFieldValues,
   },
+  examplePayload: {
+    data: {
+      id: "15",
+    },
+  },
 });
 
 export const updateEmployeeTableRow = action({
@@ -124,6 +141,12 @@ export const updateEmployeeTableRow = action({
     tableName,
     rowId,
     tableFieldValues,
+  },
+  examplePayload: {
+    data: {
+      id: "15",
+      employeeId: "42",
+    },
   },
 });
 

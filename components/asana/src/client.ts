@@ -1,11 +1,12 @@
-import { Connection, ConnectionError } from "@prismatic-io/spectral";
+import { type Connection, ConnectionError } from "@prismatic-io/spectral";
 import {
   createClient,
-  HttpClient,
+  type HttpClient,
 } from "@prismatic-io/spectral/dist/clients/http";
 
 export const createAsanaClient = async (
-  asanaConnection: Connection
+  asanaConnection: Connection,
+  debug: boolean,
 ): Promise<HttpClient> => {
   const asanaClient = createClient({
     baseUrl: "https://app.asana.com/api/1.0",
@@ -14,6 +15,7 @@ export const createAsanaClient = async (
         asanaConnection?.token?.access_token || asanaConnection?.fields?.apiKey
       }`,
     },
+    debug,
   });
 
   try {
@@ -21,7 +23,7 @@ export const createAsanaClient = async (
   } catch (err) {
     throw new ConnectionError(
       asanaConnection,
-      `Unsupported connection properties ${err}.`
+      `Unsupported connection properties ${err}.`,
     );
   }
 

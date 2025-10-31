@@ -1,8 +1,13 @@
-import { dataSource, Element, input, util } from "@prismatic-io/spectral";
+import { dataSource } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../client";
 import { connectionInput, teamId, workspaceId } from "../inputs";
-import { cleanString, fetchMoreData } from "../util";
-import { DataSource } from "../types/Project";
+import {
+  cleanString,
+  fetchMoreData,
+  mapToLabelKey,
+  handleMultipleWorkspacesError,
+} from "../util";
+import type { DataSource } from "../types/Project";
 
 const selectProject = dataSource({
   display: {
@@ -11,29 +16,41 @@ const selectProject = dataSource({
   },
   inputs: {
     connection: connectionInput,
-    workspace: { ...workspaceId, required: false, clean: cleanString },
-    team: { ...teamId, required: false, clean: cleanString },
+    workspace: {
+      ...workspaceId,
+      required: false,
+      clean: cleanString,
+      dataSource: undefined,
+    },
+    team: {
+      ...teamId,
+      required: false,
+      clean: cleanString,
+      dataSource: undefined,
+    },
   },
-  perform: async (context, { connection, team, workspace }) => {
-    const client = await createAsanaClient(connection);
-    const canPaginate = workspace || team ? true : false;
-    const data = await fetchMoreData<DataSource>(
-      client,
-      "/projects",
-      [],
-      canPaginate,
-      {
-        workspace,
-        team,
-        limit: canPaginate ? 100 : undefined,
-      }
-    );
+  perform: async (_context, { connection, team, workspace }) => {
+    try {
+      const client = await createAsanaClient(connection, false);
+      const canPaginate = workspace || team ? true : false;
+      const data = await fetchMoreData<DataSource>(
+        client,
+        "/projects",
+        [],
+        canPaginate,
+        {
+          workspace,
+          team,
+          limit: canPaginate ? 100 : undefined,
+        },
+      );
 
-    const result = data.map<Element>(({ gid, name }) => ({
-      label: name,
-      key: gid,
-    }));
-    return { result };
+      const result = mapToLabelKey(data);
+      return { result };
+    } catch (err) {
+      handleMultipleWorkspacesError(err);
+      throw err;
+    }
   },
   dataSourceType: "picklist",
 });

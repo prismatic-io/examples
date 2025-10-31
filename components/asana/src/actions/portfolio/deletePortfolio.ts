@@ -8,7 +8,10 @@ export const deletePortfolio = action({
     description: "Delete the information and metadata of a portfolio",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.delete(`/portfolios/${params.portfolioId}`);
     return { data };
   },

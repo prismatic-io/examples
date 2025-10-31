@@ -1,4 +1,4 @@
-import { input, KeyValuePair, util } from "@prismatic-io/spectral";
+import { input, type KeyValuePair, util } from "@prismatic-io/spectral";
 import { employeeFields, validateDate, validateEmployeeFields } from "./util";
 
 export const connectionInput = input({
@@ -11,18 +11,21 @@ export const tableName = input({
   type: "string",
   required: true,
   example: "jobInfo",
+  placeholder: "jobInfo",
   clean: util.types.toString,
 });
 export const firstName = input({
   label: "First Name",
   type: "string",
   required: true,
+  placeholder: "John",
   clean: util.types.toString,
 });
 export const lastName = input({
   label: "Last Name",
   type: "string",
   required: true,
+  placeholder: "Doe",
   clean: util.types.toString,
 });
 export const employeeFieldValues = input({
@@ -54,6 +57,7 @@ export const employeeId = input({
   required: true,
   clean: util.types.toString,
   example: "42",
+  dataSource: "selectEmployee",
 });
 
 export const startDate = input({
@@ -94,12 +98,18 @@ export const timeOffStatus = input({
   clean: util.types.toString,
 });
 
-export const rowId = input({ label: "Row ID", type: "string", required: true });
+export const rowId = input({ 
+  label: "Row ID", 
+  type: "string", 
+  required: true,
+  placeholder: "123"
+});
 
 export const fileId = input({
   label: "File ID",
   type: "string",
   required: true,
+  placeholder: "456",
 });
 
 export const categoryId = input({

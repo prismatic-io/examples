@@ -6,6 +6,7 @@ import deleteFile from "./deleteActions";
 import listDirectory from "./listActions";
 import connections from "./connections";
 import createActions from "./createActions";
+import appendActions from "./appendActions";
 
 export default component({
   key: "sftp",
@@ -20,6 +21,7 @@ export default component({
   actions: {
     ...readActions,
     ...createActions,
+    ...appendActions,
     writeFile,
     moveFile,
     deleteFile,

@@ -8,7 +8,10 @@ export const addUserToProject = action({
     description: "Add an existing user to the given project",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/projects/${params.projectId}/addMembers`,
       {
@@ -21,7 +24,7 @@ export const addUserToProject = action({
           opt_fields:
             "layout,team,workspace,html_notes,notes,color,custom_field_settings,custom_fields,followers,members,privacy_setting,archived,modified_at,created_at,start_on,due_on,current_status,owner,name,resource_type,gid",
         },
-      }
+      },
     );
     return { data };
   },

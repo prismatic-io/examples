@@ -8,7 +8,7 @@ export const lowerCaseHeaders = (
   headers: Record<string, string>,
 ): Record<string, string> =>
   Object.entries(headers).reduce((result, [key, val]) => {
-    return { ...result, [key.toLowerCase()]: val };
+    return Object.assign(result, { [key.toLowerCase()]: val });
   }, {});
 
 export const subscriptionTrigger = trigger({

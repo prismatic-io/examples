@@ -81,6 +81,7 @@ export const bucket = input({
   comments:
     "An Amazon S3 'bucket' is a container where files are stored. You can create a bucket from within the AWS console. Bucket names contain only letters, numbers, and dashes.",
   example: "my-s3-bucket-abc123",
+  dataSource: "selectBucket",
   clean: util.types.toString,
 });
 
@@ -218,9 +219,9 @@ export const endpoint = input({
   type: "string",
   required: true,
   example:
-    "https://hooks.prismatic.io/trigger/SW5zdGFuY2VGbG93Q29uZmlnOjhiNGY0ZTRkLWIyODMtNDE4Yy04YmZhLTg1NGI11234567890==",
+    "https://hooks.example.com/trigger/SW5zdGFuY2VGbG93Q29uZmlnOjhiNGY0ZTRkLWIyODMtNDE4Yy04YmZhLTg1NGI11234567890==",
   placeholder:
-    "https://hooks.prismatic.io/trigger/SW5zdGFuY2VGbG93Q29uZmlnOjhiNGY0ZTRkLWIyODMtNDE4Yy04YmZhLTg1NGI11234567890==",
+    "https://hooks.example.com/trigger/SW5zdGFuY2VGbG93Q29uZmlnOjhiNGY0ZTRkLWIyODMtNDE4Yy04YmZhLTg1NGI11234567890==",
   comments: "The endpoint that you want to trigger when an S3 event occurs.",
   clean: util.types.toString,
 });

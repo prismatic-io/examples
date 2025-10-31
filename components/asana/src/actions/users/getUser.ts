@@ -38,7 +38,10 @@ export const getUsers = action({
     description: "Get the information and metadata of a user",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/users/${params.userId}`);
     return { data };
   },
@@ -52,7 +55,10 @@ export const getCurrentUser = action({
     description: "Get information about the currently authenticated user",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get("/users/me");
     return { data };
   },

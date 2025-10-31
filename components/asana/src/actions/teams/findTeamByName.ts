@@ -25,18 +25,21 @@ export const findTeamByName = action({
     description: "Find a team of a given name within a workspace",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
-    let offset = undefined;
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
+    let offset: string | undefined;
     let stop = false;
     while (!stop) {
       const response: TeamReturn = await client.get(
         `/workspaces/${params.workspaceId}/teams`,
         {
           params: { offset },
-        }
+        },
       );
       const filteredData = response.data.data.filter(
-        (team) => params.teamName === team.name
+        (team) => params.teamName === team.name,
       );
       if (filteredData.length > 0) {
         return { data: filteredData[0] };

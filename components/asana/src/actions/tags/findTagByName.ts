@@ -28,8 +28,11 @@ export const findTagByName = action({
     description: "Find a tag of a given name within a workspace",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
-    let offset = undefined;
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
+    let offset: string | undefined;
     let stop = false;
     while (!stop) {
       const response: TagReturn = await client.get(
@@ -39,10 +42,10 @@ export const findTagByName = action({
             offset,
             opt_fields: TAG_OPT_FIELDS,
           },
-        }
+        },
       );
       const filteredData = response.data.data.filter(
-        (tag) => params.tagName === tag.name
+        (tag) => params.tagName === tag.name,
       );
       if (filteredData.length > 0) {
         return { data: filteredData[0] };

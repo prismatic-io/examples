@@ -12,10 +12,10 @@ export const deleteTopic = action({
   perform: async (context, params) => {
     const sns = await createSNSClient({
       awsConnection: params.awsConnection,
-      awsRegion: util.types.toString(params.awsRegion),
+      awsRegion: params.awsRegion,
     });
     const deleteTopicParams = {
-      TopicArn: util.types.toString(params.topicArn),
+      TopicArn: params.topicArn,
     };
     const command = new DeleteTopicCommand(deleteTopicParams);
     const response = await sns.send(command);

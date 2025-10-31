@@ -8,7 +8,10 @@ export const listPortfolios = action({
     description: "List portfolios that the authenticated user owns",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
 
     // You can only fetch portfolios for the currently authenticated in user
     const {

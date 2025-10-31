@@ -9,7 +9,7 @@ import {
 } from "../../inputs";
 import { optionalFields } from "../../constants";
 import { getSubtasks } from "../../helpers";
-import { Task } from "../../types/Task";
+import type { Task } from "../../types/Task";
 
 export const listSubtasks = action({
   display: {
@@ -17,7 +17,10 @@ export const listSubtasks = action({
     description: "Return a list of all subtasks in a given task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
 
     // Get the first page of subtasks
     let subtasks = await getSubtasks(client, params.taskId, {
@@ -42,12 +45,12 @@ export const listSubtasks = action({
               getSubtasksAccumulator.push(
                 getSubtasks(client, subtask.gid, {
                   opt_fields: optionalFields,
-                })
+                }),
               );
             }
             return getSubtasksAccumulator;
           },
-          []
+          [],
         );
 
         // Retrieve all subtasks parallelly
@@ -56,14 +59,14 @@ export const listSubtasks = action({
         // Reset the subtasks array to store the subtasks of the current iteration
         subtasks = [];
 
-        results.forEach((result) =>
+        results.forEach((result) => {
           result.forEach((subtask: Task) => {
             // Push the subtask to the subtasks array
             subtasks.push(subtask);
             // Push the subtask to the allSubtasks array
             allSubtasks.push(subtask);
-          })
-        );
+          });
+        });
 
         // If there are no subtasks, we don't need to get more subtasks
         shouldGetMoreSubtasks = subtasks.length;

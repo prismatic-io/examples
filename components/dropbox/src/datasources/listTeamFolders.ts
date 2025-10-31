@@ -16,7 +16,10 @@ export const listTeamFolders = dataSource({
   },
   inputs: {
     connection: connectionInput,
-    path: directoryPath,
+    path: {
+      ...directoryPath,
+      dataSource: undefined,
+    },
     cursor,
     limit,
   },

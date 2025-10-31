@@ -1,12 +1,6 @@
 import { action } from "@prismatic-io/spectral";
 import { createOauthClient } from "../../client";
-import {
-  connectionInput,
-  debug,
-  view_id,
-  view,
-  external_id,
-} from "../../inputs";
+import { connectionInput, view_id, view, external_id } from "../../inputs";
 import { openViewResponse as updateViewResponse } from "../../examplePayloads";
 import { debugLogger } from "../../utils";
 
@@ -16,8 +10,8 @@ export const updateView = action({
     description: "Update an existing view.",
   },
   perform: async (
-    context,
-    { connection, debug, view_id, external_id, view },
+    { debug: { enabled: debug } },
+    { connection, view_id, external_id, view },
   ) => {
     debugLogger({ debug, connection, view_id, external_id, view });
     const client = await createOauthClient({
@@ -35,7 +29,6 @@ export const updateView = action({
     view_id,
     external_id,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: updateViewResponse as unknown,

@@ -8,7 +8,10 @@ export const listAttachments = action({
     description: "List all attachments in a given task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/tasks/${params.taskId}/attachments`, {
       params: {
         offset: params.offset,

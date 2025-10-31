@@ -1,5 +1,6 @@
-import { util } from "@prismatic-io/spectral";
-import { HttpClient } from "@prismatic-io/spectral/dist/clients/http";
+import { type Element, util } from "@prismatic-io/spectral";
+import type { HttpClient } from "@prismatic-io/spectral/dist/clients/http";
+import type { DataSource } from "./types/Project";
 const colorOptions = [
   "dark-blue",
   "dark-brown",
@@ -45,7 +46,7 @@ export const fetchMoreData = async <T>(
   url: string,
   fetchedRecords: T[],
   fetchAll = false,
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
 ): Promise<T[]> => {
   const { data: records } = await client.get(url, {
     params,
@@ -70,3 +71,25 @@ export const fetchMoreData = async <T>(
 
 export const cleanString = (value: unknown): string | undefined =>
   value ? util.types.toString(value) : undefined;
+
+export const handleMultipleWorkspacesError = (err: unknown) => {
+  const error = err as {
+    response: { data: { errors: { message: string }[] } };
+  };
+  if (error) {
+    if (
+      error?.response?.data?.errors?.[0]?.message?.includes(
+        "This request accesses data in multiple workspaces",
+      )
+    ) {
+      throw new Error("Workspace ID must be provided");
+    }
+  }
+};
+
+export const mapToLabelKey = (data: DataSource[]): Element[] => {
+  return data.map<Element>(({ gid, name }) => ({
+    label: name,
+    key: gid,
+  }));
+};

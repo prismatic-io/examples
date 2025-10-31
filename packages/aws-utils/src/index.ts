@@ -9,3 +9,5 @@ export {
 } from "./inputs/dynamicAccess";
 export { awsRegions } from "./data/awsRegions";
 export { getClientParams } from "./client/getClientParams";
+export { selectRegion } from "./dataSources/selectRegion";
+export { toOptionalString, toTrimmedString } from "./helpers/misc";

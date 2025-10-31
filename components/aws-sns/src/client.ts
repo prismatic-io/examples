@@ -1,8 +1,13 @@
 import { SNSClient } from "@aws-sdk/client-sns";
 import { ConnectionError } from "@prismatic-io/spectral";
-import { assumeRoleConnection, assumeRole } from "aws-utils";
-import { getCredentials, toTrimmedString } from "./helpers";
-import { ClientProps } from "./interfaces/ClientProps";
+import {
+  assumeRole,
+  assumeRoleConnection,
+  toOptionalString,
+  toTrimmedString,
+} from "aws-utils";
+import { getCredentials } from "./helpers";
+import type { ClientProps } from "./interfaces/ClientProps";
 
 export const createSNSClient = async ({
   awsRegion,
@@ -17,6 +22,7 @@ export const createSNSClient = async ({
         accessKeyId,
         secretAccessKey,
         toTrimmedString(awsConnection.fields.roleARN),
+        toOptionalString(awsConnection.fields?.externalId),
       )
     : { accessKeyId, secretAccessKey };
 

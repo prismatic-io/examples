@@ -8,7 +8,10 @@ export const deleteProjects = action({
     description: "Delete the information and metadata of a project by Id",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.delete(`/projects/${params.projectId}`);
     return { data };
   },

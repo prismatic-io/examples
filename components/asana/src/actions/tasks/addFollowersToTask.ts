@@ -8,7 +8,10 @@ export const addFollowersToTask = action({
     description: "Add followers to an existing task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/tasks/${params.taskId}/addFollowers`,
       {
@@ -21,7 +24,7 @@ export const addFollowersToTask = action({
           opt_fields:
             "resource_type,gid,created_at,followers,name,color,workspace",
         },
-      }
+      },
     );
     return { data };
   },

@@ -7,7 +7,6 @@ import {
   limit,
   teamId,
   userId,
-  debug,
   fetchAll,
 } from "../inputs";
 import {
@@ -22,7 +21,7 @@ export const getUser = action({
     label: "Get User By Email",
     description: "Get a user's information by email",
   },
-  perform: async (context, { connection, email, debug }) => {
+  perform: async ({ debug: { enabled: debug } }, { connection, email }) => {
     debugLogger({ debug, email });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -32,7 +31,7 @@ export const getUser = action({
     });
     return { data };
   },
-  inputs: { email, connection: connectionInput, debug },
+  inputs: { email, connection: connectionInput },
   examplePayload: {
     data: getUserResponse,
   },
@@ -43,7 +42,7 @@ export const getUserById = action({
     label: "Get User By ID",
     description: "Get a user's information by ID",
   },
-  perform: async (context, { connection, user, debug }) => {
+  perform: async ({ debug: { enabled: debug } }, { connection, user }) => {
     debugLogger({ debug, user });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -56,7 +55,6 @@ export const getUserById = action({
   inputs: {
     user: userId,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: getUserResponse,
@@ -69,8 +67,8 @@ export const listUsers = action({
     description: "List Users",
   },
   perform: async (
-    context,
-    { fetchAll, connection, cursor, limit, teamId, debug },
+    { debug: { enabled: debug } },
+    { fetchAll, connection, cursor, limit, teamId },
   ) => {
     debugLogger({ cursor, limit, teamId, debug });
     const client = await createOauthClient({
@@ -96,7 +94,6 @@ export const listUsers = action({
     cursor,
     teamId,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: listUsersResponse,
@@ -109,8 +106,8 @@ export const listUsersConversations = action({
     description: "List Users Conversations",
   },
   perform: async (
-    context,
-    { connection, cursor, limit, teamId, userId, debug, fetchAll },
+    { debug: { enabled: debug } },
+    { connection, cursor, limit, teamId, userId, fetchAll },
   ) => {
     debugLogger({ cursor, limit, teamId, userId, debug });
     const client = await createOauthClient({
@@ -143,7 +140,6 @@ export const listUsersConversations = action({
     cursor,
     teamId,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: listUserConversationsResponse,

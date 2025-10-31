@@ -9,7 +9,10 @@ export const listTags = action({
     description: "List all tags in your account",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`workspaces/${params.workspaceId}/tags`, {
       params: {
         limit: params.limit,

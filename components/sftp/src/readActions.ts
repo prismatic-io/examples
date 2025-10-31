@@ -1,9 +1,9 @@
-import { basename } from "path";
+import { basename } from "node:path";
 import * as mime from "mime-types";
 import { action, util, input } from "@prismatic-io/spectral";
-import { connection, debugInput, returnBuffer } from "./inputs";
+import { connection, returnBuffer } from "./inputs";
 import { getSftpClient } from "./client";
-import { promises } from "fs";
+import { promises } from "node:fs";
 
 const inputPath = input({
   label: "Path",
@@ -20,8 +20,8 @@ const readFile = action({
     label: "Read File",
     description: "Read a file from SFTP",
   },
-  perform: async (context, { connection, inputPath, debug, returnBuffer }) => {
-    const sftp = await getSftpClient(connection, debug);
+  perform: async (context, { connection, inputPath, returnBuffer }) => {
+    const sftp = await getSftpClient(connection, context.debug.enabled);
 
     try {
       const inputData = await sftp.get(inputPath);
@@ -39,7 +39,6 @@ const readFile = action({
     connection,
     inputPath,
     returnBuffer,
-    debug: debugInput,
   },
   examplePayload: {
     data: "Sample file contents",
@@ -52,8 +51,8 @@ const fastGet = action({
     label: "Fast Get",
     description: "Read a file from SFTP",
   },
-  perform: async (context, { connection, inputPath, debug }) => {
-    const sftp = await getSftpClient(connection, debug);
+  perform: async (context, { connection, inputPath }) => {
+    const sftp = await getSftpClient(connection, context.debug.enabled);
 
     try {
       const fileName = basename(inputPath);
@@ -74,7 +73,6 @@ const fastGet = action({
     connection,
     inputPath,
     returnBuffer,
-    debug: debugInput,
   },
   examplePayload: {
     data: Buffer.from("Sample file contents"),
@@ -87,8 +85,8 @@ const statFile = action({
     label: "Stat File",
     description: "Pull statistics about a file",
   },
-  perform: async (context, { connection, inputPath, debug }) => {
-    const sftp = await getSftpClient(connection, debug);
+  perform: async (context, { connection, inputPath }) => {
+    const sftp = await getSftpClient(connection, context.debug.enabled);
 
     try {
       const statData = await sftp.stat(inputPath);
@@ -99,7 +97,7 @@ const statFile = action({
       await sftp.end();
     }
   },
-  inputs: { connection, inputPath, debug: debugInput },
+  inputs: { connection, inputPath },
   examplePayload: {
     data: {
       mode: 33279, // integer representing type and permissions

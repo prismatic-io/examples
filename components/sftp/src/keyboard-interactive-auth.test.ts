@@ -30,8 +30,9 @@ describe("Connect to server that only allows keyboard-interactive", () => {
     const { result, loggerMock } = await invoke(listDirectory, {
       connection: basicAuthConnection,
       path: "/",
-      debug: true,
       pattern: "",
+      includeSubdirectories: false,
+      includeDirectories: false,
     });
     expect(result?.data).toEqual([".dockerenv", "bin", "lib", "sbin"]);
     expect(loggerMock.debug).toHaveBeenCalledWith(

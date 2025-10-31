@@ -8,7 +8,10 @@ export const getAttachment = action({
     description: "Get the information and metadata of an attachment",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/attachments/${params.attachmentId}`, {
       params: {
         opt_fields:

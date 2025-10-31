@@ -98,6 +98,12 @@ const addEmployee = action({
     lastName,
     employeeFieldValues,
   },
+  examplePayload: {
+    data: {
+      id: "234",
+      location: "New York Office",
+    },
+  },
 });
 
 // Wraps https://documentation.bamboohr.com/reference/update-employee
@@ -118,6 +124,17 @@ const updateEmployee = action({
     connection: connectionInput,
     employeeId,
     employeeFieldValues,
+  },
+  examplePayload: {
+    data: {
+      id: "42",
+      fields: [
+        {
+          id: "jobTitle",
+          value: "Senior Developer",
+        }
+      ],
+    },
   },
 });
 

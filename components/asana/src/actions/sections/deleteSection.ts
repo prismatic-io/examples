@@ -8,7 +8,10 @@ export const deleteSection = action({
     description: "Delete the information and metadata of a section",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.delete(`/sections/${params.sectionId}`);
     return { data };
   },

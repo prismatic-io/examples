@@ -8,8 +8,10 @@ import {
   teamMemberId,
   userType,
   recursive,
+  entryFilter,
 } from "../inputs";
-import { handleDropboxError } from "../util";
+import { BOTH_ENTRY_FILTER } from "../constants";
+import { filterEntries, handleDropboxError } from "../util";
 
 export const listFolders = dataSource({
   display: {
@@ -18,12 +20,20 @@ export const listFolders = dataSource({
   },
   inputs: {
     connection: connectionInput,
-    path: directoryPath,
+    path: {
+      ...directoryPath,
+      dataSource: undefined,
+    },
     cursor,
     limit,
     recursive,
-    userType,
+    userType: {
+      ...userType,
+      example: "either 'admin' or 'user'",
+      placeholder: "'admin' or 'user'",
+    },
     teamMemberId,
+    entryFilter,
   },
   perform: async (context, params) => {
     const dbx = createAuthorizedClient(params.connection);
@@ -41,7 +51,12 @@ export const listFolders = dataSource({
               recursive: util.types.toBool(params.recursive),
             });
 
-      const result = entries.map<Element>((folder) => ({
+      const filteredEntries =
+        params.entryFilter === BOTH_ENTRY_FILTER
+          ? entries
+          : filterEntries(entries, params.entryFilter);
+
+      const result = filteredEntries.map<Element>((folder) => ({
         label: folder.name,
         key: (folder as any).id,
       }));

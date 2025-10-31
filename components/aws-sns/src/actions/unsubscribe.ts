@@ -12,10 +12,10 @@ export const unsubscribe = action({
   perform: async (context, params) => {
     const sns = await createSNSClient({
       awsConnection: params.awsConnection,
-      awsRegion: util.types.toString(params.awsRegion),
+      awsRegion: params.awsRegion,
     });
     const unsubscribeParams = {
-      SubscriptionArn: util.types.toString(params.subscriptionArn),
+      SubscriptionArn: params.subscriptionArn,
     };
     const command = new UnsubscribeCommand(unsubscribeParams);
     const response = await sns.send(command);

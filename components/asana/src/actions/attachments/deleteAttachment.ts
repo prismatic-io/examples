@@ -8,7 +8,10 @@ export const deleteAttachment = action({
     description: "Delete an existing attachment",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.delete(`/attachments/${params.attachmentId}`);
     return { data };
   },

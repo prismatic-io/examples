@@ -52,7 +52,10 @@ const listWebhooks = action({
     offset,
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get("/webhooks", {
       params: {
         workspace: params.workspaceId,
@@ -64,7 +67,7 @@ const listWebhooks = action({
       const instanceWebhookUrls = Object.values(context.webhookUrls);
       return {
         data: (data.data || []).filter((webhook: AsanaWebhook) =>
-          instanceWebhookUrls.includes(webhook.target)
+          instanceWebhookUrls.includes(webhook.target),
         ),
       };
     }
@@ -81,7 +84,7 @@ const listWebhooks = action({
           resource_type: "project",
         },
         resource_type: "webhook",
-        target: "https://hooks.prismatic.io/trigger/EXAMPLE",
+        target: "https://hooks.example.com/trigger/EXAMPLE",
       },
     ],
   },
@@ -112,7 +115,10 @@ const createWebhook = action({
     asanaConnection: connectionInput,
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
 
     try {
       const { data } = await client.post("/webhooks", {
@@ -124,14 +130,17 @@ const createWebhook = action({
       });
       return { data };
     } catch (err) {
-      if (err) {
+      const error = err as {
+        response: { data: { errors: { message: string }[] } };
+      };
+      if (error) {
         if (
-          err?.response.data?.errors?.[0]?.message?.includes(
-            "Duplicated webhook"
+          error?.response?.data?.errors?.[0]?.message?.includes(
+            "Duplicated webhook",
           )
         ) {
           console.warn(
-            `Skipping creation of webhook. A webhook with resource (${params.resourceId}) and target (${params.endpoint}) already exists.`
+            `Skipping creation of webhook. A webhook with resource (${params.resourceId}) and target (${params.endpoint}) already exists.`,
           );
           return;
         }
@@ -158,7 +167,10 @@ const deleteWebhook = action({
     },
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.delete(`/webhooks/${params.webhookId}`);
     return { data };
   },
@@ -173,10 +185,13 @@ const deleteInstanceWebhooks = action({
   },
   inputs: { asanaConnection: connectionInput, workspaceId },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
 
     let webhooks: AsanaWebhook[] = [];
-    let offset = undefined;
+    let offset: string | undefined;
     let stop = false;
     while (!stop) {
       const response: WebhookResponse = await client.get("/webhooks", {
@@ -191,7 +206,7 @@ const deleteInstanceWebhooks = action({
 
     const instanceWebhookUrls = Object.values(context.webhookUrls);
     const instanceWebhooks = webhooks.filter((webhook) =>
-      instanceWebhookUrls.includes(webhook.target)
+      instanceWebhookUrls.includes(webhook.target),
     );
 
     for (const webhook of instanceWebhooks) {

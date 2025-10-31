@@ -32,7 +32,6 @@ describe("statFile", () => {
     const { result } = await invoke(readActions.statFile, {
       connection,
       inputPath,
-      debug: false,
     });
     expect(result.data).toStrictEqual(expectedResults);
   }, 20000);

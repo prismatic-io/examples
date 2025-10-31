@@ -16,7 +16,10 @@ export const createPortfolio = action({
     description: "Create a new portfolio",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(`/portfolios`, {
       data: {
         color: params.color,

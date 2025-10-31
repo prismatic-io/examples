@@ -1,4 +1,4 @@
-import { TriggerPayload } from "@prismatic-io/spectral";
+import type { TriggerPayload } from "@prismatic-io/spectral";
 
 export const snsExampleHeaders = {
   "x-amz-sns-message-type": "Notification",
@@ -69,4 +69,5 @@ export const snsExamplePayload: TriggerPayload = {
     versionSequenceId: "1",
   },
   startedAt: "2012-04-25T21:49:25.719Z",
+  globalDebug: false,
 };

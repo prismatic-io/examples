@@ -1,6 +1,7 @@
 import { ActionContext, util } from "@prismatic-io/spectral";
 import { DropboxResponseError } from "dropbox";
 import { StringTag } from "./types";
+import { DropboxEntry } from "./interfaces";
 
 export const handleDropboxError = (err, paths = []) => {
   // https://developers.dropbox.com/error-handling-guide
@@ -120,3 +121,22 @@ export const getEntries = (
   }
   return entries;
 };
+
+export const toOptionalString = (value: unknown) => {
+  if (value) {
+    return util.types.toString(value);
+  }
+  return undefined;
+};
+
+export const filterEntries = (
+  entries: DropboxEntry[],
+  filter: string
+): DropboxEntry[] => {
+  return entries.filter(({ ".tag": tag }) => tag === filter);
+};
+
+export function getBase64FromUrl(url: string): string {
+  const lastPathSegmentMatch = url.match(/\/([^\/]+)$/);
+  return lastPathSegmentMatch ? lastPathSegmentMatch[1] : "";
+}

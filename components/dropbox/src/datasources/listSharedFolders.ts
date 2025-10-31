@@ -16,7 +16,10 @@ export const listSharedFolders = dataSource({
   },
   inputs: {
     connection: connectionInput,
-    path: directoryPath,
+    path: {
+      ...directoryPath,
+      dataSource: undefined,
+    },
     cursor,
     limit,
     folderActions,

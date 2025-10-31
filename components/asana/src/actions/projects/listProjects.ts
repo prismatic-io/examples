@@ -9,7 +9,10 @@ export const listProjects = action({
     description: "Return a list of all projects connected to your account",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/projects`, {
       params: {
         offset: params.offset,
@@ -42,7 +45,7 @@ export const listProjects = action({
             "<body>Asana helps you plan your 1:1s in advance, stay focused during the conversation, and track notes and action items.</body>",
           members: [{ gid: "1202178852626547", resource_type: "user" }],
           modified_at: "2022-06-15T21:21:40.641Z",
-          name: "[Sample] [Teammate] / Prismatic 1:1",
+          name: "[Sample] [Teammate] / Acme 1:1",
           notes:
             "Asana helps you plan your 1:1s in advance, stay focused during the conversation, and track notes and action items.",
           owner: { gid: "1202178852626547", resource_type: "user" },

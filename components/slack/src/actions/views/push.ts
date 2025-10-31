@@ -1,6 +1,6 @@
 import { action } from "@prismatic-io/spectral";
 import { createOauthClient } from "../../client";
-import { connectionInput, debug, trigger_id, view } from "../../inputs";
+import { connectionInput, trigger_id, view } from "../../inputs";
 import { openViewResponse as pushViewResponse } from "../../examplePayloads";
 import { debugLogger } from "../../utils";
 
@@ -9,7 +9,10 @@ export const pushView = action({
     label: "Push Views",
     description: "Push a view onto the stack of a root view.",
   },
-  perform: async (context, { connection, debug, trigger_id, view }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, trigger_id, view },
+  ) => {
     debugLogger({ debug, connection, trigger_id, view });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -24,7 +27,6 @@ export const pushView = action({
     view,
     trigger_id,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: pushViewResponse as unknown,

@@ -8,7 +8,10 @@ export const listUsers = action({
     description: "List all users in your account",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/users`, {
       params: {
         offset: params.offset,

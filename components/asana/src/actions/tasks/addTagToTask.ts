@@ -9,7 +9,10 @@ export const addTagToTask = action({
     description: "Add a tag to an existing task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/tasks/${params.taskId}/addTag`,
       {
@@ -21,7 +24,7 @@ export const addTagToTask = action({
         params: {
           opt_fields: TAG_OPT_FIELDS,
         },
-      }
+      },
     );
     return { data };
   },

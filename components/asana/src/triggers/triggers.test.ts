@@ -29,7 +29,7 @@ describe("Test event triggers", () => {
       {
         webhookUrls: { myFlow: TRIGGER_ENDPOINT },
         flow: { id: "myId", name: "myFlow" },
-      }
+      },
     );
     console.log({ result });
   });

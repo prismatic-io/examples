@@ -8,7 +8,10 @@ export const deleteTask = action({
     description: "Delete the information and metadata of an existing task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.delete(`/tasks/${params.taskId}`);
     return { data };
   },

@@ -5,13 +5,13 @@ import {
   includeMultiPartyImchannels,
   includePrivateChannels,
   includePublicChannels,
-} from "./inputs";
-import { createOauthClient } from "./client";
+} from "../inputs";
+import { createOauthClient } from "../client";
 import { Channel } from "@slack/web-api/dist/types/response/ConversationsListResponse";
 import { Member } from "@slack/web-api/dist/types/response/UsersListResponse";
-import { generateChannelTypesString, getChannelDisplayName } from "./utils";
+import { generateChannelTypesString, getChannelDisplayName } from "../utils";
 
-const selectChannels = dataSource({
+export const selectChannels = dataSource({
   display: {
     label: "Select Channel",
     description:
@@ -74,7 +74,7 @@ const selectChannels = dataSource({
   },
 });
 
-const selectUsers = dataSource({
+export const selectUsers = dataSource({
   display: {
     label: "Select User",
     description: "Select a User from a dropdown menu (up to 10,000 users)",

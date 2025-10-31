@@ -10,7 +10,7 @@ import {
   teamMemberId,
   userType,
 } from "../inputs";
-import { checkDebug } from "../util";
+import { checkDebug, getBase64FromUrl } from "../util";
 import { listChangesPayload } from "../example-payloads";
 
 interface CursorData {
@@ -38,7 +38,16 @@ export const listChanges = action({
       params.userType,
       params.teamMemberId
     );
-    const cursorData = context.instanceState[context.stepId] as CursorData;
+    const integrationFlowName = context.flow.name;
+    const encodedId = getBase64FromUrl(
+      context.webhookUrls[integrationFlowName]
+    );
+
+    // Type assertion should not be necessary, but for some reason executionFrame does not have stepName in the type definition
+    const stepName = (context.executionFrame as { stepName: string }).stepName;
+    const stateKey = `${stepName}_${encodedId}`;
+
+    const cursorData = context.instanceState[stateKey] as CursorData;
 
     checkDebug(params, context);
 
@@ -69,7 +78,7 @@ export const listChanges = action({
       };
       return {
         data: response.result as ListChangesResult,
-        instanceState: { [context.stepId]: newCursorData },
+        instanceState: { [stateKey]: newCursorData },
       };
     }
 
@@ -96,7 +105,7 @@ export const listChanges = action({
         cursor: response.result.cursor,
         has_more: false,
       },
-      instanceState: { [context.stepId]: newCursorData },
+      instanceState: { [stateKey]: newCursorData },
     };
   },
   inputs: {

@@ -9,7 +9,6 @@ import {
   messageId,
   userId,
   blocks,
-  debug,
   query,
   limit,
   highlight,
@@ -37,8 +36,8 @@ export const postMessage = action({
     description: "Post a message to a slack channel",
   },
   perform: async (
-    context,
-    { connection, message, channelName, username, messageId, debug },
+    { debug: { enabled: debug } },
+    { connection, message, channelName, username, messageId },
   ) => {
     debugLogger({
       connection,
@@ -65,7 +64,6 @@ export const postMessage = action({
     username,
     connection: connectionInput,
     messageId: { ...messageId, required: false },
-    debug,
   },
   examplePayload: {
     data: postMessageResponse,
@@ -78,8 +76,8 @@ export const updateMessage = action({
     description: "Update the contents of an existing message",
   },
   perform: async (
-    context,
-    { connection, message, channelId, messageId, debug },
+    { debug: { enabled: debug } },
+    { connection, message, channelId, messageId },
   ) => {
     debugLogger({ message, channelId, messageId, debug });
     const client = await createOauthClient({
@@ -97,7 +95,6 @@ export const updateMessage = action({
     messageId,
     channelId,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: updateMessageResponse,
@@ -110,7 +107,10 @@ export const deletePendingMessage = action({
     description:
       "Delete the content and metadata of a pending scheduled message from a queue",
   },
-  perform: async (context, { connection, messageId, channelId, debug }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, messageId, channelId },
+  ) => {
     debugLogger({ messageId, channelId, debug });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -125,7 +125,6 @@ export const deletePendingMessage = action({
     messageId,
     channelId,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: deletePendingMessageResponse,
@@ -137,7 +136,10 @@ export const deleteMessage = action({
     label: "Delete message",
     description: "Delete the content and metadata of an existing message",
   },
-  perform: async (context, { connection, messageId, channelId, debug }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, messageId, channelId },
+  ) => {
     debugLogger({ messageId, channelId, debug });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -152,7 +154,6 @@ export const deleteMessage = action({
     messageId,
     channelId,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: deleteMessageResponse,
@@ -165,8 +166,8 @@ export const postEphemeralMessage = action({
     description: "Post an ephemeral message to a user or channel",
   },
   perform: async (
-    context,
-    { connection, channelName, userId, username, message, debug },
+    { debug: { enabled: debug } },
+    { connection, channelName, userId, username, message },
   ) => {
     debugLogger({ channelName, userId, username, message, debug });
     const client = await createOauthClient({
@@ -186,7 +187,6 @@ export const postEphemeralMessage = action({
     username,
     message,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: postEphemeralMessageResponse,
@@ -198,7 +198,7 @@ export const postSlackMessage = action({
     label: "Slack Message From Webhook",
     description: "Post a message to a Slack channel from a webhook URL",
   },
-  perform: async (context, { connection, message, debug }) => {
+  perform: async ({ debug: { enabled: debug } }, { connection, message }) => {
     debugLogger({ message, debug });
     const webhook = createWebhookClient(connection);
     return {
@@ -210,7 +210,6 @@ export const postSlackMessage = action({
   inputs: {
     connection: connectionInput,
     message,
-    debug,
   },
   examplePayload: { data: webhookDefaultResponse },
 });
@@ -221,7 +220,10 @@ export const postWebhookBlockMessage = action({
     description:
       "Post a block formatted message to a Slack channel from a webhook URL",
   },
-  perform: async (context, { connection, message, blocks, debug }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, message, blocks },
+  ) => {
     debugLogger({ message, blocks, debug });
     const webhook = createWebhookClient(connection);
 
@@ -241,7 +243,6 @@ export const postWebhookBlockMessage = action({
       comments: "This message will override if your block cannot be sent",
     },
     blocks,
-    debug,
   },
   examplePayload: { data: webhookDefaultResponse },
 });
@@ -252,8 +253,8 @@ export const postBlockMessage = action({
     description: "Post a message to a slack channel",
   },
   perform: async (
-    context,
-    { connection, blocks, message, channelName, username, messageId, debug },
+    { debug: { enabled: debug } },
+    { connection, blocks, message, channelName, username, messageId },
   ) => {
     debugLogger({ blocks, message, channelName, username, messageId, debug });
     const client = await createOauthClient({
@@ -279,7 +280,6 @@ export const postBlockMessage = action({
     username,
     connection: connectionInput,
     messageId: { ...messageId, required: false },
-    debug,
   },
   examplePayload: {
     data: postBlockMessageResponse,
@@ -312,18 +312,8 @@ export const searchMessages = action({
     description: "Searches for messages matching a query.",
   },
   perform: async (
-    context,
-    {
-      connection,
-      debug,
-      count,
-      highlight,
-      page,
-      query,
-      sort,
-      sort_dir,
-      team_id,
-    },
+    { debug: { enabled: debug } },
+    { connection, count, highlight, page, query, sort, sort_dir, team_id },
   ) => {
     debugLogger({
       debug,
@@ -362,7 +352,6 @@ export const searchMessages = action({
     sort_dir,
     team_id,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: searchMessagesResponse,

@@ -18,10 +18,10 @@
   },
   "dependencies": {
     "@aws-sdk/client-sts": "3.716.0",
-    "@prismatic-io/spectral": "10.3.5"
+    "@prismatic-io/spectral": "^10.5.12"
   },
   "devDependencies": {
-    "@prismatic-io/eslint-config-spectral": "2.0.1",
+    "@prismatic-io/eslint-config-spectral": "2.0.2",
     "@types/jest": "29.5.11",
     "eslint": "8.57.0",
     "prettier": "^3.4.2",

@@ -14,7 +14,10 @@ export const listUsersInTeam = action({
     description: "List all users in the given team",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/teams/${params.teamId}/users`, {
       params: {
         offset: params.offset,

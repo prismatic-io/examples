@@ -8,7 +8,10 @@ export const addUserToTeam = action({
     description: "Add an existing user to the given team",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(`/teams/${params.teamId}/addUser`, {
       data: { user: params.userId },
     });

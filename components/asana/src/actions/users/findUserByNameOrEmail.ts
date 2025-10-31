@@ -34,8 +34,11 @@ export const findUserByNameOrEmail = action({
       "Find a user with the given name or email address in your workspace",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
-    let offset = undefined;
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
+    let offset: string | undefined;
     let stop = false;
     while (!stop) {
       const response: UserReturn = await client.get(`/users`, {
@@ -47,7 +50,7 @@ export const findUserByNameOrEmail = action({
       });
       const filteredData = response.data.data.filter(
         (user) =>
-          params.userName === user.name || params.userEmail === user.email
+          params.userName === user.name || params.userEmail === user.email,
       );
       if (filteredData.length > 0) {
         return { data: filteredData[0] };
@@ -58,7 +61,7 @@ export const findUserByNameOrEmail = action({
       }
     }
     throw new Error(
-      `No user could be found with name "${params.userName}" or email "${params.userEmail}".`
+      `No user could be found with name "${params.userName}" or email "${params.userEmail}".`,
     );
   },
   inputs: {

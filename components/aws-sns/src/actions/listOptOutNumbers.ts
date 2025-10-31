@@ -4,7 +4,7 @@ import { awsRegion } from "aws-utils";
 import { nextToken, connectionInput } from "../inputs";
 import {
   ListPhoneNumbersOptedOutCommand,
-  ListPhoneNumbersOptedOutResponse,
+  type ListPhoneNumbersOptedOutResponse,
 } from "@aws-sdk/client-sns";
 
 interface Response {
@@ -18,12 +18,12 @@ const examplePayload: Response = {
 export const listOptOutNumbers = action({
   display: {
     label: "List Opt Out Numbers",
-    description: "Create an Amazon SNS Topic",
+    description: "List all opt out numbers",
   },
   perform: async (context, params) => {
     const sns = await createSNSClient({
       awsConnection: params.awsConnection,
-      awsRegion: util.types.toString(params.awsRegion),
+      awsRegion: params.awsRegion,
     });
     const listPhoneNumbersOptedOutParams = {
       nextToken: util.types.toString(params.nextToken),

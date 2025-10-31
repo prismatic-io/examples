@@ -13,12 +13,12 @@
     "publish": "npm run build && prism components:publish"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "10.3.5",
+    "@prismatic-io/spectral": "10.5.3",
     "@slack/bolt": "4.2.0",
     "@slack/webhook": "6.1.0"
   },
   "devDependencies": {
-    "@prismatic-io/eslint-config-spectral": "2.0.1",
+    "@prismatic-io/eslint-config-spectral": "2.0.2",
     "@types/jest": "29.5.11",
     "@types/node": "14.14.35",
     "copy-webpack-plugin": "11.0.0",

@@ -1,5 +1,5 @@
 import Client from "ssh2-sftp-client";
-import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
+import { type Connection, ConnectionError, util } from "@prismatic-io/spectral";
 import { basic, privateKey } from "./connections";
 import {
   secureCipherAlgorithms,
@@ -37,7 +37,7 @@ export const getSftpClient = async (connection: Connection, debug: boolean) => {
 
   sftp.on(
     "keyboard-interactive",
-    function (_name, _instructions, _instructionsLang, _prompts, finish) {
+    (_name, _instructions, _instructionsLang, _prompts, finish) => {
       if (debug) {
         console.debug(
           "This SFTP server requires keyboard-interactive login. Falling back to keyboard-interactive.",

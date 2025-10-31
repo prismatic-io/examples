@@ -9,7 +9,10 @@ export const getProject = action({
     description: "Get the information and metadata of a project by Id",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/projects/${params.projectId}`, {
       params: {
         opt_fields: PROJECT_OPT_FIELDS,

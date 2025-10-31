@@ -34,5 +34,15 @@ export const assumeRoleConnection: DefaultConnectionDefinition = {
       comments: "An AWS IAM Secret Access Key",
       example: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
     },
+    externalId: {
+      label: "External ID",
+      placeholder: "shared-common-secret",
+      type: "string",
+      required: false,
+      shown: true,
+      comments:
+        "Provides enhanced security measures to the connection. Optional, but recommended. Please check [AWS docs](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_common-scenarios_third-party.html#id_roles_third-party_external-id) for more information.",
+      example: "shared-common-secret",
+    },
   },
 };

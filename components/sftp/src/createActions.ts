@@ -1,6 +1,6 @@
 import { action } from "@prismatic-io/spectral";
 import { getSftpClient } from "./client";
-import { connection, debugInput, path, recursive } from "./inputs";
+import { connection, path, recursive } from "./inputs";
 
 const createDirectory = action({
   display: {
@@ -8,8 +8,8 @@ const createDirectory = action({
     description:
       "Create a new directory. If the recursive flag is set to true, the method will create any directories in the path which do not already exist.",
   },
-  perform: async (context, { connection, path, debug, recursive }) => {
-    const sftp = await getSftpClient(connection, debug);
+  perform: async (context, { connection, path, recursive }) => {
+    const sftp = await getSftpClient(connection, context.debug.enabled);
 
     try {
       const newDirectory = await sftp.mkdir(path, recursive);
@@ -20,7 +20,7 @@ const createDirectory = action({
       await sftp.end();
     }
   },
-  inputs: { connection, path, recursive, debug: debugInput },
+  inputs: { connection, path, recursive },
   examplePayload: {
     data: "/path/to/new/directory/",
   },

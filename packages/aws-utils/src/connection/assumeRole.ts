@@ -6,6 +6,7 @@ export const assumeRole = async (
   accessKeyId: string,
   secretAccessKey: string,
   roleArn: string,
+  externalId?: string,
 ): Promise<Credentials> => {
   const stsClient = new STSClient({
     ...(region.length > 0 && { region }),
@@ -17,6 +18,7 @@ export const assumeRole = async (
     new AssumeRoleCommand({
       RoleArn: util.types.toString(roleArn),
       RoleSessionName: "integration-session",
+      ExternalId: externalId,
     }),
   );
   return {

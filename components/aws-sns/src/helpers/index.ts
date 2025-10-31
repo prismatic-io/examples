@@ -1,6 +1,10 @@
+import { type Connection, ConnectionError } from "@prismatic-io/spectral";
+import {
+  type Credentials,
+  assumeRoleConnection,
+  toTrimmedString,
+} from "aws-utils";
 import { accessKeySecretPair } from "../connections";
-import { assumeRoleConnection, Credentials } from "aws-utils";
-import { Connection, ConnectionError, util } from "@prismatic-io/spectral";
 
 export const validateConnection = (connection: Connection): void => {
   if (
@@ -14,9 +18,6 @@ export const validateConnection = (connection: Connection): void => {
     );
   }
 };
-
-export const toTrimmedString = (value: unknown): string =>
-  util.types.toString(value).trim();
 
 export const getCredentials = (connection: Connection): Credentials => {
   validateConnection(connection);

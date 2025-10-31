@@ -8,7 +8,10 @@ export const getWorkspace = action({
     description: "Get the information and metadata of the given Workspace",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/workspaces/${params.workspaceId}`);
     return { data };
   },

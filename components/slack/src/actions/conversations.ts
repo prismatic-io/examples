@@ -20,7 +20,6 @@ import {
   oldest,
   conversationPurpose,
   conversationTopic,
-  debug,
   connected_team_ids,
   search_channel_types,
   sort,
@@ -54,8 +53,8 @@ export const createConversation = action({
     description: "Create a new conversation",
   },
   perform: async (
-    context,
-    { connection, isPrivate, conversationName, teamId, debug },
+    { debug: { enabled: debug } },
+    { connection, isPrivate, conversationName, teamId },
   ) => {
     debugLogger({ debug, isPrivate, conversationName, teamId });
     const client = await createOauthClient({ slackConnection: connection });
@@ -71,7 +70,6 @@ export const createConversation = action({
     isPrivate,
     teamId,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: createConversationResponse,
@@ -83,7 +81,10 @@ export const closeConversation = action({
     label: "Close Conversation",
     description: "Close an existing conversation",
   },
-  perform: async (context, { connection, conversationName, debug }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, conversationName },
+  ) => {
     debugLogger({ debug, conversationName });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -93,7 +94,7 @@ export const closeConversation = action({
     });
     return { data };
   },
-  inputs: { conversationName, connection: connectionInput, debug },
+  inputs: { conversationName, connection: connectionInput },
   examplePayload: {
     data: closeConversationResponse,
   },
@@ -105,8 +106,8 @@ export const renameConversation = action({
     description: "Rename an existing conversation",
   },
   perform: async (
-    context,
-    { connection, newConversationName, conversationName, debug },
+    { debug: { enabled: debug } },
+    { connection, newConversationName, conversationName },
   ) => {
     debugLogger({ debug, newConversationName, conversationName });
     const client = await createOauthClient({
@@ -125,7 +126,6 @@ export const renameConversation = action({
       label: "New Conversation Name",
     },
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: renameConversationResponse,
@@ -138,7 +138,7 @@ export const getConversationsHistory = action({
     description: "Get the history of a conversation",
   },
   perform: async (
-    context,
+    { debug: { enabled: debug } },
     {
       connection,
       cursor,
@@ -148,7 +148,6 @@ export const getConversationsHistory = action({
       oldest,
       inclusive,
       latest,
-      debug,
       fetchAll,
     },
   ) => {
@@ -198,7 +197,6 @@ export const getConversationsHistory = action({
     latest,
     oldest,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: getConversationsHistoryResponse,
@@ -210,8 +208,8 @@ export const listConversations = action({
     label: "List Conversations",
     description: "List all conversations",
   },
-  perform: async (context, params) => {
-    debugLogger(params);
+  perform: async ({ debug: { enabled: debug } }, params) => {
+    debugLogger({ ...params, debug });
     const client = await createOauthClient({
       slackConnection: params.connection,
     });
@@ -248,7 +246,6 @@ export const listConversations = action({
     includePrivateChannels,
     includeMultiPartyImchannels,
     includeImChannels,
-    debug,
   },
   examplePayload: {
     data: listConversationResponse,
@@ -260,7 +257,10 @@ export const leaveConversation = action({
     label: "Leave Conversations",
     description: "Leave an existing conversation",
   },
-  perform: async (context, { connection, channelName, debug }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, channelName },
+  ) => {
     debugLogger({ debug, channelName });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -273,7 +273,6 @@ export const leaveConversation = action({
   inputs: {
     channelName,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: leaveConversationResponse,
@@ -286,8 +285,8 @@ export const listConversationMembers = action({
     description: "List all members of a conversation",
   },
   perform: async (
-    context,
-    { fetchAll, connection, channelName, cursor, limit, debug },
+    { debug: { enabled: debug } },
+    { fetchAll, connection, channelName, cursor, limit },
   ) => {
     debugLogger({ debug, channelName, cursor, limit });
     const client = await createOauthClient({
@@ -318,7 +317,6 @@ export const listConversationMembers = action({
     limit,
     cursor,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: listConversationMembersResponse,
@@ -330,7 +328,10 @@ export const archiveConversation = action({
     label: "Archive Conversation",
     description: "Archive an existing conversation",
   },
-  perform: async (context, { connection, channelName, debug }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, channelName },
+  ) => {
     debugLogger({ debug, channelName });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -343,7 +344,6 @@ export const archiveConversation = action({
   inputs: {
     channelName,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: archiveConversationResponse,
@@ -355,7 +355,10 @@ export const conversationExists = action({
     label: "Conversation Exists",
     description: "Returns true if the conversation already exists",
   },
-  perform: async (context, { connection, channelName, debug }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, channelName },
+  ) => {
     debugLogger({ debug, channelName });
     const client = await createOauthClient({ slackConnection: connection });
     const data = await client.conversations.list();
@@ -373,7 +376,6 @@ export const conversationExists = action({
   inputs: {
     channelName,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: true,
@@ -385,7 +387,10 @@ export const inviteUserToConversation = action({
     label: "Invite User To Conversation",
     description: "Invite a user to an existing conversation",
   },
-  perform: async (context, { connection, channelName, userId, debug }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, channelName, userId },
+  ) => {
     debugLogger({ debug, channelName, userId });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -401,7 +406,6 @@ export const inviteUserToConversation = action({
     channelName,
     userId,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: inviteUserToConversationResponse,
@@ -413,7 +417,10 @@ export const setConversationPurpose = action({
     label: "Set Conversation Purpose",
     description: "Set the purpose of an existing conversation",
   },
-  perform: async (context, { connection, channelName, purpose, debug }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, channelName, purpose },
+  ) => {
     debugLogger({ debug, channelName, purpose });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -429,7 +436,6 @@ export const setConversationPurpose = action({
     channelName,
     connection: connectionInput,
     purpose: conversationPurpose,
-    debug,
   },
   examplePayload: {
     data: setConversationPurposeResponse,
@@ -441,7 +447,10 @@ export const setConversationTopic = action({
     label: "Set Conversation Topic",
     description: "Set the purpose of an existing conversation",
   },
-  perform: async (context, { connection, channelName, topic, debug }) => {
+  perform: async (
+    { debug: { enabled: debug } },
+    { connection, channelName, topic },
+  ) => {
     debugLogger({ debug, channelName, topic });
     const client = await createOauthClient({
       slackConnection: connection,
@@ -458,7 +467,6 @@ export const setConversationTopic = action({
     channelName,
     userId,
     topic: conversationTopic,
-    debug,
   },
   examplePayload: {
     data: setConversationTopicResponse,
@@ -472,10 +480,9 @@ export const searchConversation = action({
       "Search for public or private channels in an Enterprise organization.",
   },
   perform: async (
-    context,
+    { debug: { enabled: debug } },
     {
       connection,
-      debug,
       connected_team_ids,
       cursor,
       limit,
@@ -526,7 +533,6 @@ export const searchConversation = action({
     team_ids,
     total_count_only,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: closeConversationResponse,

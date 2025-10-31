@@ -1,5 +1,5 @@
 import { action, util } from "@prismatic-io/spectral";
-import { SubscribeCommand, SubscribeResponse } from "@aws-sdk/client-sns";
+import { SubscribeCommand, type SubscribeResponse } from "@aws-sdk/client-sns";
 import { createSNSClient } from "../client";
 import { awsRegion } from "aws-utils";
 import { topicArn, protocol, endpoint, connectionInput } from "../inputs";
@@ -22,11 +22,11 @@ export const subscribe = action({
   perform: async (context, params) => {
     const sns = await createSNSClient({
       awsConnection: params.awsConnection,
-      awsRegion: util.types.toString(params.awsRegion),
+      awsRegion: params.awsRegion,
     });
     const subscribeParams = {
       Protocol: util.types.toString(params.protocol),
-      TopicArn: util.types.toString(params.topicArn),
+      TopicArn: params.topicArn,
       Endpoint: util.types.toString(params.endpoint),
     };
     const command = new SubscribeCommand(subscribeParams);

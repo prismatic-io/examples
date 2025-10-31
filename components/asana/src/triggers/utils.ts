@@ -1,15 +1,15 @@
 import {
-  Connection,
-  TriggerPayload,
+  type Connection,
+  type TriggerPayload,
   util,
-  ActionContext,
+  type ActionContext,
 } from "@prismatic-io/spectral";
 import crypto from "crypto";
 import { createAsanaClient } from "../client";
-import { WebhookFilterSettings } from "../types/WebhookFilterSettings";
-import { Event } from "../types/Event";
-import { CachedTasks } from "../types/CachedTasks";
-import { CachedStories } from "../types/CachedStories";
+import type { WebhookFilterSettings } from "../types/WebhookFilterSettings";
+import type { Event } from "../types/Event";
+import type { CachedTasks } from "../types/CachedTasks";
+import type { CachedStories } from "../types/CachedStories";
 
 export const isHeartbeatData = (data: any): boolean =>
   typeof data === "object" &&
@@ -19,7 +19,7 @@ export const isHeartbeatData = (data: any): boolean =>
 export const validateHmac = (
   payload: TriggerPayload,
   signature: string,
-  secrets: string[]
+  secrets: string[],
 ): void => {
   const body = util.types.toString(payload.rawBody.data);
   for (const secret of secrets) {
@@ -32,7 +32,7 @@ export const validateHmac = (
     }
   }
   throw new Error(
-    "The included signing signature does not match a known Asana signing key. Rejecting."
+    "The included signing signature does not match a known Asana signing key. Rejecting.",
   );
 };
 
@@ -81,13 +81,13 @@ export const findWebhook = async ({
   endpoint: string;
   resourceId: string;
 }): Promise<AsanaWebhook | undefined> => {
-  const client = await createAsanaClient(asanaConnection);
+  const client = await createAsanaClient(asanaConnection, false);
   const { data: workSpaces } = await client.get("/workspaces", {
     params: { limit: 100 },
   });
   const webhooks: AsanaWebhook[] = [];
   for (const workspace of workSpaces.data) {
-    let offset: string | unknown = undefined;
+    let offset: string | unknown ;
     do {
       const { data } = await client.get<{
         data: AsanaWebhook[];
@@ -105,7 +105,7 @@ export const findWebhook = async ({
   }
   return webhooks.find(
     (webhook) =>
-      webhook.target === endpoint && webhook.resource.gid === resourceId
+      webhook.target === endpoint && webhook.resource.gid === resourceId,
   );
 };
 
@@ -115,7 +115,7 @@ export const createWebhook = async ({
   filters,
   asanaConnection,
 }: CreateWebhookParams): Promise<AsanaWebhook> => {
-  const client = await createAsanaClient(asanaConnection);
+  const client = await createAsanaClient(asanaConnection, false);
   const existingWebhook = await findWebhook({
     endpoint,
     resourceId,
@@ -141,7 +141,7 @@ export const deleteWebhook = async ({
   resourceId,
   asanaConnection,
 }: DeleteWebhookParams): Promise<void> => {
-  const client = await createAsanaClient(asanaConnection);
+  const client = await createAsanaClient(asanaConnection, false);
   const existingWebhook = await findWebhook({
     endpoint,
     resourceId,
@@ -153,7 +153,7 @@ export const deleteWebhook = async ({
   } else {
     console.debug(`Deleting webhook ${existingWebhook.gid}`);
     await client.delete<{ data: AsanaWebhook }>(
-      `/webhooks/${existingWebhook.gid}`
+      `/webhooks/${existingWebhook.gid}`,
     );
     return;
   }
@@ -161,7 +161,7 @@ export const deleteWebhook = async ({
 
 export const getFilters = (
   filterSettings: WebhookFilterSettings,
-  resourceType: string
+  resourceType: string,
 ): Array<AsanaFilter> => {
   const filters: Array<AsanaFilter> = [];
   if (filterSettings.triggerWhenAdded)
@@ -186,16 +186,16 @@ const processTask = async (
   taskEvent: Event,
   cachedTasks: CachedTasks,
   asanaConnection: Connection,
-  context: ActionContext
+  context: ActionContext,
 ): Promise<void> => {
   if (taskEvent.resource.gid in cachedTasks) {
     taskEvent.task = cachedTasks[taskEvent.resource.gid];
     return;
   }
-  const client = await createAsanaClient(asanaConnection);
+  const client = await createAsanaClient(asanaConnection, false);
   try {
     const { data: response } = await client.get(
-      `/tasks/${taskEvent.resource.gid}`
+      `/tasks/${taskEvent.resource.gid}`,
     );
     const taskData = response.data;
     taskEvent.task = taskData;
@@ -203,7 +203,7 @@ const processTask = async (
   } catch (error) {
     // If we fail to fetch a task, we should not fail the trigger as Asana may send events for tasks that have been deleted
     context.logger.warn(
-      `Task ${taskEvent.resource.gid} does not exist. This usually happens when a task is immediately deleted at the UI.`
+      `Task ${taskEvent.resource.gid} does not exist. This usually happens when a task is immediately deleted at the UI.`,
     );
     taskEvent.task = {};
   }
@@ -213,24 +213,27 @@ const processStory = async (
   storyEvent: Event,
   cachedStories: CachedStories,
   asanaConnection: Connection,
-  context: ActionContext
+  context: ActionContext,
 ): Promise<void> => {
   if (storyEvent.resource.gid in cachedStories) {
     storyEvent.task = cachedStories[storyEvent.resource.gid];
     return;
   }
-  const client = await createAsanaClient(asanaConnection);
+  const client = await createAsanaClient(
+    asanaConnection,
+    context.debug.enabled,
+  );
   try {
     const { data: response } = await client.get(
-      `/stories/${storyEvent.resource.gid}`
+      `/stories/${storyEvent.resource.gid}`,
     );
     const storyData = response.data;
     storyEvent.story = storyData;
     cachedStories[storyEvent.resource.gid] = storyData;
   } catch (error) {
-    // If we fail to fetch a story, we should not fail the trigger as Asana may send events for stories that have been deleted
+    // If we fail to fetch a story (comment/activity), we should not fail the trigger as Asana may send events for items that have been deleted
     context.logger.warn(
-      `Story ${storyEvent.resource.gid} does not exist. This usually happens when a story is immediately deleted at the UI.`
+      `Comment/Activity ${storyEvent.resource.gid} does not exist. This usually happens when a comment or activity is immediately deleted in the UI.`,
     );
     storyEvent.task = {};
   }
@@ -239,7 +242,7 @@ const processStory = async (
 const getEventsAdditionalData = async (
   asanaConnection: Connection,
   payload: TriggerPayload,
-  context: ActionContext
+  context: ActionContext,
 ): Promise<void> => {
   // Deleted or removed actions should not be fetched
   const AVOID_ACTIONS = ["deleted", "removed"];
@@ -247,7 +250,7 @@ const getEventsAdditionalData = async (
   const RESOURCE_TYPE_STORY = "story";
   const events = extractEvents(payload.body.data);
 
-  // Cache tasks or stories to avoid fetching multiple times as Asana sends multiple events for the same task or story
+  // Cache tasks or stories (comments/activities) to avoid fetching multiple times as Asana sends multiple events for the same task or story
   const cachedTasks: CachedTasks = {};
   const cachedStories: CachedStories = {};
 
@@ -270,7 +273,7 @@ const getEventsAdditionalData = async (
 export const getAdditionalData = async (
   context: ActionContext,
   payload: TriggerPayload,
-  inputs: { asanaConnection: Connection }
+  inputs: { asanaConnection: Connection },
 ): Promise<TriggerPayload> => {
   const events = extractEvents(payload.body.data);
   if (events.length === 0) return Promise.resolve(payload);

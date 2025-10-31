@@ -15,7 +15,10 @@ export const addCustomFieldToPortfolio = action({
     description: "Add a custom field to an existing portfolio",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/portfolios/${params.portfolioId}/addCustomFieldSetting`,
       {
@@ -25,7 +28,7 @@ export const addCustomFieldToPortfolio = action({
           insert_before: params.insertBefore,
           is_important: params.isImportant,
         },
-      }
+      },
     );
     return { data };
   },

@@ -8,7 +8,10 @@ export const listPortfolioItems = action({
     description: "List all items in a given portfolio",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(
       `/portfolios/${params.portfolioId}/items`,
       {
@@ -16,7 +19,7 @@ export const listPortfolioItems = action({
           offset: params.offset,
           limit: params.limit,
         },
-      }
+      },
     );
     return { data };
   },

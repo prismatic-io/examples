@@ -8,14 +8,17 @@ export const removePortfolioItem = action({
     description: "Remove an existing item from the given portfolio",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.delete(
       `/portfolios/${params.portfolioId}/removeItem`,
       {
         data: {
           item: params.itemId,
         },
-      }
+      },
     );
     return { data };
   },

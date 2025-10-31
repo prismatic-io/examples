@@ -8,7 +8,10 @@ export const getStatusUpdate = action({
     description: "Get a status update",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/status_updates/${params.statusId}`);
     return { data };
   },

@@ -13,7 +13,10 @@ export const getStatusesForObject = action({
     description: "Get status updates from a project, portfolio, or goal",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/status_updates`, {
       params: {
         parent: params.parent,

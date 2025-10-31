@@ -8,7 +8,10 @@ export const removeTagFromTask = action({
     description: "Remove a tag from the given task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(`/tasks/${params.taskId}/removeTag`, {
       data: {
         tag: params.tagId,

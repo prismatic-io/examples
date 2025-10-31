@@ -30,7 +30,10 @@ export const createTask = action({
     description: "Create a new task inside a workspace or organization",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const taskData = {
       data: {
         approval_status: params.approvalStatus,

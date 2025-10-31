@@ -38,7 +38,7 @@ import {
 } from "./actions/users";
 import { listFiles, searchFiles, uploadFile } from "./actions/files";
 import rawRequest from "./actions/rawRequest";
-// import views from "./actions/views";
+import views from "./actions/views";
 import { searchAll } from "./actions/searchAll";
 import { handleErrors } from "@prismatic-io/spectral/dist/clients/http";
 
@@ -82,7 +82,7 @@ export default component({
     uploadFile,
     getConversationsHistory,
     rawRequest,
-    // ...views,
+    ...views,
     // searchConversation,
     searchAll,
     searchFiles,

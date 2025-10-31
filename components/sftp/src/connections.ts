@@ -1,5 +1,5 @@
 import {
-  OnPremConnectionDefinition,
+  type OnPremConnectionDefinition,
   onPremConnection,
 } from "@prismatic-io/spectral";
 
@@ -18,7 +18,7 @@ const commonInputs = {
     required: true,
     comments:
       "The address of the SFTP server. This should be either an IP address or hostname.",
-    example: "sftp.prismatic.io",
+    example: "sftp.example.com",
     onPremControlled: true,
   },
   port: {
@@ -82,6 +82,7 @@ export const basic = onPremConnection({
   inputs: {
     password: {
       label: "Password",
+      comments: "Password for SFTP authentication",
       placeholder: "Password",
       type: "password",
       required: true,
@@ -100,27 +101,27 @@ export const privateKey = onPremConnection({
   inputs: {
     privateKey: {
       label: "Private Key",
+      comments: "SSH private key",
       placeholder: "SSH Private Key",
       type: "text",
       required: true,
-      comments: "SSH private key",
       example: "-----BEGIN OPENSSH PRIVATE KEY-----\nabc123...",
     },
     passphrase: {
       label: "Key Passphrase",
+      comments: "Passphrase for the private key. Leave blank if none.",
       placeholder: "Passphrase",
       type: "password",
       required: false,
-      comments: "Passphrase for the private key. Leave blank if none.",
       example: "p@s$PHr@$3",
     },
     password: {
       label: "Password",
+      comments:
+        "Though uncommon, some SFTP servers that use private keys may also require a password. Leave blank if none.",
       placeholder: "Password",
       type: "password",
       required: false,
-      comments:
-        "Though uncommon, some SFTP servers that use private keys may also require a password. Leave blank if none.",
       example: "p@s$W0Rd",
     },
     ...commonInputs,

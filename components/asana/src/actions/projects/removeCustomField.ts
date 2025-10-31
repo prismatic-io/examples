@@ -8,14 +8,17 @@ export const removeCustomFieldFromProject = action({
     description: "Remove an existing Custom Field from an existing Project",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/projects/${params.projectId}/removeCustomFieldSetting`,
       {
         data: {
           custom_field: params.fieldId,
         },
-      }
+      },
     );
     return { data };
   },

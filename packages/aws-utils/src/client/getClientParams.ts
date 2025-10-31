@@ -1,7 +1,7 @@
 import { assumeRole } from "../connection/assumeRole";
 import { assumeRoleConnection } from "../connection/assumeRoleConnection";
 import { getCredentials } from "../helpers/getCredentials";
-import { toTrimmedString } from "../helpers/misc";
+import { toOptionalString, toTrimmedString } from "../helpers/misc";
 import { validateConnection } from "../helpers/validateConnection";
 import { Credentials } from "../interfaces/Credentials";
 import { GetClientParamsProps } from "../interfaces/GetClientParamsProps";
@@ -47,6 +47,7 @@ export const getClientParams = async ({
         accessKeyId,
         secretAccessKey,
         toTrimmedString(awsConnection.fields.roleARN),
+        toOptionalString(awsConnection.fields?.externalId),
       )
     : {
         accessKeyId,

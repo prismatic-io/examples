@@ -16,7 +16,10 @@ export const updateTag = action({
     description: "Update the information and metadata of the given tag",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.put(
       `/tags/${params.tagId}`,
       {
@@ -30,7 +33,7 @@ export const updateTag = action({
         params: {
           opt_fields: TAG_OPT_FIELDS,
         },
-      }
+      },
     );
     return { data };
   },

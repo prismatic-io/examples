@@ -2,7 +2,6 @@ import { action } from "@prismatic-io/spectral";
 import { createOauthClient } from "../client";
 import {
   connectionInput,
-  debug,
   highlight,
   limit,
   page,
@@ -20,18 +19,8 @@ export const searchAll = action({
     description: "Searches for messages and files matching a query.",
   },
   perform: async (
-    context,
-    {
-      connection,
-      debug,
-      query,
-      sort,
-      sort_dir,
-      count,
-      team_id,
-      highlight,
-      page,
-    },
+    { debug: { enabled: debug } },
+    { connection, query, sort, sort_dir, count, team_id, highlight, page },
   ) => {
     debugLogger({
       debug,
@@ -70,7 +59,6 @@ export const searchAll = action({
     highlight,
     team_id,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: searchAllResponse as unknown,

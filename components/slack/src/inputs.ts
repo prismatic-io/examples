@@ -2,13 +2,20 @@ import { input, util } from "@prismatic-io/spectral";
 import { valueListInputClean } from "./utils";
 import { SearchAllSort, Sort, SortDir } from "./interfaces";
 
+export const connectionInput = input({
+  label: "Connection",
+  type: "connection",
+  required: true,
+  comments: "The connection to use",
+});
+
 export const message = input({
   label: "Message",
   placeholder: "Message to send",
   type: "text",
   required: true,
   comments: "The message to send the Slack channel.",
-  example: "Hello from Prismatic!",
+  example: "Hello from Acme!",
   clean: util.types.toString,
 });
 
@@ -19,26 +26,6 @@ export const messageId = input({
   comments:
     "A unique identifier of a message or thread to reply to (thread_ts)",
   example: "84350944036",
-  clean: util.types.toString,
-});
-
-// .sendMessage can take a channel name or ID
-export const channelName = input({
-  label: "Channel Name or ID",
-  type: "string",
-  required: true,
-  comments: "The name or static ID of the Slack channel.",
-  example: "general",
-  clean: util.types.toString,
-});
-
-// update, delete message only take channel ID
-export const channelId = input({
-  label: "Channel ID",
-  type: "string",
-  required: true,
-  comments: "The static ID of the Slack channel.",
-  example: "C02MS7HV6KB",
   clean: util.types.toString,
 });
 
@@ -75,16 +62,6 @@ export const username = input({
   comments:
     "The username of the bot the message will be sent from. This requires the 'chat:write.customize' scope.",
   example: "exampleUser",
-  clean: util.types.toString,
-});
-
-export const userId = input({
-  label: "User Id",
-  type: "string",
-  required: true,
-  example: "84350944036",
-  comments:
-    "Provide a string value for the unique identifier of the user you want to send the message to.",
   clean: util.types.toString,
 });
 
@@ -130,13 +107,6 @@ export const debug = input({
   required: false,
   comments: "When true, the payload will be logged.",
   clean: util.types.toBool,
-});
-
-export const connectionInput = input({
-  label: "Connection",
-  type: "connection",
-  required: true,
-  comments: "The connection to use",
 });
 
 export const blocks = input({
@@ -555,4 +525,37 @@ export const fetchAll = input({
   required: false,
   comments: "Make the action handle pagination, returning all results.",
   clean: util.types.toBool,
+});
+
+// .sendMessage can take a channel name or ID
+export const channelName = input({
+  label: "Channel Name or ID",
+  type: "string",
+  required: true,
+  comments: "The name or static ID of the Slack channel.",
+  example: "general",
+  dataSource: "selectChannels",
+  clean: util.types.toString,
+});
+
+// update, delete message only take channel ID
+export const channelId = input({
+  label: "Channel ID",
+  type: "string",
+  required: true,
+  comments: "The static ID of the Slack channel.",
+  example: "C02MS7HV6KB",
+  dataSource: "selectChannels",
+  clean: util.types.toString,
+});
+
+export const userId = input({
+  label: "User Id",
+  type: "string",
+  required: true,
+  example: "84350944036",
+  comments:
+    "Provide a string value for the unique identifier of the user you want to send the message to.",
+  dataSource: "selectUsers",
+  clean: util.types.toString,
 });

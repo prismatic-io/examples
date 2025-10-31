@@ -9,13 +9,16 @@ export const attachFileToTask = action({
     description: "Attach a file to a task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const formData = new FormData();
     formData.append("file", params.file.data, { filename: params.fileName });
     const { data } = await client.post(
       `/tasks/${params.taskId}/attachments/`,
       formData,
-      { headers: formData.getHeaders() }
+      { headers: formData.getHeaders() },
     );
     return { data };
   },

@@ -23,7 +23,10 @@ export const updateProject = action({
     description: "Update the information and metadata of a project",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const projectData = {
       data: {
         archived: params.archived,
@@ -42,7 +45,7 @@ export const updateProject = action({
     };
     const { data } = await client.put(
       `/projects/${params.projectId}`,
-      projectData
+      projectData,
     );
     return { data };
   },
@@ -79,7 +82,7 @@ export const updateProject = action({
         workspace: {
           gid: "1126509132283071",
           resource_type: "workspace",
-          name: "Prismatic",
+          name: "Acme",
         },
         team: {
           gid: "1202178854270529",

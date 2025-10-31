@@ -9,7 +9,10 @@ export const listCustomFields = action({
     description: "List all custom fields in a workspace",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(
       `/workspaces/${params.workspaceId}/custom_fields`,
       {
@@ -18,7 +21,7 @@ export const listCustomFields = action({
           limit: params.limit,
           opt_fields: CUSTOM_FIELD_OPT_FIELDS,
         },
-      }
+      },
     );
     return { data };
   },

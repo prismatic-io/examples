@@ -13,7 +13,10 @@ export const createTeam = action({
     description: "Create a new team",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(`/teams`, {
       data: {
         description: params.teamDescription || undefined,
@@ -39,7 +42,7 @@ export const createTeam = action({
         organization: {
           gid: "1126509132283071",
           resource_type: "workspace",
-          name: "Prismatic",
+          name: "Acme",
         },
       },
     },

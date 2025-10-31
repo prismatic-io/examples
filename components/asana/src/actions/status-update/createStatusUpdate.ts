@@ -13,7 +13,10 @@ export const createStatusUpdate = action({
     description: "Create a status update from a project, portfolio, or goal",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.post(
       `/status_updates`,
       {
@@ -29,7 +32,7 @@ export const createStatusUpdate = action({
           limit: params.limit,
           offset: params.offset,
         },
-      }
+      },
     );
     return { data };
   },

@@ -9,7 +9,10 @@ export const getTag = action({
     description: "Get the information and metadata of the given tag",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/tags/${params.tagId}`, {
       params: {
         opt_fields: TAG_OPT_FIELDS,

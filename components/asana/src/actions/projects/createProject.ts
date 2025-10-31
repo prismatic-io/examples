@@ -25,7 +25,10 @@ export const createProjects = action({
       "Create a new project inside of an existing team or organization",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const projectData = {
       data: {
         archived: params.archived,

@@ -90,10 +90,9 @@ const pollChangesTrigger = pollingTrigger({
     instanceState: { stepId: "someStepId" },
     polledNoChanges: false,
     payload: {
+      globalDebug: false,
       headers: {
-        "prismatic-invoke-type": "Integration Flow Test",
         "Content-Type": "application/json",
-        "Prismatic-Synchronous": "false",
       },
       queryParameters: null,
       rawBody: {
@@ -128,12 +127,12 @@ const pollChangesTrigger = pollingTrigger({
       },
       pathFragment: "",
       webhookUrls: {
-        "Flow 1": "https://hooks.prismatic.io/trigger/WEBHOOK_ID",
+        "Flow 1": "https://hooks.example.com/trigger/WEBHOOK_ID",
       },
       webhookApiKeys: {
         "Flow 1": ["sample-api-key"],
       },
-      invokeUrl: "https://hooks.prismatic.io/trigger/WEBHOOK_ID",
+      invokeUrl: "https://hooks.example.com/trigger/WEBHOOK_ID",
       executionId: "exampleExecutionId",
       customer: {
         id: "testCustomerId",

@@ -8,3 +8,5 @@ export const ALL_LEVELS_AUTHENTICATION_INPUT_MODEL = [
 
 export const MISSING_PATHS_ERROR_MESSAGE =
   "File Paths or Dynamic Paths must be specified";
+
+export const BOTH_ENTRY_FILTER = "all";

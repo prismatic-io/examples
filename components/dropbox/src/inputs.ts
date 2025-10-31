@@ -1,6 +1,14 @@
 import { input, util } from "@prismatic-io/spectral";
-import { cleanActionArray, cleanString, cleanStringWithTag } from "./util";
-import { ALL_LEVELS_AUTHENTICATION_INPUT_MODEL } from "./constants";
+import {
+  cleanActionArray,
+  cleanString,
+  cleanStringWithTag,
+  toOptionalString,
+} from "./util";
+import {
+  ALL_LEVELS_AUTHENTICATION_INPUT_MODEL,
+  BOTH_ENTRY_FILTER,
+} from "./constants";
 
 export const userType = input({
   label: "Team User Type",
@@ -27,6 +35,7 @@ export const path = input({
     "The location of a file within a Dropbox share. Include a leading /.",
   example: "/path/to/file.txt",
   clean: util.types.toString,
+  dataSource: "listFolders",
 });
 
 export const directoryPath = input({
@@ -38,6 +47,7 @@ export const directoryPath = input({
     "The path to a directory within a Dropbox share. Include a leading /.",
   example: "/path/to/my/directory/",
   clean: cleanString,
+  dataSource: "listFolders",
 });
 
 export const fileName = input({
@@ -59,6 +69,7 @@ export const fromPath = input({
     "The location of a source file within a Dropbox share. Include a leading /.",
   example: "/path/to/source/file.txt",
   clean: util.types.toString,
+  dataSource: "listFolders",
 });
 
 export const toPath = input({
@@ -70,6 +81,7 @@ export const toPath = input({
     "The location of a destination file within a Dropbox share. Include a leading /.",
   example: "/path/to/destination/file.txt",
   clean: util.types.toString,
+  dataSource: "listFolders",
 });
 
 export const folderActions = input({
@@ -550,4 +562,19 @@ export const debug = input({
     "Whether to log the payload to the debug log. This is useful for troubleshooting.",
   clean: util.types.toBool,
   default: "false",
+});
+
+export const entryFilter = input({
+  label: "Entry Filter",
+  type: "string",
+  required: true,
+  default: BOTH_ENTRY_FILTER,
+  comments:
+    "Select a filter to return only files or folders. If both are selected, all will be returned.",
+  model: [
+    { label: "File", value: "file" },
+    { label: "Folder", value: "folder" },
+    { label: "Files and Folders", value: BOTH_ENTRY_FILTER },
+  ],
+  clean: util.types.toString,
 });

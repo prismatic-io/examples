@@ -5,7 +5,6 @@ import {
   channels,
   connectionInput,
   cursor,
-  debug,
   fileContent,
   fileName,
   fileTitle,
@@ -32,8 +31,8 @@ export const listFiles = action({
     label: "List Files",
     description: "List all available files",
   },
-  perform: async (context, params) => {
-    debugLogger(params);
+  perform: async ({ debug: { enabled: debug } }, params) => {
+    debugLogger({ ...params, debug });
     const client = await createOauthClient({
       slackConnection: params.connection,
     });
@@ -47,7 +46,7 @@ export const listFiles = action({
     });
     return { data };
   },
-  inputs: { connection: connectionInput, fetchAll, cursor, debug },
+  inputs: { connection: connectionInput, fetchAll, cursor },
   examplePayload: {
     data: listFilesResponse as unknown,
   },
@@ -58,8 +57,8 @@ export const uploadFile = action({
     label: "Upload File",
     description: "Upload a new file to a slack conversation",
   },
-  perform: async (context, params) => {
-    debugLogger(params);
+  perform: async ({ debug: { enabled: debug } }, params) => {
+    debugLogger({ ...params, debug });
     const client = await createOauthClient({
       slackConnection: params.connection,
     });
@@ -82,7 +81,6 @@ export const uploadFile = action({
     channels,
     initialComment,
     thread,
-    debug,
   },
   examplePayload: {
     data: uploadFileResponse,
@@ -95,18 +93,8 @@ export const searchFiles = action({
     description: "Searches for files matching a query.",
   },
   perform: async (
-    context,
-    {
-      connection,
-      debug,
-      query,
-      sort,
-      sort_dir,
-      count,
-      highlight,
-      page,
-      team_id,
-    },
+    { debug: { enabled: debug } },
+    { connection, query, sort, sort_dir, count, highlight, page, team_id },
   ) => {
     debugLogger({
       debug,
@@ -145,7 +133,6 @@ export const searchFiles = action({
     sort_dir,
     team_id,
     connection: connectionInput,
-    debug,
   },
   examplePayload: {
     data: searchFilesResponse as unknown,

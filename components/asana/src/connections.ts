@@ -6,7 +6,10 @@ import {
 
 export const asanaApiKeyConnection = connection({
   key: "apiKey",
-  label: "Asana Personal Access Token",
+  display: {
+    label: "Asana Personal Access Token",
+    description: "Asana Personal Access Token",
+  },
   inputs: {
     apiKey: {
       label: "Personal Access Token",
@@ -24,7 +27,10 @@ export const asanaApiKeyConnection = connection({
 export const asanaOAuthConnection = oauth2Connection({
   oauth2Type: OAuth2Type.AuthorizationCode,
   key: "oauth2",
-  label: "Asana OAuth 2.0 Connection",
+  display: {
+    label: "Asana OAuth 2.0 Connection",
+    description: "Asana OAuth 2.0 Connection",
+  },
   inputs: {
     authorizeUrl: {
       label: "Authorize URL",

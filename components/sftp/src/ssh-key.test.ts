@@ -10,7 +10,7 @@ import {
 } from "@prismatic-io/spectral/dist/testing";
 import component from ".";
 import { privateKey } from "./connections";
-import fs from "fs";
+import fs from "node:fs";
 
 const harness = createHarness(component);
 const connectionWithPassphrase = createConnection(privateKey, {
@@ -48,7 +48,6 @@ describe("Connect to server with SSH key", () => {
     const result = await harness.action("listDirectory", {
       connection: connectionWithPassphrase,
       path: "/",
-      debug: false,
     });
     expect(result?.data).toEqual([
       "build_version",
@@ -61,7 +60,6 @@ describe("Connect to server with SSH key", () => {
     const result = await harness.action("listDirectory", {
       connection: connectionWithoutPassphrase,
       path: "/",
-      debug: false,
     });
     expect(result?.data).toEqual([
       "build_version",

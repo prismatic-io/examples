@@ -8,7 +8,10 @@ export const removeAssigneeFromTask = action({
     description: "Remove the assignee from the given task",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.put(`/tasks/${params.taskId}`, {
       data: {
         assignee: null,

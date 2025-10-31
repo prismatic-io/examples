@@ -9,7 +9,10 @@ export const getCustomField = action({
     description: "Get the information and metadata of a custom field",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get(`/custom_fields/${params.fieldId}`, {
       params: {
         opt_fields: CUSTOM_FIELD_OPT_FIELDS,

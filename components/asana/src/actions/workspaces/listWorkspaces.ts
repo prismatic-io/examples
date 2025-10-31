@@ -8,7 +8,10 @@ export const listWorkspaces = action({
     description: "List of all workspaces connected to your account",
   },
   perform: async (context, params) => {
-    const client = await createAsanaClient(params.asanaConnection);
+    const client = await createAsanaClient(
+      params.asanaConnection,
+      context.debug.enabled,
+    );
     const { data } = await client.get("/workspaces", {
       params: {
         limit: params.limit,
