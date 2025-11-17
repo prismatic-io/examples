@@ -132,8 +132,9 @@ The SQLite database maintains a simple schema:
 CREATE TABLE webhooks (
    id INTEGER PRIMARY KEY AUTOINCREMENT,
    customer_id TEXT,
-   flow_id TEXT,
    instance_id TEXT,
+   integration_name TEXT,
+   flow_name TEXT,
    webhook_url TEXT,
    enabled INTEGER DEFAULT 1,
    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
