@@ -6,10 +6,10 @@ import { listObjectsPayload } from "../examplePayloads";
 import {
   accessKeyInput,
   bucket,
-  prefix,
-  maxKeys,
   continuationToken,
   includeMetadata,
+  maxKeys,
+  prefix,
 } from "../inputs";
 
 export const listObjects = action({
@@ -24,6 +24,8 @@ export const listObjects = action({
       dynamicAccessKeyId: params.dynamicAccessKeyId,
       dynamicSecretAccessKey: params.dynamicSecretAccessKey,
       dynamicSessionToken: params.dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
 
     const listObjectsV2Params = {
@@ -35,9 +37,7 @@ export const listObjects = action({
     const command = new ListObjectsV2Command(listObjectsV2Params);
     const response = await s3.send(command);
     return {
-      data: params.includeMetadata
-        ? response
-        : (response.Contents || []).map(({ Key }) => Key),
+      data: params.includeMetadata ? response : (response.Contents || []).map(({ Key }) => Key),
     };
   },
   inputs: {

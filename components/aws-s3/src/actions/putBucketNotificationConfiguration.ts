@@ -1,23 +1,22 @@
+import type { NotificationConfiguration } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
+import { putBucketNotificationConfigurationPayload } from "../examplePayloads";
 import {
   accessKeyInput,
   bucket,
+  eventBridgeConfiguration,
   lambdaFunctionConfigurations,
   queueConfigurations,
   topicConfigurations,
-  eventBridgeConfiguration,
 } from "../inputs";
 import { putBucketNotificationConfiguration as putBucketNotificationConfigurationFn } from "../utils";
-import { NotificationConfiguration } from "@aws-sdk/client-s3";
-import { putBucketNotificationConfigurationPayload } from "../examplePayloads";
 
 export const putBucketNotificationConfiguration = action({
   display: {
     label: "Put Bucket Notification Configuration",
-    description:
-      "Replace an existing bucket notification configuration with a new one",
+    description: "Replace an existing bucket notification configuration with a new one",
   },
   perform: async (
     context,
@@ -40,6 +39,8 @@ export const putBucketNotificationConfiguration = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const notificationConfiguration: NotificationConfiguration = {
       TopicConfigurations: topicConfigurations,
@@ -47,11 +48,7 @@ export const putBucketNotificationConfiguration = action({
       LambdaFunctionConfigurations: lambdaFunctionConfigurations,
       EventBridgeConfiguration: eventBridgeConfiguration,
     };
-    const data = await putBucketNotificationConfigurationFn(
-      s3,
-      bucket,
-      notificationConfiguration,
-    );
+    const data = await putBucketNotificationConfigurationFn(s3, bucket, notificationConfiguration);
 
     return {
       data,

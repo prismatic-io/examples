@@ -1,23 +1,17 @@
-import { action } from "@prismatic-io/spectral";
-import { createSNSClient } from "../../auth";
-import {
-  accessKeyInput,
-  bucket,
-  snsTopicArn,
-  bucketOwnerAccountid,
-} from "../../inputs";
 import {
   SetTopicAttributesCommand,
-  SetTopicAttributesCommandInput,
+  type SetTopicAttributesCommandInput,
 } from "@aws-sdk/client-sns";
+import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
+import { createSNSClient } from "../../auth";
 import { updateTopicPolicyPayload } from "../../examplePayloads";
+import { accessKeyInput, bucket, bucketOwnerAccountid, snsTopicArn } from "../../inputs";
 
 export const updateTopicPolicy = action({
   display: {
     label: "Update SNS Topic Policy For S3 Event Notification",
-    description:
-      "Update an Amazon SNS Topic Policy to grant S3 permission to publish",
+    description: "Update an Amazon SNS Topic Policy to grant S3 permission to publish",
   },
   perform: async (
     context,

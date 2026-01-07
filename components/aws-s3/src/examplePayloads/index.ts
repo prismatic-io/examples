@@ -1,4 +1,4 @@
-import {
+import type {
   AbortMultipartUploadCommandOutput,
   Bucket,
   CompleteMultipartUploadCommandOutput,
@@ -20,14 +20,14 @@ import {
   PutObjectOutput,
   PutObjectRetentionCommandOutput,
 } from "@aws-sdk/client-s3";
-import {
+import type {
   CreateTopicResponse,
   SetTopicAttributesCommandOutput,
   SubscribeResponse,
   UnsubscribeCommandOutput,
 } from "@aws-sdk/client-sns";
-import { GetCallerIdentityCommandOutput } from "@aws-sdk/client-sts";
-import { UploadPartPayload } from "../types/UploadPartPayload";
+import type { GetCallerIdentityCommandOutput } from "@aws-sdk/client-sts";
+import type { UploadPartPayload } from "../types/UploadPartPayload";
 
 export const headObjectPayload: { data: HeadObjectCommandOutput } = {
   data: {
@@ -55,8 +55,7 @@ export const headBucketPayload: { data: HeadBucketCommandOutput } = {
     $metadata: {
       httpStatusCode: 200,
       requestId: "A6R8PTRGRVGVB123",
-      extendedRequestId:
-        "O1lqC0pMNa1+juScFrJbqgtJDQgkqvkcWDvLPfmcZBQNbxe+Bl4JE0WeIuswg/123456==",
+      extendedRequestId: "O1lqC0pMNa1+juScFrJbqgtJDQgkqvkcWDvLPfmcZBQNbxe+Bl4JE0WeIuswg/123456==",
       cfId: null,
       attempts: 1,
       totalRetryDelay: 0,
@@ -126,8 +125,7 @@ export const deleteBucketPayload: { data: DeleteBucketCommandOutput } = {
     $metadata: {
       httpStatusCode: 204,
       requestId: "CBD415E7",
-      extendedRequestId:
-        "WXvHrStedS7jFJZVw0Pt1LH3K3Nn99XFGuyELkK7UQANs3IOHs9GsR=",
+      extendedRequestId: "WXvHrStedS7jFJZVw0Pt1LH3K3Nn99XFGuyELkK7UQANs3IOHs9GsR=",
       cfId: null,
       attempts: 1,
       totalRetryDelay: 0,
@@ -142,8 +140,7 @@ export const putBucketNotificationConfigurationPayload: {
     $metadata: {
       httpStatusCode: 200,
       requestId: "3G6FNXP71KGVQ",
-      extendedRequestId:
-        "epeRYyT9tl3QOMTMck4AG+NqmGa5fRKv5nME7gRl8KMxfnCAKWZzKbWVKp4ED7RaZIGvVcS=",
+      extendedRequestId: "epeRYyT9tl3QOMTMck4AG+NqmGa5fRKv5nME7gRl8KMxfnCAKWZzKbWVKp4ED7RaZIGvVcS=",
       cfId: null,
       attempts: 1,
       totalRetryDelay: 0,
@@ -158,8 +155,7 @@ export const getBucketNotificationConfigurationPayload: {
     $metadata: {
       httpStatusCode: 200,
       requestId: "2KMYXFM4GHPES",
-      extendedRequestId:
-        "dLu9EloFaZ2UeACk5l4IovjfHXHTkM7kFLdThrbIJIjn05dgO7bdU3TUJ7/8DzZvcQ==",
+      extendedRequestId: "dLu9EloFaZ2UeACk5l4IovjfHXHTkM7kFLdThrbIJIjn05dgO7bdU3TUJ7/8DzZvcQ==",
       cfId: null,
       attempts: 1,
       totalRetryDelay: 0,
@@ -210,8 +206,7 @@ export const getObjectLockConfigurationPayload: {
     $metadata: {
       httpStatusCode: 200,
       requestId: "J58R459KF4NH",
-      extendedRequestId:
-        "YLfHsBUyeXU06tYjF7ZLX7f7JhBL1FFZhA/UZKUr4WNTy0OHDOjYN=",
+      extendedRequestId: "YLfHsBUyeXU06tYjF7ZLX7f7JhBL1FFZhA/UZKUr4WNTy0OHDOjYN=",
       cfId: null,
       attempts: 1,
       totalRetryDelay: 0,
@@ -300,8 +295,7 @@ export const copyObjectPayload: { data: CopyObjectOutput } = {
 export const deleteObjectPayload: { data: DeleteObjectOutput } = {
   data: {
     DeleteMarker: true,
-    VersionId:
-      "3/L4kqtJlcpXroDTDmJ+rmSpXd3dIbrHY+MTRCxf3vjVBH40Nr8X8gdRQBpUMLUo",
+    VersionId: "3/L4kqtJlcpXroDTDmJ+rmSpXd3dIbrHY+MTRCxf3vjVBH40Nr8X8gdRQBpUMLUo",
     RequestCharged: "requester",
   },
 };
@@ -392,8 +386,7 @@ export const abortMultipartUploadPayload: {
     $metadata: {
       httpStatusCode: 204,
       requestId: "DZ1ZJB3H2JB1234",
-      extendedRequestId:
-        "0D9BDVoAGoHqu3dIW4WHmaO4kkiWecrbf0yLRMe/JmUfX7N/12345=",
+      extendedRequestId: "0D9BDVoAGoHqu3dIW4WHmaO4kkiWecrbf0yLRMe/JmUfX7N/12345=",
       cfId: null,
       attempts: 1,
       totalRetryDelay: 0,
@@ -508,8 +501,7 @@ export const completeMultipartUploadPayload: {
     $metadata: {
       httpStatusCode: 200,
       requestId: "GD4Y1XMZ6MFV1234",
-      extendedRequestId:
-        "Ego8CAUdYnt2THhZmBLnbfmTPY0HR8zA9rEMkSg+OB0t/uldGkuBlI6UF9X+123456=",
+      extendedRequestId: "Ego8CAUdYnt2THhZmBLnbfmTPY0HR8zA9rEMkSg+OB0t/uldGkuBlI6UF9X+123456=",
       cfId: null,
       attempts: 1,
       totalRetryDelay: 0,

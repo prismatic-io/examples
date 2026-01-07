@@ -87,7 +87,7 @@ export const findWebhook = async ({
   });
   const webhooks: AsanaWebhook[] = [];
   for (const workspace of workSpaces.data) {
-    let offset: string | unknown ;
+    let offset: string | unknown;
     do {
       const { data } = await client.get<{
         data: AsanaWebhook[];
@@ -200,7 +200,7 @@ const processTask = async (
     const taskData = response.data;
     taskEvent.task = taskData;
     cachedTasks[taskEvent.resource.gid] = taskData;
-  } catch (error) {
+  } catch {
     // If we fail to fetch a task, we should not fail the trigger as Asana may send events for tasks that have been deleted
     context.logger.warn(
       `Task ${taskEvent.resource.gid} does not exist. This usually happens when a task is immediately deleted at the UI.`,
@@ -230,7 +230,7 @@ const processStory = async (
     const storyData = response.data;
     storyEvent.story = storyData;
     cachedStories[storyEvent.resource.gid] = storyData;
-  } catch (error) {
+  } catch {
     // If we fail to fetch a story (comment/activity), we should not fail the trigger as Asana may send events for items that have been deleted
     context.logger.warn(
       `Comment/Activity ${storyEvent.resource.gid} does not exist. This usually happens when a comment or activity is immediately deleted in the UI.`,

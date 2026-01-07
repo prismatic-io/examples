@@ -1,33 +1,29 @@
 import { action, util } from "@prismatic-io/spectral";
-import { SubscribeCommand, type SubscribeResponse } from "@aws-sdk/client-sns";
+import { SubscribeCommand } from "@aws-sdk/client-sns";
 import { createSNSClient } from "../client";
 import { awsRegion } from "aws-utils";
 import { topicArn, protocol, endpoint, connectionInput } from "../inputs";
-
-interface Response {
-  data: SubscribeResponse;
-}
-const examplePayload: Response = {
-  data: {
-    SubscriptionArn:
-      "arn:aws:sns:us-east-2:123456789012:MyExampleTopic:00000000-00000000-00000000-00000000",
-  },
-};
+import { subscribeExamplePayload } from "../examplePayloads";
 
 export const subscribe = action({
   display: {
     label: "Subscribe to Topic",
     description: "Subscribe to an Amazon SNS Topic",
   },
-  perform: async (context, params) => {
+  perform: async (
+    { logger, debug: { enabled: debug } },
+    { awsConnection, awsRegion, topicArn, protocol, endpoint }
+  ) => {
     const sns = await createSNSClient({
-      awsConnection: params.awsConnection,
-      awsRegion: params.awsRegion,
+      awsConnection,
+      awsRegion,
+      debug,
+      logger,
     });
     const subscribeParams = {
-      Protocol: util.types.toString(params.protocol),
-      TopicArn: params.topicArn,
-      Endpoint: util.types.toString(params.endpoint),
+      Protocol: util.types.toString(protocol),
+      TopicArn: topicArn,
+      Endpoint: util.types.toString(endpoint),
     };
     const command = new SubscribeCommand(subscribeParams);
     const response = await sns.send(command);
@@ -42,7 +38,7 @@ export const subscribe = action({
     endpoint,
     awsConnection: connectionInput,
   },
-  examplePayload,
+  examplePayload: subscribeExamplePayload,
 });
 
 export default subscribe;

@@ -2,27 +2,23 @@ import { action } from "@prismatic-io/spectral";
 import { createSNSClient } from "../client";
 import { awsRegion } from "aws-utils";
 import { nextToken, connectionInput, fetchAllTopics } from "../inputs";
-import type { ListTopicsResponse } from "@aws-sdk/client-sns";
 import { fetchTopics } from "../utils";
-interface Response {
-  data: ListTopicsResponse;
-}
-
-const examplePayload: Response = {
-  data: {
-    Topics: [{ TopicArn: "arn:aws:Example Topic Arn" }],
-  },
-};
+import { listTopicsExamplePayload } from "../examplePayloads";
 
 export const listTopics = action({
   display: {
     label: "List Topics",
     description: "List available Amazon SNS Topics",
   },
-  perform: async (context, { awsConnection, awsRegion, nextToken, fetchAllTopics }) => {
+  perform: async (
+    { logger, debug: { enabled: debug } },
+    { awsConnection, awsRegion, nextToken, fetchAllTopics }
+  ) => {
     const sns = await createSNSClient({
       awsConnection,
       awsRegion,
+      debug,
+      logger,
     });
     const response = await fetchTopics(sns, fetchAllTopics, nextToken);
 
@@ -36,7 +32,7 @@ export const listTopics = action({
     fetchAllTopics,
     nextToken,
   },
-  examplePayload,
+  examplePayload: listTopicsExamplePayload,
 });
 
 export default listTopics;

@@ -4,7 +4,6 @@ import { connectionInput, topicArn } from "../inputs";
 import { createSNSClient } from "../client";
 import { fetchSubscriptions } from "../utils";
 
-
 export const selectSubscription = dataSource({
   display: {
     label: "Select Subscription",
@@ -15,19 +14,24 @@ export const selectSubscription = dataSource({
     awsRegion: { ...awsRegion, dataSource: undefined, model: undefined }, // TODO: Model removed until inline data sources support complex inputs
     topicArn: { ...topicArn, dataSource: undefined },
   },
-  perform: async (context, { awsConnection, awsRegion, topicArn }) => {
+  perform: async ({ logger }, { awsConnection, awsRegion, topicArn }) => {
     const sns = await createSNSClient({
       awsConnection,
       awsRegion,
     });
 
-    const { Subscriptions: subscriptions } = await fetchSubscriptions(sns, topicArn, true, undefined);
+    const { Subscriptions: subscriptions } = await fetchSubscriptions(
+      sns,
+      topicArn,
+      true,
+      undefined
+    );
 
     const result = subscriptions
       ? subscriptions.map<Element>((subscription) => ({
-        label: `Endpoint: ${subscription.Endpoint}`,
-        key: subscription.SubscriptionArn,
-      }))
+          label: `Endpoint: ${subscription.Endpoint}`,
+          key: subscription.SubscriptionArn,
+        }))
       : [];
     return { result };
   },

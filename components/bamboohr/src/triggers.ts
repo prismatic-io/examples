@@ -29,6 +29,12 @@ const bamboohrTrigger = trigger({
       "Receive and validate webhook requests from BambooHR for webhooks you configure.",
   },
   perform: async (context, payload) => {
+    if (context.isSimulatedTestExecution) {
+      return Promise.resolve({
+        payload,
+      });
+    }
+
     const headers = util.types.lowerCaseHeaders(payload.headers);
     const bamboohrSignature = headers["x-bamboohr-signature"];
     const bamboohrTimestamp = headers["x-bamboohr-timestamp"];

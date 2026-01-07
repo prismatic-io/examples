@@ -1,6 +1,6 @@
 import { action } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../../client";
-import { taskId, connectionInput, workspaceId, userId } from "../../inputs";
+import { taskId, connectionInput } from "../../inputs";
 
 export const deleteTask = action({
   display: {

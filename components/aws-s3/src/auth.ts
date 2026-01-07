@@ -1,7 +1,7 @@
-import { SNSClient } from "@aws-sdk/client-sns";
 import { S3Client } from "@aws-sdk/client-s3";
-import { Connection, ConnectionError } from "@prismatic-io/spectral";
-import { getClientParams, ClientProps } from "aws-utils";
+import { SNSClient } from "@aws-sdk/client-sns";
+import { type ActionLogger, type Connection, ConnectionError } from "@prismatic-io/spectral";
+import { type ClientProps, getClientParams } from "aws-utils";
 import { accessKeySecretPair } from "./connections";
 
 const throwConnectionError = (connection: Connection, error: Error): void => {
@@ -17,7 +17,9 @@ export const createS3Client = async ({
   dynamicAccessKeyId,
   dynamicSecretAccessKey,
   dynamicSessionToken,
-}: ClientProps): Promise<S3Client> => {
+  debug,
+  logger,
+}: ClientProps & { debug?: boolean; logger?: ActionLogger }): Promise<S3Client> => {
   const { region, credentials } = await getClientParams({
     awsRegion,
     awsConnection,
@@ -31,6 +33,7 @@ export const createS3Client = async ({
     return new S3Client({
       region,
       credentials,
+      logger: debug ? logger : undefined,
     });
   } catch (error) {
     throwConnectionError(awsConnection, error as Error);
@@ -43,7 +46,9 @@ export const createSNSClient = async ({
   dynamicAccessKeyId,
   dynamicSecretAccessKey,
   dynamicSessionToken,
-}: ClientProps): Promise<SNSClient> => {
+  logger,
+  debug,
+}: ClientProps & { debug?: boolean; logger?: ActionLogger }): Promise<SNSClient> => {
   const { region, credentials } = await getClientParams({
     awsRegion,
     awsConnection,
@@ -57,6 +62,7 @@ export const createSNSClient = async ({
     return new SNSClient({
       region,
       credentials,
+      logger: debug ? logger : undefined,
     });
   } catch (error) {
     throwConnectionError(awsConnection, error as Error);

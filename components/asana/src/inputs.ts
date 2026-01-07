@@ -16,7 +16,8 @@ export const workspaceId = input({
   label: "Workspace ID",
   type: "string",
   example: "375893453",
-  comments: "The gid of the workspace. Required when account has multiple workspaces.",
+  comments:
+    "The gid of the workspace. Required when account has multiple workspaces.",
   required: true,
   dataSource: "selectWorkspace",
   clean: validateId,

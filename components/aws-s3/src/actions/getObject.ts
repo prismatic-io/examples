@@ -2,8 +2,8 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
-import { accessKeyInput, bucket, objectKey } from "../inputs";
 import { getObjectPayload } from "../examplePayloads";
+import { accessKeyInput, bucket, objectKey } from "../inputs";
 
 export const getObject = action({
   display: {
@@ -28,6 +28,8 @@ export const getObject = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const getObjectParameters = {
       Bucket: bucket,

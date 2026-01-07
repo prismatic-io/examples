@@ -1,21 +1,14 @@
+import { GetObjectAttributesCommand } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
-import {
-  accessKeyInput,
-  bucket,
-  objectAttributes,
-  objectKey,
-  versionId,
-} from "../inputs";
-import { GetObjectAttributesCommand } from "@aws-sdk/client-s3";
 import { getObjectAttributesPayload } from "../examplePayloads";
+import { accessKeyInput, bucket, objectAttributes, objectKey, versionId } from "../inputs";
 
 export const getObjectAttributes = action({
   display: {
     label: "Get Object Attributes",
-    description:
-      "Retrieves all the metadata from an object without returning the object itself",
+    description: "Retrieves all the metadata from an object without returning the object itself",
   },
   perform: async (
     context,
@@ -37,6 +30,8 @@ export const getObjectAttributes = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const command = new GetObjectAttributesCommand({
       Bucket: bucket,
@@ -59,8 +54,7 @@ export const getObjectAttributes = action({
     objectAttributes,
     versionId: {
       ...versionId,
-      comments:
-        "The version ID for the object whose metadata you want to retrieve.",
+      comments: "The version ID for the object whose metadata you want to retrieve.",
     },
   },
   examplePayload: getObjectAttributesPayload,

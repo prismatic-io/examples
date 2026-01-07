@@ -28,6 +28,8 @@ export const deleteObject = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const deleteParameters = {
       Bucket: bucket,

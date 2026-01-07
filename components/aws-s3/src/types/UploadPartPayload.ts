@@ -1,4 +1,4 @@
-import { UploadPartCommandOutput } from "@aws-sdk/client-s3";
+import type { UploadPartCommandOutput } from "@aws-sdk/client-s3";
 
 export interface UploadPartPayload extends UploadPartCommandOutput {
   part: {

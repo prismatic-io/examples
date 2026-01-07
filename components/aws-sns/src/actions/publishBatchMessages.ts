@@ -3,34 +3,13 @@ import { createSNSClient } from "../client";
 import { awsRegion } from "aws-utils";
 import { topicArn, connectionInput, publishBatchEntries } from "../inputs";
 import {
-  type PublishBatchCommandOutput,
   PublishBatchCommand,
   type PublishBatchRequestEntry,
 } from "@aws-sdk/client-sns";
-interface Response {
-  data: PublishBatchCommandOutput;
-}
-
-const examplePayload: Response = {
-  data: {
-    $metadata: {
-      httpStatusCode: 200,
-      requestId: "3df5ab1c-8e8a-426f-a2d1-bd7a39ef8651",
-      attempts: 1,
-      totalRetryDelay: 0,
-    },
-    Successful: [
-      {
-        Id: "2",
-        MessageId: "6d1a92c3-77bc-49a5-bf62-1f047c34f9e7",
-      },
-    ],
-    Failed: [],
-  },
-};
+import { publishBatchMessagesExamplePayload } from "../examplePayloads";
 
 const processBinaryValueIfPresent = (
-  parsedEntries,
+  parsedEntries
 ): PublishBatchRequestEntry[] =>
   parsedEntries.map((entry) => {
     if (entry.MessageAttributes) {
@@ -38,11 +17,11 @@ const processBinaryValueIfPresent = (
         const messageAttributeValueIsBuffer =
           entry.MessageAttributes[key].BinaryValue &&
           util.types.isBufferDataPayload(
-            entry.MessageAttributes[key].BinaryValue,
+            entry.MessageAttributes[key].BinaryValue
           );
         if (messageAttributeValueIsBuffer) {
           entry.MessageAttributes[key].BinaryValue = Buffer.from(
-            entry.MessageAttributes[key].BinaryValue.data,
+            entry.MessageAttributes[key].BinaryValue.data
           );
         }
       }
@@ -56,18 +35,23 @@ export const publishBatchMessages = action({
     description:
       "Publishes up to ten messages to the specified Amazon SNS Topic",
   },
-  perform: async (context, params) => {
+  perform: async (
+    { logger, debug: { enabled: debug } },
+    { awsConnection, awsRegion, topicArn, publishBatchEntries }
+  ) => {
     const sns = await createSNSClient({
-      awsConnection: params.awsConnection,
-      awsRegion: params.awsRegion,
+      awsConnection,
+      awsRegion,
+      debug,
+      logger,
     });
-    let parsedEntries = JSON.parse(params.publishBatchEntries);
+    let parsedEntries = JSON.parse(publishBatchEntries);
     if (!Array.isArray(parsedEntries)) {
       throw new Error("Invalid Message Entries");
     }
     parsedEntries = processBinaryValueIfPresent(parsedEntries);
     const batchCommand = new PublishBatchCommand({
-      TopicArn: params.topicArn,
+      TopicArn: topicArn,
       PublishBatchRequestEntries: parsedEntries,
     });
     const response = await sns.send(batchCommand);
@@ -81,7 +65,7 @@ export const publishBatchMessages = action({
     publishBatchEntries,
     awsConnection: connectionInput,
   },
-  examplePayload,
+  examplePayload: publishBatchMessagesExamplePayload,
 });
 
 export default publishBatchMessages;

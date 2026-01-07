@@ -1,9 +1,9 @@
-import { CompleteMultipartUploadCommand, Part } from "@aws-sdk/client-s3";
+import { CompleteMultipartUploadCommand, type Part } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
-import { accessKeyInput, bucket, objectKey, uploadId, parts } from "../inputs";
 import { completeMultipartUploadPayload } from "../examplePayloads";
+import { accessKeyInput, bucket, objectKey, parts, uploadId } from "../inputs";
 
 export const completeMultipartUpload = action({
   display: {
@@ -30,6 +30,8 @@ export const completeMultipartUpload = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const command = new CompleteMultipartUploadCommand({
       Bucket: bucket,

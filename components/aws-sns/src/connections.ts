@@ -11,20 +11,22 @@ export const accessKeySecretPair = connection({
   inputs: {
     accessKeyId: {
       label: "Access Key ID",
-      placeholder: "Access Key ID",
+      placeholder: "Enter Access Key ID",
       type: "string",
       required: true,
       shown: true,
-      comments: "An AWS IAM Access Key ID",
+      comments:
+        "An AWS IAM Access Key ID for authenticating with Amazon SNS. [Learn more](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)",
       example: "AKIAIOSFODNN7EXAMPLE",
     },
     secretAccessKey: {
       label: "Secret Access Key",
-      placeholder: "Secret Access Key",
+      placeholder: "Enter Secret Access Key",
       type: "password",
       required: true,
       shown: true,
-      comments: "An AWS IAM Secret Access Key",
+      comments:
+        "An AWS IAM Secret Access Key corresponding to the Access Key ID. [Learn more](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)",
       example: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
     },
   },

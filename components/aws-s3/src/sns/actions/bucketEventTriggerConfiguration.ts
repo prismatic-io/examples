@@ -1,17 +1,17 @@
+import type { Event, TopicConfiguration } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
+import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../../auth";
+import { bucketEventTriggerConfigurationPayload } from "../../examplePayloads";
 import {
   accessKeyInput,
+  bucket,
+  bucketOwnerAccountid,
+  eventNotificationName,
   eventsList,
   snsTopicArn,
-  bucket,
-  eventNotificationName,
-  bucketOwnerAccountid,
 } from "../../inputs";
-import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { processTopicConfiguration } from "../../utils";
-import { Event, TopicConfiguration } from "@aws-sdk/client-s3";
-import { bucketEventTriggerConfigurationPayload } from "../../examplePayloads";
 
 export const bucketEventTriggerConfiguration = action({
   display: {

@@ -4,7 +4,6 @@ import { connectionInput } from "../inputs";
 import { createSNSClient } from "../client";
 import { fetchTopics } from "../utils";
 
-
 export const selectTopic = dataSource({
   display: {
     label: "Select Topic",
@@ -13,9 +12,8 @@ export const selectTopic = dataSource({
   inputs: {
     awsConnection: connectionInput,
     awsRegion: { ...awsRegion, dataSource: undefined, model: undefined }, // TODO: Model removed until inline data sources support complex inputs
-
   },
-  perform: async (context, { awsConnection, awsRegion }) => {
+  perform: async ({ logger }, { awsConnection, awsRegion }) => {
     const sns = await createSNSClient({
       awsConnection,
       awsRegion,
@@ -25,9 +23,9 @@ export const selectTopic = dataSource({
 
     const result = topics
       ? topics.map<Element>((topic) => ({
-        label: `Topic: ${topic.TopicArn.split(':').pop()}`,
-        key: topic.TopicArn,
-      }))
+          label: `Topic: ${topic.TopicArn.split(":").pop()}`,
+          key: topic.TopicArn,
+        }))
       : [];
     return { result };
   },

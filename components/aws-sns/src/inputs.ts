@@ -6,17 +6,19 @@ export const name = input({
   label: "Name",
   type: "string",
   required: true,
+  placeholder: "Enter topic name",
   example: "MyExampleTopic",
-  comments: "Provide a string for the name of the topic.",
+  comments: "The name of the SNS topic to create.",
 });
 
 export const topicArn = input({
-  label: "Topic Arn",
+  label: "Topic ARN",
   type: "string",
   required: true,
-  example: "arn:aws:sns:us-east-2:123456789012:MyExampleTopic",
+  placeholder: "Enter topic ARN",
+  example: "arn:aws:sns:us-east-1:123456789012:MyExampleTopic",
   comments:
-    "An Amazon SNS topic is a logical access point that acts as a communication channel.",
+    "The Amazon Resource Name (ARN) of the SNS topic. [Learn more](https://docs.aws.amazon.com/sns/latest/api/API_CreateTopic.html)",
   dataSource: "selectTopic",
   clean: util.types.toString,
 });
@@ -25,11 +27,14 @@ export const message = input({
   label: "Message",
   type: "string",
   required: true,
-  comments: "Provide a string for the message you would like to send.",
+  placeholder: "Enter message content",
+  example: "Your order has been shipped!",
+  comments:
+    "The message content to send to the topic or endpoint. [Learn more](https://docs.aws.amazon.com/sns/latest/api/API_Publish.html)",
 });
 
 export const protocol = input({
-  label: "protocol",
+  label: "Protocol",
   type: "string",
   required: true,
   default: "https",
@@ -45,25 +50,28 @@ export const protocol = input({
     { label: "sqs", value: "sqs" },
   ],
   comments:
-    "When you subscribe an endpoint to a topic, you must specify which protocol to use when this topic receives messages.",
+    "The protocol to use for delivering messages to the endpoint (application, email, email-json, firehose, http, https, lambda, sms, or sqs). [Learn more](https://docs.aws.amazon.com/sns/latest/api/API_Subscribe.html)",
 });
 
 export const endpoint = input({
   label: "Endpoint",
   type: "string",
   required: true,
-  example: "example@company.com",
+  placeholder: "Enter endpoint",
+  example: "https://example.com/webhook",
   comments:
-    "The endpoint that you want to receive notifications. This could be an email address, URL, phone number, or SQS/application/Lambda/Firehose ARN.",
+    "The endpoint to receive notifications. Format depends on protocol: email address (email@example.com), URL (https://example.com), phone number (+12065551234), or ARN (arn:aws:sqs:us-east-1:123456789012:MyQueue). [Learn more](https://docs.aws.amazon.com/sns/latest/api/API_Subscribe.html)",
 });
 
 export const subscriptionArn = input({
-  label: "Subscription Arn",
+  label: "Subscription ARN",
   type: "string",
   required: true,
+  placeholder: "Enter subscription ARN",
   example:
-    "arn:aws:sns:us-east-2:123456789012:MyExampleTopic:00000000-00000000-00000000-00000000",
-  comments: "The unique identifier for a topic subscription",
+    "arn:aws:sns:us-east-1:123456789012:MyExampleTopic:12345678-1234-1234-1234-123456789012",
+  comments:
+    "The Amazon Resource Name (ARN) of the subscription. [Learn more](https://docs.aws.amazon.com/sns/latest/api/API_Unsubscribe.html)",
   clean: util.types.toString,
   dataSource: "selectSubscription",
 });
@@ -72,9 +80,10 @@ export const phoneNumber = input({
   label: "Phone Number",
   type: "string",
   required: true,
-  example: "12345678901",
+  placeholder: "Enter phone number (+12065551234)",
+  example: "+12065551234",
   comments:
-    "Provide a phone number that you would like to subscribe to your topic.",
+    "The phone number in E.164 format (e.g., +12065551234) to receive SMS messages. [Learn more](https://docs.aws.amazon.com/sns/latest/dg/sms_publish-to-phone.html)",
 });
 
 export const messageAttributes = input({
@@ -82,9 +91,10 @@ export const messageAttributes = input({
   type: "string",
   required: false,
   collection: "keyvaluelist",
-  example: "This is an example attribute",
+  placeholder: "Enter key-value pairs",
+  example: '{"name": "John Doe", "age": "30"}',
   comments:
-    "For each item, provide a key value pair representing a message attribute, to supply a binary you must provide a Buffer to the key value. When determining your message attributes, it is important that you follow the specifications listed in the Amazon SNS docs: https://docs.aws.amazon.com/sns/latest/api/API_MessageAttributeValue.html",
+    "Optional message attributes as key-value pairs. The value will be automatically typed (String, Number, String.Array, or Binary for Buffer). For binary data, provide a Buffer from a previous step. [Learn more](https://docs.aws.amazon.com/sns/latest/api/API_MessageAttributeValue.html)",
 });
 
 export const parseMessage = input({
@@ -93,25 +103,27 @@ export const parseMessage = input({
   required: true,
   default: "false",
   comments:
-    "When enabled the message from SNS will be parsed as JSON and returned. If disabled it will be passed as received.",
+    "When enabled, the message from SNS will be parsed as JSON and returned. When disabled, it will be passed as received.",
 });
 
 export const maxItems = input({
   label: "Max Items",
   type: "string",
   required: false,
-  comments:
-    "Provide an integer value for the maximum amount of items that will be returned. Provide a value from 1 to 50.",
+  placeholder: "Enter maximum items (1-50)",
   example: "20",
+  comments:
+    "The maximum number of items to return per request. Valid values: 1-50.",
 });
 
 export const nextToken = input({
   label: "Next Token",
   type: "string",
   required: false,
-  comments:
-    "Specify the pagination token that's returned by a previous request to retrieve the next page of results.",
+  placeholder: "Enter pagination token",
   example: "lslTXFcbLQKkb0vP9Kgh5hy0Y0OnC7Z9ZPHPwPmMnxSk3eiDRMkct7D8E",
+  comments:
+    "The pagination token returned by a previous request to retrieve the next page of results.",
   clean: cleanStringInput,
 });
 
@@ -119,6 +131,7 @@ export const connectionInput = input({
   label: "Connection",
   type: "connection",
   required: true,
+  comments: "The Amazon SNS connection to use.",
 });
 
 export const publishBatchEntries = input({
@@ -128,7 +141,7 @@ export const publishBatchEntries = input({
   required: true,
   default: JSON.stringify(batchMessageEntriesExample, null, 2),
   comments:
-    "To add a Binary Message add a Template Field containing a Buffer from a previous field to the BinaryValue attribute. For MessageAttributes data types, see: https://docs.aws.amazon.com/sns/latest/dg/sns-message-attributes.html",
+    "An array of message entries to publish in batch. Each entry must include an Id and Message. For binary messages, add a Template Field containing a Buffer to the BinaryValue attribute. [Learn more](https://docs.aws.amazon.com/sns/latest/dg/sns-message-attributes.html)",
 });
 
 const fetchAll = input({
@@ -142,11 +155,11 @@ const fetchAll = input({
 export const fetchAllTopics = {
   ...fetchAll,
   comments:
-    "Turn this on to fetch all paginated topics. If turned off, only 100 topics will be returned.",
+    "When set to true, fetches all paginated topics. When false, only 100 topics will be returned.",
 };
 
 export const fetchAllSubscriptions = {
   ...fetchAll,
   comments:
-    "Turn this on to fetch all paginated subscriptions. If turned off, only 100 subscriptions will be returned.",
+    "When set to true, fetches all paginated subscriptions. When false, only 100 subscriptions will be returned.",
 };

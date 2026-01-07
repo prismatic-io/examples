@@ -2,8 +2,8 @@ import { ListBucketsCommand } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
-import { accessKeyInput } from "../inputs";
 import { listBucketsPayload } from "../examplePayloads";
+import { accessKeyInput } from "../inputs";
 
 export const listBuckets = action({
   display: {
@@ -12,13 +12,7 @@ export const listBuckets = action({
   },
   perform: async (
     context,
-    {
-      awsRegion,
-      accessKey,
-      dynamicAccessKeyId,
-      dynamicSecretAccessKey,
-      dynamicSessionToken,
-    },
+    { awsRegion, accessKey, dynamicAccessKeyId, dynamicSecretAccessKey, dynamicSessionToken },
   ) => {
     const s3 = await createS3Client({
       awsConnection: accessKey,
@@ -26,6 +20,8 @@ export const listBuckets = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const command = new ListBucketsCommand({});
     const response = await s3.send(command);

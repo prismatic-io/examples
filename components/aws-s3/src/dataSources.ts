@@ -1,11 +1,8 @@
+import { ListBucketsCommand } from "@aws-sdk/client-s3"; // ES Modules import
 import { dataSource } from "@prismatic-io/spectral";
+import { dynamicAccessAllInputs, selectRegion as selectRegionUtils } from "aws-utils";
 import { createS3Client } from "./auth";
 import { accessKeyInput } from "./inputs";
-import {
-  dynamicAccessAllInputs,
-  selectRegion as selectRegionUtils,
-} from "aws-utils";
-import { ListBucketsCommand } from "@aws-sdk/client-s3"; // ES Modules import
 
 const selectRegion = selectRegionUtils;
 

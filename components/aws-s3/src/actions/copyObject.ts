@@ -1,16 +1,16 @@
-import { CopyObjectCommandInput, CopyObjectCommand } from "@aws-sdk/client-s3";
+import { CopyObjectCommand, type CopyObjectCommandInput } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
+import { copyObjectPayload } from "../examplePayloads";
 import {
   accessKeyInput,
-  sourceBucket,
-  destinationBucket,
-  sourceKey,
-  destinationKey,
   acl,
+  destinationBucket,
+  destinationKey,
+  sourceBucket,
+  sourceKey,
 } from "../inputs";
-import { copyObjectPayload } from "../examplePayloads";
 
 export const copyObject = action({
   display: {
@@ -38,6 +38,8 @@ export const copyObject = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const copyParameters: CopyObjectCommandInput = {
       ACL: acl || null,

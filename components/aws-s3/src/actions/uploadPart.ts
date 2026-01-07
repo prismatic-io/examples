@@ -2,15 +2,8 @@ import { UploadPartCommand } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
-import {
-  accessKeyInput,
-  bucket,
-  objectKey,
-  uploadId,
-  partNumber,
-  fileChunk,
-} from "../inputs";
 import { uploadPartPayload } from "../examplePayloads";
+import { accessKeyInput, bucket, fileChunk, objectKey, partNumber, uploadId } from "../inputs";
 
 export const uploadPart = action({
   display: {
@@ -38,6 +31,8 @@ export const uploadPart = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const command = new UploadPartCommand({
       Bucket: bucket,

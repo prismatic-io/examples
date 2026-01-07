@@ -1,21 +1,27 @@
-import { action, util } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { createSNSClient } from "../client";
 import { awsRegion } from "aws-utils";
 import { topicArn, connectionInput } from "../inputs";
 import { DeleteTopicCommand } from "@aws-sdk/client-sns";
+import { deleteTopicExamplePayload } from "../examplePayloads";
 
 export const deleteTopic = action({
   display: {
     label: "Delete Topic",
     description: "Delete an Amazon SNS Topic",
   },
-  perform: async (context, params) => {
+  perform: async (
+    { logger, debug: { enabled: debug } },
+    { awsConnection, awsRegion, topicArn }
+  ) => {
     const sns = await createSNSClient({
-      awsConnection: params.awsConnection,
-      awsRegion: params.awsRegion,
+      awsConnection,
+      awsRegion,
+      debug,
+      logger,
     });
     const deleteTopicParams = {
-      TopicArn: params.topicArn,
+      TopicArn: topicArn,
     };
     const command = new DeleteTopicCommand(deleteTopicParams);
     const response = await sns.send(command);
@@ -25,6 +31,7 @@ export const deleteTopic = action({
     };
   },
   inputs: { awsRegion, topicArn, awsConnection: connectionInput },
+  examplePayload: deleteTopicExamplePayload,
 });
 
 export default deleteTopic;

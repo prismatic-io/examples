@@ -1,18 +1,13 @@
 {
   "name": "@prismatic-io/aws-s3",
   "private": true,
-  "version": "0.0.1",
-  "description": "Amazon S3 Component for Prismatic",
-  "main": "index.ts",
   "scripts": {
-    "lint": "eslint --cache --quiet --ext .ts,.js .",
-    "lint-fix": "eslint --cache --fix --quiet --ext .ts,.js .",
-    "format": "npm run lint-fix && prettier --log-level error --write \"./src/**/*.{js,jsx,ts,tsx,css,html,json,scss}\" \"documentation/*.mdx\"",
-    "check-format": "prettier --check \"./src/**/*.{js,jsx,ts,tsx,css,html,json,scss}\" \"documentation/*.mdx\"",
+    "lint": "biome lint --write .",
+    "format": "biome format --write .",
     "build": "npm run format && npm run lint && webpack",
     "publish": "npm run build && prism components:publish",
     "generate-regions-json": "aws ec2 describe-regions | jq '.Regions | map(.RegionName) | sort' > src/aws-regions.json",
-    "test": "echo 'no tests'"
+    "test": "echo 'No tests'"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.723.0",
@@ -20,30 +15,20 @@
     "@aws-sdk/lib-storage": "3.723.0",
     "@aws-sdk/s3-request-presigner": "3.723.0",
     "@aws-sdk/signature-v4-crt": "3.723.0",
-    "@prismatic-io/spectral": "10.5.2",
+    "@prismatic-io/spectral": "10.11.4",
     "aws-utils": "file:../../packages/aws-utils",
     "uuid": "^9.0.1"
   },
-  "author": "Prismatic",
-  "license": "MIT",
   "devDependencies": {
-    "@prismatic-io/eslint-config-spectral": "2.0.2",
-    "@types/jest": "29.5.11",
-    "@types/node": "14.14.35",
-    "copy-webpack-plugin": "11.0.0",
-    "eslint": "8.57.0",
-    "jest": "29.7.0",
-    "prettier": "^3.4.2",
-    "ts-jest": "29.1.1",
-    "ts-loader": "9.2.3",
-    "typescript": "5.5.3",
-    "webpack": "5.76.3",
-    "webpack-cli": "5.0.1"
-  },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@prismatic-io/eslint-config-spectral"
-    ]
+    "@biomejs/biome": "^1.9.4",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^18.19.0",
+    "copy-webpack-plugin": "^12.0.2",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4"
   }
 }

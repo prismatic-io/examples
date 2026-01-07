@@ -1,9 +1,9 @@
+import { GetObjectLockConfigurationCommand } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
-import { accessKeyInput, bucket } from "../inputs";
-import { GetObjectLockConfigurationCommand } from "@aws-sdk/client-s3";
 import { getObjectLockConfigurationPayload } from "../examplePayloads";
+import { accessKeyInput, bucket } from "../inputs";
 
 export const getObjectLockConfiguration = action({
   display: {
@@ -27,6 +27,8 @@ export const getObjectLockConfiguration = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const command = new GetObjectLockConfigurationCommand({
       Bucket: bucket,

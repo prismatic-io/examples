@@ -1,4 +1,4 @@
-import { action, util } from "@prismatic-io/spectral";
+import { action } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../../client";
 import { connectionInput, portfolioId, offset, limit } from "../../inputs";
 

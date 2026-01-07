@@ -1,5 +1,5 @@
 import { SNSClient } from "@aws-sdk/client-sns";
-import { ConnectionError } from "@prismatic-io/spectral";
+import { ActionLogger, ConnectionError } from "@prismatic-io/spectral";
 import {
   assumeRole,
   assumeRoleConnection,
@@ -12,7 +12,12 @@ import type { ClientProps } from "./interfaces/ClientProps";
 export const createSNSClient = async ({
   awsRegion,
   awsConnection,
-}: ClientProps): Promise<SNSClient> => {
+  debug,
+  logger,
+}: ClientProps & {
+  debug?: boolean;
+  logger?: ActionLogger;
+}): Promise<SNSClient> => {
   const { accessKeyId, secretAccessKey } = getCredentials(awsConnection);
   const shouldAssumeRole = awsConnection.key === assumeRoleConnection.key;
 
@@ -22,7 +27,7 @@ export const createSNSClient = async ({
         accessKeyId,
         secretAccessKey,
         toTrimmedString(awsConnection.fields.roleARN),
-        toOptionalString(awsConnection.fields?.externalId),
+        toOptionalString(awsConnection.fields?.externalId)
       )
     : { accessKeyId, secretAccessKey };
 
@@ -32,13 +37,14 @@ export const createSNSClient = async ({
     return new SNSClient({
       region,
       credentials,
+      logger: debug ? logger : undefined,
     });
   } catch (err) {
     throw new ConnectionError(
       awsConnection,
       `Invalid AWS Credentials have been configured. This is sometimes caused by missing characters from a copy/paste. Original AWS error message: ${
         (err as Error).message
-      }`,
+      }`
     );
   }
 };

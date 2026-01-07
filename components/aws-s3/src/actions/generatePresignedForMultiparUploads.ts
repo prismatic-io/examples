@@ -3,21 +3,20 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
+import { generatePresignedForMultiparUploadsPayload } from "../examplePayloads";
 import {
   accessKeyInput,
   bucket,
-  objectKey,
-  urlsToGenerate,
-  uploadId,
   expirationSeconds,
+  objectKey,
+  uploadId,
+  urlsToGenerate,
 } from "../inputs";
-import { generatePresignedForMultiparUploadsPayload } from "../examplePayloads";
 
 export const generatePresignedForMultiparUploads = action({
   display: {
     label: "Generate Presigned URL for Multipart Uploads",
-    description:
-      "Generate presigned URL's that can be used to upload or download an object in S3",
+    description: "Generate presigned URL's that can be used to upload or download an object in S3",
   },
   inputs: {
     awsRegion,
@@ -36,6 +35,8 @@ export const generatePresignedForMultiparUploads = action({
       dynamicAccessKeyId: params.dynamicAccessKeyId,
       dynamicSecretAccessKey: params.dynamicSecretAccessKey,
       dynamicSessionToken: params.dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const urlArray = [];
     for (let i = 1; i <= params.urlsToGenerate; i++) {

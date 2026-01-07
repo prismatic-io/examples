@@ -3,20 +3,13 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
-import {
-  accessKeyInput,
-  bucket,
-  objectKey,
-  actionType,
-  expirationSeconds,
-} from "../inputs";
 import { generatePresignedUrlPayload } from "../examplePayloads";
+import { accessKeyInput, actionType, bucket, expirationSeconds, objectKey } from "../inputs";
 
 export const generatePresignedUrl = action({
   display: {
     label: "Generate Presigned URL",
-    description:
-      "Generate a presigned URL that can be used to upload or download an object in S3",
+    description: "Generate a presigned URL that can be used to upload or download an object in S3",
   },
   inputs: {
     awsRegion,
@@ -34,6 +27,8 @@ export const generatePresignedUrl = action({
       dynamicAccessKeyId: params.dynamicAccessKeyId,
       dynamicSecretAccessKey: params.dynamicSecretAccessKey,
       dynamicSessionToken: params.dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const command =
       params.actionType === "download"

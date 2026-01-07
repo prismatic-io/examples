@@ -1,25 +1,25 @@
+import querystring from "node:querystring";
 import {
-  GetBucketNotificationConfigurationCommandInput,
+  type EventBridgeConfiguration,
   GetBucketNotificationConfigurationCommand,
-  NotificationConfiguration,
-  S3Client,
-  TopicConfiguration,
-  PutBucketNotificationConfigurationCommandInput,
+  type GetBucketNotificationConfigurationCommandInput,
+  type LambdaFunctionConfiguration,
+  type NotificationConfiguration,
+  type ObjectAttributes,
+  type ObjectIdentifier,
   PutBucketNotificationConfigurationCommand,
-  PutBucketNotificationConfigurationCommandOutput,
-  ObjectIdentifier,
-  QueueConfiguration,
-  LambdaFunctionConfiguration,
-  EventBridgeConfiguration,
-  ObjectAttributes,
+  type PutBucketNotificationConfigurationCommandInput,
+  type PutBucketNotificationConfigurationCommandOutput,
+  type QueueConfiguration,
+  type S3Client,
+  type TopicConfiguration,
 } from "@aws-sdk/client-s3";
-import querystring from "querystring";
+import type { KeyValuePair } from "@prismatic-io/spectral";
 import {
   LAMBDA_FUNCTION_CONFIGURATIONS_EXAMPLE,
   QUEUE_CONFIGURATIONS_EXAMPLE,
   TOPIC_CONFIGURATIONS_EXAMPLE,
 } from "./constants";
-import { KeyValuePair } from "@prismatic-io/spectral";
 
 export const getBucketNotificationConfiguration = async (
   s3Client: S3Client,
@@ -33,18 +33,16 @@ export const getBucketNotificationConfiguration = async (
       ExpectedBucketOwner: bucketOwnerAccountid,
     };
 
-  const getBucketNotificationConfigurationCommand =
-    new GetBucketNotificationConfigurationCommand(
-      getBucketNotificationConfigurationCommandInput,
-    );
+  const getBucketNotificationConfigurationCommand = new GetBucketNotificationConfigurationCommand(
+    getBucketNotificationConfigurationCommandInput,
+  );
   // Get the existing notification configuration for the bucket
   const getBucketNotificationConfigurationCommandOutput = await s3Client.send(
     getBucketNotificationConfigurationCommand,
   );
 
   // Remove the metadata from the response
-  if (removeMetadata)
-    delete getBucketNotificationConfigurationCommandOutput.$metadata;
+  if (removeMetadata) getBucketNotificationConfigurationCommandOutput.$metadata = undefined;
 
   return getBucketNotificationConfigurationCommandOutput;
 };
@@ -60,10 +58,9 @@ export const putBucketNotificationConfiguration = async (
       NotificationConfiguration: notificationConfiguration,
       SkipDestinationValidation: true,
     };
-  const putBucketNotificationConfigurationCommand =
-    new PutBucketNotificationConfigurationCommand(
-      putBucketNotificationConfigurationCommandInput,
-    );
+  const putBucketNotificationConfigurationCommand = new PutBucketNotificationConfigurationCommand(
+    putBucketNotificationConfigurationCommandInput,
+  );
   const putBucketNotificationConfigurationCommandOutput = await s3Client.send(
     putBucketNotificationConfigurationCommand,
   );
@@ -88,51 +85,36 @@ export const processTopicConfiguration = async (
 
   //Check if the topic configuration already exists
   let existingTopicConfigurationIndex = -1;
-  notificationConfiguration.TopicConfigurations.find(
-    (topicConfiguration, index) => {
-      const topicConfigurationIdEqualsEventNotificationName =
-        topicConfiguration.Id === eventNotificationName;
+  notificationConfiguration.TopicConfigurations.find((topicConfiguration, index) => {
+    const topicConfigurationIdEqualsEventNotificationName =
+      topicConfiguration.Id === eventNotificationName;
 
-      if (topicConfigurationIdEqualsEventNotificationName)
-        existingTopicConfigurationIndex = index;
+    if (topicConfigurationIdEqualsEventNotificationName) existingTopicConfigurationIndex = index;
 
-      return topicConfigurationIdEqualsEventNotificationName;
-    },
-  );
+    return topicConfigurationIdEqualsEventNotificationName;
+  });
 
   if (existingTopicConfigurationIndex === -1) {
     //Add a new topic configuration
     notificationConfiguration.TopicConfigurations.push(topicConfiguration);
   } else {
     //Replace the existing topic configuration
-    notificationConfiguration.TopicConfigurations[
-      existingTopicConfigurationIndex
-    ] = topicConfiguration;
+    notificationConfiguration.TopicConfigurations[existingTopicConfigurationIndex] =
+      topicConfiguration;
   }
 
-  return await putBucketNotificationConfiguration(
-    s3Client,
-    bucket,
-    notificationConfiguration,
-  );
+  return await putBucketNotificationConfiguration(s3Client, bucket, notificationConfiguration);
 };
 
-export const getObjectIdentifiers = (
-  objectKeys: unknown,
-): ObjectIdentifier[] => {
+export const getObjectIdentifiers = (objectKeys: unknown): ObjectIdentifier[] => {
   if (Array.isArray(objectKeys)) {
     return objectKeys.map((key) => ({ Key: key }));
   }
   return [];
 };
 
-export const getTopicConfigurations = (
-  topicConfigurations: unknown,
-): TopicConfiguration[] => {
-  if (
-    typeof topicConfigurations === "string" &&
-    topicConfigurations.length > 0
-  ) {
+export const getTopicConfigurations = (topicConfigurations: unknown): TopicConfiguration[] => {
+  if (typeof topicConfigurations === "string" && topicConfigurations.length > 0) {
     const topicConfigurationsJson = JSON.parse(topicConfigurations);
     if (!Array.isArray(topicConfigurationsJson))
       throw new Error(
@@ -146,13 +128,8 @@ export const getTopicConfigurations = (
   return undefined;
 };
 
-export const getQueueConfigurations = (
-  queueConfigurations: unknown,
-): QueueConfiguration[] => {
-  if (
-    typeof queueConfigurations === "string" &&
-    queueConfigurations.length > 0
-  ) {
+export const getQueueConfigurations = (queueConfigurations: unknown): QueueConfiguration[] => {
+  if (typeof queueConfigurations === "string" && queueConfigurations.length > 0) {
     const queueConfigurationsJson = JSON.parse(queueConfigurations);
     if (!Array.isArray(queueConfigurationsJson))
       throw new Error(
@@ -169,13 +146,8 @@ export const getQueueConfigurations = (
 export const getLambdaFunctionConfigurations = (
   lambdaFunctionConfigurations: unknown,
 ): LambdaFunctionConfiguration[] => {
-  if (
-    typeof lambdaFunctionConfigurations === "string" &&
-    lambdaFunctionConfigurations.length > 0
-  ) {
-    const lambdaFunctionConfigurationsJson = JSON.parse(
-      lambdaFunctionConfigurations,
-    );
+  if (typeof lambdaFunctionConfigurations === "string" && lambdaFunctionConfigurations.length > 0) {
+    const lambdaFunctionConfigurationsJson = JSON.parse(lambdaFunctionConfigurations);
     if (!Array.isArray(lambdaFunctionConfigurationsJson))
       throw new Error(
         `Lambda function configurations must be an array with the following structure: ${JSON.stringify(
@@ -191,19 +163,14 @@ export const getLambdaFunctionConfigurations = (
 export const getEventBridgeConfiguration = (
   eventBridgeConfiguration: unknown,
 ): EventBridgeConfiguration => {
-  if (
-    typeof eventBridgeConfiguration === "string" &&
-    eventBridgeConfiguration.length > 0
-  ) {
+  if (typeof eventBridgeConfiguration === "string" && eventBridgeConfiguration.length > 0) {
     return JSON.parse(eventBridgeConfiguration);
   }
 
   return undefined;
 };
 
-export const getObjectAttributes = (
-  attributes: unknown,
-): ObjectAttributes[] => {
+export const getObjectAttributes = (attributes: unknown): ObjectAttributes[] => {
   if (Array.isArray(attributes)) {
     if (attributes.length === 0) {
       throw new Error("Object Attributes must contain at least one attribute");
@@ -213,10 +180,19 @@ export const getObjectAttributes = (
 };
 
 export const encodeTags = (tags: KeyValuePair[]): string => {
-  return querystring.encode(
-    (tags || []).reduce(
-      (acc, { key, value }) => ({ ...acc, [key]: value }),
-      {},
-    ),
-  );
+  const tagsObj: Record<string, string> = {};
+  for (const { key, value } of tags || []) {
+    tagsObj[key as string] = value as string;
+  }
+  return querystring.encode(tagsObj);
+};
+
+export const objectMapper = (
+  object,
+  key: string,
+): { lastModified: string; [key: string]: unknown } => {
+  return {
+    ...object,
+    [key]: new Date(object[key]).toISOString(),
+  };
 };

@@ -15,9 +15,9 @@ jest.mock("aws-utils", () => {
 });
 
 import { ConnectionError } from "@prismatic-io/spectral";
+import { createConnection } from "@prismatic-io/spectral/dist/testing";
 import { createS3Client } from "./auth";
 import { accessKeySecretPair } from "./connections";
-import { createConnection } from "@prismatic-io/spectral/dist/testing";
 
 describe("createS3Client", () => {
   describe("invalid credentials", () => {

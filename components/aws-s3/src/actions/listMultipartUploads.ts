@@ -2,8 +2,8 @@ import { ListMultipartUploadsCommand } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
-import { accessKeyInput, bucket } from "../inputs";
 import { listMultipartUploadsPayload } from "../examplePayloads";
+import { accessKeyInput, bucket } from "../inputs";
 
 export const listMultipartUploads = action({
   display: {
@@ -27,6 +27,8 @@ export const listMultipartUploads = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const command = new ListMultipartUploadsCommand({ Bucket: bucket });
     const response = await s3.send(command);

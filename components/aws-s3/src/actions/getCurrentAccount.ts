@@ -1,9 +1,9 @@
-import { STSClient, GetCallerIdentityCommand } from "@aws-sdk/client-sts";
-import { getCurrentAccountPayload } from "../examplePayloads";
+import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import { action } from "@prismatic-io/spectral";
-import { createS3Client } from "../auth";
-import { accessKeyInput } from "../inputs";
 import { dynamicAccessAllInputs } from "aws-utils";
+import { createS3Client } from "../auth";
+import { getCurrentAccountPayload } from "../examplePayloads";
+import { accessKeyInput } from "../inputs";
 export const getCurrentAccount = action({
   display: {
     label: "Get Current Account",
@@ -11,12 +11,7 @@ export const getCurrentAccount = action({
   },
   perform: async (
     context,
-    {
-      accessKey,
-      dynamicAccessKeyId,
-      dynamicSecretAccessKey,
-      dynamicSessionToken,
-    },
+    { accessKey, dynamicAccessKeyId, dynamicSecretAccessKey, dynamicSessionToken },
   ) => {
     const s3 = await createS3Client({
       awsConnection: accessKey,
@@ -24,6 +19,8 @@ export const getCurrentAccount = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const sts = new STSClient({ credentials: s3.config.credentials });
     const command = new GetCallerIdentityCommand({});

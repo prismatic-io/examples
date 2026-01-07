@@ -52,11 +52,13 @@ export const asanaOAuthConnection = oauth2Connection({
     },
     scopes: {
       label: "Scopes",
-      placeholder: "Scopes",
+      placeholder: "Enter space separated scopes",
+      example: "tasks:read projects:read users:read",
       type: "string",
       required: false,
-      shown: false,
-      comments: "Asana does not support granular scopes.",
+      shown: true,
+      comments:
+        "Space separated OAuth scopes using the format `<resource>:<action>` (e.g., tasks:read, projects:write). Leave blank for full access. See https://developers.asana.com/docs/oauth-scopes",
       default: "",
     },
     clientId: {

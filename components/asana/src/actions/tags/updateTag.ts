@@ -1,13 +1,6 @@
 import { action } from "@prismatic-io/spectral";
 import { createAsanaClient } from "../../client";
-import {
-  connectionInput,
-  followersList,
-  color,
-  name,
-  notes,
-  tagId,
-} from "../../inputs";
+import { connectionInput, color, name, notes, tagId } from "../../inputs";
 import { TAG_OPT_FIELDS } from "../../util";
 
 export const updateTag = action({

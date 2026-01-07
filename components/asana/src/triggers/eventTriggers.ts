@@ -249,7 +249,8 @@ const storiesTrigger = trigger({
     projectId,
     triggerWhenAdded: {
       ...triggerWhenAdded,
-      comments: "Determines if the webhook will trigger when a comment or activity is added.",
+      comments:
+        "Determines if the webhook will trigger when a comment or activity is added.",
     },
     triggerWhenChanged: {
       ...triggerWhenChanged,

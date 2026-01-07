@@ -1,9 +1,9 @@
+import { SubscribeCommand, type SubscribeCommandInput } from "@aws-sdk/client-sns";
 import { action } from "@prismatic-io/spectral";
-import { SubscribeCommand, SubscribeCommandInput } from "@aws-sdk/client-sns";
-import { createSNSClient } from "../../auth";
-import { snsTopicArn, endpoint, accessKeyInput } from "../../inputs";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
+import { createSNSClient } from "../../auth";
 import { subscribeToTopicPayload } from "../../examplePayloads";
+import { accessKeyInput, endpoint, snsTopicArn } from "../../inputs";
 
 export const subscribeToTopic = action({
   display: {

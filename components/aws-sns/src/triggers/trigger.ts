@@ -1,21 +1,18 @@
 import { trigger, util } from "@prismatic-io/spectral";
-import MessageValidator from "sns-validator";
-import { parseMessage } from "../inputs";
+import { connectionInput, parseMessage, topicArn } from "../inputs";
 import { snsExamplePayload } from "./exampleNotification";
-import { createClient } from "@prismatic-io/spectral/dist/clients/http";
-
-export const lowerCaseHeaders = (
-  headers: Record<string, string>,
-): Record<string, string> =>
-  Object.entries(headers).reduce((result, [key, val]) => {
-    return Object.assign(result, { [key.toLowerCase()]: val });
-  }, {});
+import { getPreviousTriggerState, webhookPerformFn } from "../utils";
+import { awsRegion } from "aws-utils/src/inputs/awsRegion";
+import { createSNSClient } from "../client";
+import { SubscribeCommand, UnsubscribeCommand } from "@aws-sdk/client-sns";
+import { STORE_KEY } from "../constants";
+import { Store } from "../interfaces/Store";
 
 export const subscriptionTrigger = trigger({
   display: {
-    label: "Subscription Trigger",
+    label: "Manual Subscription",
     description:
-      "Confirm subscription and unsubscribe requests and validate SNS messages",
+      "Receive and validate webhook requests from SNS for manually configured webhook subscriptions.",
   },
   inputs: { parseMessage },
   scheduleSupport: "invalid",
@@ -26,86 +23,130 @@ export const subscriptionTrigger = trigger({
     payload: snsExamplePayload,
     branch: "Notification",
   },
-  perform: async ({ logger }, payload, params) => {
-    const validator = new MessageValidator();
+  perform: webhookPerformFn,
+});
 
-    const originalHeaders = payload.headers;
-    payload.headers = lowerCaseHeaders(payload.headers);
-
-    const _parseMessage =
-      payload.headers["x-amz-sns-message-type"] === "Notification" &&
-      util.types.toBool(params.parseMessage);
-
-    const validateMessage = async ({ rawBody: { data }, headers }) => {
-      if (headers["x-amz-sns-rawdelivery"] === "true") {
-        return _parseMessage
-          ? JSON.parse(util.types.toString(data) || "{}")
-          : util.types.toString(data);
-      }
-      return await new Promise((resolve, reject) => {
-        validator.validate(util.types.toString(data), (error, message) => {
-          if (error) {
-            logger.error(
-              `SNS Message could not be verified with error: ${error}`,
-            );
-            return reject(error);
-          }
-          return resolve(message);
-        });
+export const webhookLifecycleTrigger = trigger({
+  display: {
+    label: "Topic Webhook",
+    description:
+      "Receive notifications from an SNS topic. Automatically creates and manages a topic subscription when the instance is deployed, and removes the subscription when the instance is deleted.",
+  },
+  inputs: {
+    parseMessage,
+    awsConnection: connectionInput,
+    awsRegion,
+    topicArn,
+  },
+  scheduleSupport: "invalid",
+  synchronousResponseSupport: "valid",
+  allowsBranching: true,
+  staticBranchNames: ["Notification", "Subscribe", "Unsubscribe"],
+  examplePayload: {
+    payload: snsExamplePayload,
+    branch: "Notification",
+  },
+  perform: webhookPerformFn,
+  webhookLifecycleHandlers: {
+    create: async (context, { awsConnection, awsRegion, topicArn }) => {
+      const sns = await createSNSClient({
+        awsConnection,
+        awsRegion,
+        debug: context.debug.enabled,
+        logger: context.logger,
       });
-    };
+      const flowName = context.webhookUrls[context.flow.name];
+      const triggerId = flowName.split("/").pop();
+      const STATE_KEY = `${triggerId}:awsSnsTopicSubscription`;
+      const { existingSubscriptionArn, previousAwsRegion, previousTopicArn } =
+        getPreviousTriggerState(context, STATE_KEY);
+      const isSameRegion = previousAwsRegion === awsRegion;
+      const isSameTopic = previousTopicArn === topicArn;
 
-    const message = await validateMessage(payload);
-
-    //FIXME - Is there a way to get rid of the usage of let here?
-    let branch = "";
-
-    const messageType = payload.headers["x-amz-sns-message-type"];
-    const client = createClient({
-      baseUrl: message.SubscribeURL,
-    });
-    switch (messageType) {
-      case "SubscriptionConfirmation":
-        await client.get("");
-        branch = "Subscribe";
-        break;
-      case "UnsubscribeConfirmation":
-        await client.get("");
-        branch = "Unsubscribe";
-        break;
-      case "Notification":
-        branch = "Notification";
-        break;
-      default:
-        throw new Error(
-          `Message type was not "Notification", "SubscriptionConfirmation" or "UnsubscribeConfirmation", but "${messageType}" instead.`,
-        );
-    }
-
-    // Parse non-raw message data
-    if (_parseMessage && payload.headers["x-amz-sns-rawdelivery"] !== "true") {
-      try {
-        message.Message = JSON.parse(util.types.toString(message.Message));
-      } catch {
-        throw new Error(
-          `Received a message that is not valid JSON: ${message.Message}`,
-        );
+      if (existingSubscriptionArn) {
+        if (!isSameRegion || !isSameTopic) {
+          context.logger.info(
+            `Updating SNS subscription for flow ${context.flow.id} from ${previousAwsRegion} to ${awsRegion} and ${previousTopicArn} to ${topicArn}.`
+          );
+          const command = new UnsubscribeCommand({
+            SubscriptionArn: util.types.toString(existingSubscriptionArn),
+          });
+          await sns.send(command);
+          context.logger.info(
+            `Deleted SNS subscription for flow ${context.flow.id}.`
+          );
+        } else {
+          context.logger.info(
+            `SNS subscription already exists for flow ${context.flow.id}. Skipping creation.`
+          );
+          return;
+        }
       }
-    }
 
-    payload.headers = originalHeaders;
-
-    return {
-      // Return a deserialized message as payload.body.data
-      branch,
-      payload: {
-        ...payload,
-        body: {
-          data: message,
+      context.logger.info(
+        `Creating SNS subscription for flow ${context.flow.id} in region ${awsRegion} and topic ${topicArn}.`
+      );
+      const command = new SubscribeCommand({
+        TopicArn: topicArn,
+        Protocol: "https",
+        Endpoint: context.webhookUrls[context.flow.name],
+        Attributes: {
+          RawMessageDelivery: "false",
         },
-      },
-    };
+        ReturnSubscriptionArn: true,
+      });
+
+      const response = await sns.send(command);
+      context.logger.info(
+        `Created SNS subscription for topic ${topicArn}. ` +
+          `SubscriptionArn: ${response.SubscriptionArn} (pending confirmation)`
+      );
+
+      return {
+        crossFlowState: {
+          [STATE_KEY]: {
+            subscriptionArn: response.SubscriptionArn,
+            previousAwsRegion: awsRegion,
+            previousTopicArn: topicArn,
+          },
+        },
+      };
+    },
+    delete: async (context, { awsConnection, awsRegion }) => {
+      const triggerId = context.webhookUrls[context.flow.name].split("/").pop();
+      const STATE_KEY = `${triggerId}:awsSnsTopicSubscription`;
+      const { existingSubscriptionArn } = getPreviousTriggerState(
+        context,
+        STATE_KEY
+      );
+      if (!existingSubscriptionArn) {
+        context.logger.warn(
+          `No subscription ARN found for flow ${context.flow.name}. Skipping deletion.`
+        );
+        return;
+      }
+
+      const sns = await createSNSClient({
+        awsConnection,
+        awsRegion,
+        debug: context.debug.enabled,
+        logger: context.logger,
+      });
+      const command = new UnsubscribeCommand({
+        SubscriptionArn: existingSubscriptionArn,
+      });
+
+      await sns.send(command);
+      context.logger.info(
+        `Deleted SNS subscription for topic ${topicArn}. ` +
+          `SubscriptionArn: ${existingSubscriptionArn}`
+      );
+
+      context[STORE_KEY] = {
+        [STATE_KEY]: undefined,
+      };
+    },
   },
 });
 
-export default { subscriptionTrigger };
+export default { subscriptionTrigger, webhookLifecycleTrigger };

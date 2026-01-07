@@ -11,8 +11,7 @@ export default component({
   public: true,
   display: {
     label: "Amazon SNS",
-    description:
-      "Manage subscriptions, topics, and messages within Amazon (AWS) SNS",
+    description: "Manage topics, subscriptions, and messages in Amazon SNS.",
     iconPath: "icon.png",
     category: "Data Platforms",
   },

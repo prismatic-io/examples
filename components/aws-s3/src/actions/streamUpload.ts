@@ -1,27 +1,18 @@
-import querystring from "querystring";
-import { action, input, util } from "@prismatic-io/spectral";
-import { Upload } from "@aws-sdk/lib-storage";
-import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
-import { PassThrough } from "stream";
-import { v4 as uuidv4 } from "uuid";
-import { createS3Client } from "../auth";
-import {
-  accessKeyInput,
-  acl,
-  bucket,
-  fileContents,
-  objectKey,
-  tagging,
-} from "../inputs";
-import {
+import querystring from "node:querystring";
+import { PassThrough } from "node:stream";
+import type {
   AbortMultipartUploadCommandOutput,
   CompleteMultipartUploadCommandOutput,
 } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
+import { util, action, input, ActionContext } from "@prismatic-io/spectral";
+import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
+import { v4 as uuidv4 } from "uuid";
+import { createS3Client } from "../auth";
+import { accessKeyInput, acl, bucket, fileContents, objectKey, tagging } from "../inputs";
 
 interface UploadStreamExecutionState {
-  uploadFinisher: Promise<
-    CompleteMultipartUploadCommandOutput | AbortMultipartUploadCommandOutput
-  >;
+  uploadFinisher: Promise<CompleteMultipartUploadCommandOutput | AbortMultipartUploadCommandOutput>;
   fileStream: PassThrough;
 }
 
@@ -57,12 +48,11 @@ const createUploadStream = action({
       dynamicSessionToken: params.dynamicSessionToken,
     });
 
-    const tags = querystring.encode(
-      (params.tagging || []).reduce(
-        (acc, { key, value }) => ({ ...acc, [key]: value }),
-        {},
-      ),
-    );
+    const tagsObj: Record<string, string> = {};
+    for (const { key, value } of params.tagging || []) {
+      tagsObj[key as string] = value as string;
+    }
+    const tags = querystring.encode(tagsObj);
 
     // We'll use a UUID to uniquely identify this upload
     const uploadId = uuidv4();
@@ -106,9 +96,7 @@ const writeUploadStream = action({
     fileContents,
   },
   perform: async ({ executionState }, params) => {
-    const { fileStream } = executionState[
-      params.uploadId
-    ] as UploadStreamExecutionState;
+    const { fileStream } = executionState[params.uploadId] as UploadStreamExecutionState;
 
     await new Promise((resolve) => {
       // If the stream returns false it represents that the amount of data in the stream has passed the

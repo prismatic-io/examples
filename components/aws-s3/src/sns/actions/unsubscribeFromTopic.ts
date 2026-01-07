@@ -1,15 +1,14 @@
-import { action } from "@prismatic-io/spectral";
-import { createSNSClient } from "../../auth";
-import { subscriptionArn, accessKeyInput } from "../../inputs";
-import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { UnsubscribeCommand } from "@aws-sdk/client-sns";
+import { action } from "@prismatic-io/spectral";
+import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
+import { createSNSClient } from "../../auth";
 import { unsubscribeFromTopicPayload } from "../../examplePayloads";
+import { accessKeyInput, subscriptionArn } from "../../inputs";
 
 export const unsubscribeFromTopic = action({
   display: {
     label: "Unsubscribe from a SNS Topic",
-    description:
-      "Unsubscribe from an Amazon SNS Topic for S3 Event Notifications",
+    description: "Unsubscribe from an Amazon SNS Topic for S3 Event Notifications",
   },
   perform: async (
     context,

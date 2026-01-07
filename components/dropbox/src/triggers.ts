@@ -33,6 +33,13 @@ const dropboxWebhook = trigger({
       });
     }
 
+    if (context.isSimulatedTestExecution) {
+      return Promise.resolve({
+        payload,
+        branch: "Notification",
+      });
+    }
+
     // Verify the signing secret is correct
     const requestBody = util.types.toString(payload.rawBody.data);
     const computedSignature = crypto

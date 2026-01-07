@@ -10,18 +10,9 @@ import {
 import {
   PublishCommand,
   type MessageAttributeValue,
-  type PublishResponse,
 } from "@aws-sdk/client-sns";
 import type { KeyValuePair } from "@prismatic-io/spectral";
-interface Response {
-  data: PublishResponse;
-}
-
-const examplePayload: Response = {
-  data: {
-    MessageId: "00000000-00000000-00000000-00000000",
-  },
-};
+import { publishMessageExamplePayload } from "../examplePayloads";
 
 const getAttributeType = (input: unknown): MessageAttributeValue => {
   if (typeof input === "string") {
@@ -72,8 +63,9 @@ const getAttributeType = (input: unknown): MessageAttributeValue => {
 
 const attributeReducer = (kvpList: KeyValuePair<unknown>[] = []) => {
   return kvpList.reduce(
-    (result, { key, value }) => Object.assign(result, { [key]: getAttributeType(value) }),
-    {},
+    (result, { key, value }) =>
+      Object.assign(result, { [key]: getAttributeType(value) }),
+    {}
   );
 };
 
@@ -82,15 +74,20 @@ export const publishMessage = action({
     label: "Publish Message",
     description: "Publish a message to an Amazon SNS Topic",
   },
-  perform: async (context, params) => {
+  perform: async (
+    { logger, debug: { enabled: debug } },
+    { awsConnection, awsRegion, message, topicArn, messageAttributes }
+  ) => {
     const sns = await createSNSClient({
-      awsConnection: params.awsConnection,
-      awsRegion: params.awsRegion,
+      awsConnection,
+      awsRegion,
+      debug,
+      logger,
     });
     const publishParams = {
-      Message: util.types.toString(params.message),
-      MessageAttributes: attributeReducer(params.messageAttributes),
-      TopicArn: params.topicArn,
+      Message: util.types.toString(message),
+      MessageAttributes: attributeReducer(messageAttributes),
+      TopicArn: topicArn,
     };
     const command = new PublishCommand(publishParams);
     const response = await sns.send(command);
@@ -106,7 +103,7 @@ export const publishMessage = action({
     messageAttributes,
     awsConnection: connectionInput,
   },
-  examplePayload,
+  examplePayload: publishMessageExamplePayload,
 });
 
 export default publishMessage;

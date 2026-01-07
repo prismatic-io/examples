@@ -1,9 +1,9 @@
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
+import { getBucketNotificationConfigurationPayload } from "../examplePayloads";
 import { accessKeyInput, bucket } from "../inputs";
 import { getBucketNotificationConfiguration as getBucketNotificationConfigurationFn } from "../utils";
-import { getBucketNotificationConfigurationPayload } from "../examplePayloads";
 
 export const getBucketNotificationConfiguration = action({
   display: {
@@ -27,13 +27,10 @@ export const getBucketNotificationConfiguration = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
-    const data = await getBucketNotificationConfigurationFn(
-      s3,
-      bucket,
-      undefined,
-      false,
-    );
+    const data = await getBucketNotificationConfigurationFn(s3, bucket, undefined, false);
     return {
       data,
     };

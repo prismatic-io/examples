@@ -1,6 +1,11 @@
+import {
+  type ObjectLockConfiguration,
+  PutObjectLockConfigurationCommand,
+} from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
+import { putObjectLockConfigurationPayload } from "../examplePayloads";
 import {
   accessKeyInput,
   bucket,
@@ -8,11 +13,6 @@ import {
   defaultRetentionMode,
   defaultRetentionYears,
 } from "../inputs";
-import {
-  ObjectLockConfiguration,
-  PutObjectLockConfigurationCommand,
-} from "@aws-sdk/client-s3";
-import { putObjectLockConfigurationPayload } from "../examplePayloads";
 
 export const putObjectLockConfiguration = action({
   display: {
@@ -39,6 +39,8 @@ export const putObjectLockConfiguration = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const defaultRetentionDaysPresent = defaultRetentionDays > 0;
     const defaultRetentionYearsPresent = defaultRetentionYears > 0;
@@ -55,9 +57,7 @@ export const putObjectLockConfiguration = action({
       !defaultRetentionDaysPresent &&
       !defaultRetentionYearsPresent
     ) {
-      throw new Error(
-        "You must specify either Default Retention Years or Default Retention Days.",
-      );
+      throw new Error("You must specify either Default Retention Years or Default Retention Days.");
     }
 
     if (
@@ -71,13 +71,9 @@ export const putObjectLockConfiguration = action({
       Rule: defaultRetentionModePresent
         ? {
             DefaultRetention: {
-              Days: defaultRetentionDaysPresent
-                ? defaultRetentionDays
-                : undefined,
+              Days: defaultRetentionDaysPresent ? defaultRetentionDays : undefined,
               Mode: defaultRetentionMode,
-              Years: defaultRetentionYearsPresent
-                ? defaultRetentionYears
-                : undefined,
+              Years: defaultRetentionYearsPresent ? defaultRetentionYears : undefined,
             },
           }
         : undefined,

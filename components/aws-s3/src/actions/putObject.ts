@@ -1,18 +1,11 @@
-import { PutObjectRequest, PutObjectCommand } from "@aws-sdk/client-s3";
+import type { ReadStream } from "node:fs";
+import querystring from "node:querystring";
+import { PutObjectCommand, type PutObjectRequest } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
-import querystring from "querystring";
-import {
-  accessKeyInput,
-  bucket,
-  fileContents,
-  objectKey,
-  tagging,
-  acl,
-} from "../inputs";
 import { putObjectPayload } from "../examplePayloads";
-import { ReadStream } from "fs";
+import { accessKeyInput, acl, bucket, fileContents, objectKey, tagging } from "../inputs";
 
 export const putObject = action({
   display: {
@@ -40,14 +33,15 @@ export const putObject = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const { data, contentType } = fileContents;
-    const tags = querystring.encode(
-      (tagging || []).reduce(
-        (acc, { key, value }) => ({ ...acc, [key]: value }),
-        {},
-      ),
-    );
+    const tagsObj: Record<string, string> = {};
+    for (const { key, value } of tagging || []) {
+      tagsObj[key as string] = value as string;
+    }
+    const tags = querystring.encode(tagsObj);
     const putParameters: PutObjectRequest = {
       ACL: acl || null,
       Bucket: bucket,

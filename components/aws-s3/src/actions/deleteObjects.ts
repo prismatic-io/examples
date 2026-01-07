@@ -1,9 +1,9 @@
-import { DeleteObjectsCommand, ObjectIdentifier } from "@aws-sdk/client-s3";
+import { DeleteObjectsCommand, type ObjectIdentifier } from "@aws-sdk/client-s3";
 import { action } from "@prismatic-io/spectral";
 import { awsRegion, dynamicAccessAllInputs } from "aws-utils";
 import { createS3Client } from "../auth";
-import { accessKeyInput, bucket, objectKeys } from "../inputs";
 import { deleteObjectsPayload } from "../examplePayloads";
+import { accessKeyInput, bucket, objectKeys } from "../inputs";
 
 export const deleteObjects = action({
   display: {
@@ -28,6 +28,8 @@ export const deleteObjects = action({
       dynamicAccessKeyId,
       dynamicSecretAccessKey,
       dynamicSessionToken,
+      logger: context.logger,
+      debug: context.debug.enabled,
     });
     const objects: ObjectIdentifier[] = objectKeys;
     const command = new DeleteObjectsCommand({
