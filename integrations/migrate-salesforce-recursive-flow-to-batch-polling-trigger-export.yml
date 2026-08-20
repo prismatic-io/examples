@@ -1,0 +1,393 @@
+category: ""
+configPages:
+  - elements: []
+    name: Configuration
+  - elements:
+      - type: configVar
+        value: Salesforce Record Type
+    name: Salesforce Configuration
+    tagline: ""
+    userLevelConfigured: false
+defaultInstanceProfile: Default Instance Profile
+definitionVersion: 7
+description: >-
+  This integration compares two methods for doing an initial data sync from
+  Salesforce.
+documentation: >+
+  This integration compares two methods for doing an initial data sync from
+  Salesforce.
+
+
+  1. The "Recursive implementation" flow runs on deploy, fetches 200 records
+  from Salesforce, processes them, and invokes itself to fetch the next 200
+  records.
+
+  2. The "Batch Polling Trigger" flow leverages the Salesforce component's batch
+  trigger which polls large sets of records at once, and batches the records
+  into 200-record chunks, processing each set of 200 records in a
+  mini-execution.
+
+endpointType: flow_specific
+flows:
+  - description: Recursively fetches 200 records and sends them upstream
+    endpointSecurityType: customer_optional
+    isAgentFlow: false
+    isSynchronous: false
+    name: Recursive Implementation
+    steps:
+      - action:
+          key: recursiveTrigger
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ""
+        inputs:
+          defaultCursor:
+            type: value
+            value: '{ "CreatedDate": "1970-01-01T00:00:00Z", "Id": "" }'
+          runOnDeploy:
+            type: value
+            value: "true"
+        isTrigger: true
+        name: Trigger
+      - action:
+          key: getCursor
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ""
+        inputs: {}
+        name: Get Recursive Cursor
+      - action:
+          key: deserializeFromJson
+          component:
+            isPublic: true
+            key: change-data-format
+            version: LATEST
+        description: ""
+        inputs:
+          data:
+            type: reference
+            value: getRecursiveCursor.results
+        name: Deserialize JSON
+      - action:
+          key: runCode
+          component:
+            isPublic: true
+            key: code
+            version: LATEST
+        description: ""
+        inputs:
+          code:
+            type: value
+            value: "module.exports = async ({ logger, configVars }, stepResults) => {\n\tconst recordType = configVars[\"Salesforce Record Type\"];\n\tconst { CreatedDate, Id } = stepResults.deserializeJson.results;\n\tconst whereClause = Id\n\t\t? `WHERE CreatedDate > ${CreatedDate} OR (CreatedDate = ${CreatedDate} AND Id > '${Id}')`\n\t\t: `WHERE CreatedDate > ${CreatedDate}`;\n\tconst query = `\n\t\tSELECT Id, CreatedDate FROM ${recordType}\n\t\t${whereClause}\n\t\tORDER BY CreatedDate ASC, Id ASC\n\t\tLIMIT 200\n\t`;\n\treturn { data: query };\n};\n"
+        name: Generate SOQL Query
+      - action:
+          key: query
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs:
+          queryString:
+            type: reference
+            value: generateSoqlQuery.results
+          version:
+            type: value
+            value: "63.0"
+        name: Query
+      - action:
+          key: branchOnExpression
+          component:
+            isPublic: true
+            key: branch
+            version: LATEST
+        branches:
+          - name: No more records to process
+            steps:
+              - action:
+                  key: stopExecution
+                  component:
+                    isPublic: true
+                    key: stop-execution
+                    version: LATEST
+                description: ""
+                inputs:
+                  contentType:
+                    type: value
+                    value: application/json
+                  headers:
+                    type: complex
+                    value: []
+                  jsonBody:
+                    type: value
+                    value: ""
+                  statusCode:
+                    type: value
+                    value: "200"
+                name: Stop Execution
+          - name: Else
+            steps:
+              - action:
+                  key: loopOverItems
+                  component:
+                    isPublic: true
+                    key: loop
+                    version: LATEST
+                description: ""
+                inputs:
+                  items:
+                    type: reference
+                    value: query.results.records
+                name: Loop over records
+                steps:
+                  - action:
+                      key: runCode
+                      component:
+                        isPublic: true
+                        key: code
+                        version: LATEST
+                    description: ""
+                    inputs:
+                      code:
+                        type: value
+                        value: >
+                          /*
+                            Access config variables by name through the configVars object. e.g.
+                              const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                            Access previous steps' results through the stepResults object. Trigger
+                            and step names are camelCased. If the step "Get Data from API" returned
+                            {"foo": "bar", "baz": 123}, you could destructure that data with:
+                              const { foo, baz } = stepResults.getDataFromApi.results;
+
+                            You can return string, number or complex object data. e.g.
+                              return { data: { foo: "Hello", bar: 123.45, baz: true } };
+                          */
+
+
+                          module.exports = async ({ logger, configVars },
+                          stepResults) => {
+                            return { data: null };
+                          };
+                    name: Do something with each record
+        description: ""
+        inputs:
+          conditions:
+            type: complex
+            value:
+              - name: No more records to process
+                type: complex
+                value:
+                  - and
+                  - - isEmpty
+                    - name: ""
+                      type: reference
+                      value: query.results.records
+                    - name: ""
+                      type: value
+                      value: ""
+        name: Check if there are more records to process
+      - action:
+          key: last
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: ""
+        inputs:
+          listInput:
+            type: reference
+            value: query.results.records
+        name: Last
+      - action:
+          key: createObject
+          component:
+            isPublic: true
+            key: collection-tools
+            version: LATEST
+        description: ""
+        inputs:
+          keyValueInput:
+            type: complex
+            value:
+              - name:
+                  type: value
+                  value: CreatedDate
+                type: reference
+                value: last.results.CreatedDate
+              - name:
+                  type: value
+                  value: Id
+                type: reference
+                value: last.results.Id
+        name: Create Object
+      - action:
+          key: binaryToJson
+          component:
+            isPublic: true
+            key: change-data-format
+            version: LATEST
+        description: ""
+        inputs:
+          data:
+            type: reference
+            value: createObject.results
+        name: JavaScript Object to JSON
+      - action:
+          key: setCursor
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ""
+        inputs:
+          cursor:
+            type: reference
+            value: javascriptObjectToJson.results
+        name: Set Recursive Cursor
+      - action:
+          key: invokeRecursive
+          component:
+            isPublic: true
+            key: recursive-flow
+            version: LATEST
+        description: ""
+        inputs: {}
+        name: Invoke Recursive Trigger
+  - description: ""
+    endpointSecurityType: customer_optional
+    isAgentFlow: false
+    isSynchronous: false
+    name: Batch Polling Trigger
+    steps:
+      - action:
+          key: pollChangesTrigger
+          component:
+            isPublic: true
+            key: salesforce
+            version: LATEST
+        description: ""
+        inputs:
+          dynamicValues:
+            type: value
+            value: ""
+          fieldValueTypes:
+            type: complex
+            value: []
+          fieldValues:
+            type: complex
+            value: []
+          lookBackDate:
+            type: value
+            value: "1970-01-01"
+          maxRecordsToFetch:
+            type: value
+            value: "20000"
+          recordType:
+            type: configVar
+            value: Salesforce Record Type
+          returnIdsOnly:
+            type: value
+            value: "false"
+          selectedFields:
+            type: complex
+            value: []
+          showDeletedRecords:
+            type: value
+            value: "false"
+          showNewRecords:
+            type: value
+            value: "true"
+          showUpdatedRecords:
+            type: value
+            value: "true"
+          version:
+            type: value
+            value: "63.0"
+        isTrigger: true
+        name: Batch Polling Trigger Trigger
+        schedule:
+          meta:
+            scheduleType: once
+            timeZone: ""
+          type: value
+          value: ""
+      - action:
+          key: loopOverItems
+          component:
+            isPublic: true
+            key: loop
+            version: LATEST
+        description: ""
+        inputs:
+          items:
+            type: reference
+            value: batchPollingTriggerTrigger.results.body.data
+        name: Loop Over Records
+        steps:
+          - action:
+              key: runCode
+              component:
+                isPublic: true
+                key: code
+                version: LATEST
+            description: ""
+            inputs:
+              code:
+                type: value
+                value: >
+                  /*
+                    Access config variables by name through the configVars object. e.g.
+                      const apiEndpoint = `${configVars["App Base URL"]}/api`;
+
+                    Access previous steps' results through the stepResults object. Trigger
+                    and step names are camelCased. If the step "Get Data from API" returned
+                    {"foo": "bar", "baz": 123}, you could destructure that data with:
+                      const { foo, baz } = stepResults.getDataFromApi.results;
+
+                    You can return string, number or complex object data. e.g.
+                      return { data: { foo: "Hello", bar: 123.45, baz: true } };
+                  */
+
+
+                  module.exports = async ({ logger, configVars }, stepResults)
+                  => {
+                    return { data: null };
+                  };
+            name: Do something with each record
+    triggerResolver:
+      batchSize: 200
+      concurrentBatchLimit: 1
+      enabled: true
+name: Migrate Salesforce Recursive Flow to Batch Polling Trigger
+requiredConfigVars:
+  - dataSource:
+      key: selectRecordType
+      component:
+        isPublic: true
+        key: salesforce
+        version: LATEST
+    dataType: picklist
+    defaultValue: ""
+    description: Type of record to import
+    inputs:
+      filterQuery:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: ""
+      version:
+        meta:
+          orgOnly: true
+          visibleToCustomerDeployer: false
+          visibleToOrgDeployer: false
+        type: value
+        value: "63.0"
+    key: Salesforce Record Type
+    orgOnly: false
