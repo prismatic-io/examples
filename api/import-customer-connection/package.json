@@ -1,0 +1,24 @@
+{
+  "name": "import-customer-connection",
+  "version": "1.0.0",
+  "description": "This example assumes that you have an existing OAuth 2.0 connection saved outside of Prismatic, and would like to import that connection as a reusable **user-scoped connection**.",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.20.0",
+    "dotenv": "^17.4.2",
+    "jsonwebtoken": "^9.0.3",
+    "uuid": "^14.0.2"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}
