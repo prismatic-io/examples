@@ -1,0 +1,30 @@
+{
+  "name": "flow-concurrency",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "tsdown",
+    "import": "npm run build && prism integrations:import",
+    "test": "vitest run",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit",
+    "format": "biome format --write ."
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "10.30.3",
+    "pg": "^8.23.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.1",
+    "@faker-js/faker": "^10.6.0",
+    "@types/cli-progress": "^3.11.6",
+    "@types/pg": "^8.23.1",
+    "cli-progress": "^3.12.0",
+    "dotenv": "^17.2.2",
+    "tsdown": "0.22.3",
+    "typescript": "6.0.3",
+    "vitest": "4.1.9"
+  }
+}
