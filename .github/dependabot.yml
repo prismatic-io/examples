@@ -1,0 +1,46 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directories:
+      - "/**"
+    schedule:
+      interval: "weekly"
+    groups:
+      version-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "pip"
+    directories:
+      - "/**"
+    schedule:
+      interval: "weekly"
+    groups:
+      version-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/**"
+    schedule:
+      interval: "weekly"
+    groups:
+      version-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
