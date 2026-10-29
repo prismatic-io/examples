@@ -1,8 +1,0 @@
-{
-  "extends": ["@prismatic-io/eslint-config-spectral"],
-  "root": true,
-  "parserOptions": {
-    "project": "./tsconfig.json"
-  },
-  "ignorePatterns": ["src/**/*.d.ts"]
-}
