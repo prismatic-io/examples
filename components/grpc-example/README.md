@@ -20,13 +20,13 @@ To load a `.proto` file in a custom component, place the `.proto` files in `src/
 
 Service definition files must be included in your compiled connector build.
 This can be done by automatically copying your `src/protoFiles` directory into the `dist/` directory at build time.
-Note that [webpack.config.js](./webpack.config.js) contains this configuration:
+Note that [tsdown.config.mts](./tsdown.config.mts) contains this configuration:
 
-```js
-{
-  from: path.resolve(__dirname, "src", "protoFiles"),
-  to: path.resolve(__dirname, "dist", "protoFiles"),
-},
+```ts
+copy: [
+  { from: "assets/*", to: "dist" },
+  { from: "src/protoFiles/*", to: "dist/protoFiles" },
+],
 ```
 
 ## Running locally

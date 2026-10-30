@@ -2,7 +2,10 @@ import { onPremConnection } from "@prismatic-io/spectral";
 
 export const exampleOpaConnection = onPremConnection({
   key: "exampleOpaConnection",
-  label: "Example OPA Connection",
+  display: {
+    label: "Example OPA Connection",
+    description: "Connect to the mock service, optionally through an on-prem agent",
+  },
   inputs: {
     endpoint: {
       label: "Endpoint",

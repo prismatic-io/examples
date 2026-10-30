@@ -11,8 +11,10 @@ import Client from "ssh2-sftp-client";
 
 export const basic = connection({
   key: "basic",
-  label: "Basic Username/Password",
-  comments: "Basic Username and Password connection",
+  display: {
+    label: "Basic Username/Password",
+    description: "Basic Username and Password connection",
+  },
   inputs: {
     username: { label: "Username", type: "string", required: true },
     password: { label: "Password", type: "password", required: true },

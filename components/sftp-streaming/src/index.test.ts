@@ -4,7 +4,7 @@ import {
 } from "@prismatic-io/spectral/dist/testing";
 import myComponent, { basic } from ".";
 
-jest.setTimeout(60000);
+vi.setConfig({ testTimeout: 60000 });
 
 const harness = createHarness(myComponent);
 const connection = createConnection(basic, {
