@@ -52,8 +52,8 @@ To build and publish the component,
 
 ```bash
 cd example-opa-component
-yarn install
-yarn build
+npm install
+npm run build
 prism components:publish
 ```
 
