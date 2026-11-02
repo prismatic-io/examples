@@ -5,12 +5,25 @@ This is helpful if you want to charge your customers per instance that they depl
 
 It also fetches instance compute information (how much each instance used in megabyte-seconds), which is helpful if you plan to charge your customers for compute time.
 
-Run this script by first installing dependencies with `npm install`.
-Provide the script with `--start-date` and `--end-date` parameters.
+## Running this script
 
+This script requires Node.js 22 or later. Install dependencies with:
+
+```bash
+npm install
 ```
-npm run start --start-date 2024-12-01 --end-date 2025-02-13
+
+Then, provide the script with `--start-date` and `--end-date` parameters (in `YYYY-MM-DD` format, inclusive, interpreted as UTC dates).
+Note the `--` after `npm run start`, which tells npm to pass the remaining arguments to the script:
+
+```bash
+npm run start -- --start-date 2024-12-01 --end-date 2025-02-13
 ```
+
+The `start` script uses the [prism CLI tool](https://www.npmjs.com/package/@prismatic-io/prism) to fetch an API token (`prism me:token`), so make sure you've logged in with `prism login`.
+If you'd rather supply a token yourself, set a `PRISMATIC_API_KEY` environment variable and run `npx tsx index.ts` with the same arguments.
+
+Note that this script runs against the US Commercial stack by default. If you'd like to run it against another region (EU, AUS, CA, GovCloud, private cloud, etc.) also provide a `PRISMATIC_URL` environment variable for your region.
 
 After running, this script will write out two files:
 

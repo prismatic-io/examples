@@ -3,7 +3,7 @@
  */
 
 import { gql, GraphQLClient } from "graphql-request";
-import { getDaysArray } from "./util";
+import { getDaysArray, getEndOfDay, toDateString } from "./util";
 
 interface UsageSnapshot {
   snapshotTime: string;
@@ -66,7 +66,7 @@ export const getCustomerInstanceCount = async ({
 }: GetCustomerInstanceCountArgs): Promise<
   GetCustomerInstanceCountArgsResult[]
 > => {
-  let usageSnapshots: UsageSnapshot[] = [];
+  const usageSnapshots: UsageSnapshot[] = [];
 
   let startCursor = "";
   let hasNextPage = false;
@@ -81,7 +81,8 @@ export const getCustomerInstanceCount = async ({
     const result = await client.request<UsageQueryResult>(GET_CUSTOMER_USAGE, {
       customerId,
       snapshotStart: startDate,
-      snapshotEnd: endDate,
+      // Include all of the end date's hourly snapshots
+      snapshotEnd: getEndOfDay(endDate),
       startCursor,
     });
     usageSnapshots.push(...result.customerTotalUsageMetrics.nodes);
@@ -92,27 +93,23 @@ export const getCustomerInstanceCount = async ({
   const results: GetCustomerInstanceCountArgsResult[] = [];
 
   for (const currentDate of getDaysArray(startDate, endDate)) {
-    const snapshotsForDay = usageSnapshots.filter((us) => {
-      const snapshotDate = new Date(us.snapshotTime);
-      return (
-        snapshotDate.getFullYear() === currentDate.getFullYear() &&
-        snapshotDate.getMonth() === currentDate.getMonth() &&
-        snapshotDate.getDate() === currentDate.getDate()
-      );
-    });
+    const date = toDateString(currentDate);
+    const snapshotsForDay = usageSnapshots.filter(
+      (us) => toDateString(new Date(us.snapshotTime)) === date,
+    );
     if (snapshotsForDay.length) {
       const averageDeployedInstanceCount =
         snapshotsForDay.reduce(
           (sum, snapshot) => sum + snapshot.deployedInstanceCount,
-          0
+          0,
         ) / snapshotsForDay.length;
       const averageUniqueIntegrationCount =
         snapshotsForDay.reduce(
-          (sum, snapshot) => sum + snapshot.deployedInstanceCount,
-          0
+          (sum, snapshot) => sum + snapshot.deployedUniqueIntegrationCount,
+          0,
         ) / snapshotsForDay.length;
       results.push({
-        date: currentDate.toISOString().slice(0, 10),
+        date,
         averageDeployedInstanceCount,
         averageUniqueIntegrationCount,
       });

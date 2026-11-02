@@ -43,7 +43,7 @@ const GET_INSTANCES = gql`
 `;
 
 export const getInstances = async (
-  client: GraphQLClient
+  client: GraphQLClient,
 ): Promise<Instance[]> => {
   const instances: Instance[] = [];
   let startCursor = "";

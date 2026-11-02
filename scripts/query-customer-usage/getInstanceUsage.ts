@@ -1,4 +1,5 @@
 import { gql, GraphQLClient } from "graphql-request";
+import { toDateString } from "./util";
 
 interface GetInstanceUsageArgs {
   client: GraphQLClient;
@@ -67,10 +68,10 @@ export const getInstanceUsage = async ({
       GET_INSTANCE_USAGE_SNAPSHOTS,
       {
         instanceId,
-        snapshotStart: startDate.toISOString().slice(0, 10),
-        snapshotEnd: endDate.toISOString().slice(0, 10),
+        snapshotStart: toDateString(startDate),
+        snapshotEnd: toDateString(endDate),
         startCursor,
-      }
+      },
     );
     instanceUsage.push(...result.instanceDailyUsageMetrics.nodes);
     startCursor = result.instanceDailyUsageMetrics.pageInfo.endCursor;
