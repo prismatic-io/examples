@@ -1,11 +1,9 @@
 /**
  * Configuration module for environment variables
  * and application settings.
- * Reads from .env file and process.env
+ * Reads from process.env (a .env file, if present, is loaded by
+ * Node's --env-file-if-exists flag in the npm scripts)
  */
-import dotenv from "dotenv";
-
-dotenv.config();
 
 interface Config {
   /** Port number for the server to listen on */

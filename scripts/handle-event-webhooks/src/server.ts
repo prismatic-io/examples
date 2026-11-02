@@ -11,7 +11,7 @@ import {
   handleInstanceDisabled,
   handleInstanceEnabled,
 } from "./handleEvents";
-import { eventTypes, PayloadSchema } from "./types";
+import { isEventType, PayloadSchema, type EventType } from "./types";
 
 // Create an express app
 const app = express();
@@ -22,7 +22,7 @@ app.post(
   express.raw({ type: "application/json" }), // Middleware to get raw body for HMAC verification
   (req, res) => {
     const eventType = req.headers["x-webhook-event"];
-    if (!eventTypes.includes(eventType as string)) {
+    if (!isEventType(eventType)) {
       console.warn(`Rejecting unsupported event type: ${eventType}`);
       return res.status(400).send({ error: "Unsupported event type" });
     }
@@ -51,23 +51,23 @@ app.post(
 
     const payload = parsedPayload.data;
 
-    switch (payload.event_type) {
-      case "instance.updated":
-        handleInstanceUpdated(payload.instance.id);
-        break;
-      case "instance.enabled":
-        handleInstanceEnabled(payload.instance.id);
-        break;
-      case "instance.disabled":
-        handleInstanceDisabled(payload.instance.id);
-        break;
-      case "instance.deleted":
-        handleInstanceDeleted(payload.instance.id);
-        break;
-      default:
-        console.warn(`Unhandled event type: ${payload.event_type}`);
-        return res.status(400).send({ error: "Unhandled event type" });
-    }
+    const handlers: Record<EventType, (instanceId: string) => Promise<void>> = {
+      "instance.updated": handleInstanceUpdated,
+      "instance.enabled": handleInstanceEnabled,
+      "instance.disabled": handleInstanceDisabled,
+      "instance.deleted": handleInstanceDeleted,
+    };
+
+    // Process the event asynchronously so we can respond to Prismatic quickly.
+    // Catch errors so a failed handler doesn't crash the server with an
+    // unhandled promise rejection.
+    handlers[payload.event_type](payload.instance.id).catch((err) => {
+      console.error(
+        `Error handling ${payload.event_type} for instance ${payload.instance.id}:`,
+        err,
+      );
+    });
+
     res.status(200).send({ status: "success" });
   },
 );

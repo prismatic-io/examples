@@ -26,7 +26,7 @@ When Prismatic sends event webhooks (e.g., when an instance is updated, enabled,
 
 ### [`src/server.ts`](src/server.ts)
 
-The main Express server that handles incoming webhook requests at the `/prismatic-event` endpoint. Key responsibilities:
+The main Express server that handles incoming webhook requests at the `/prismatic-events` endpoint. Key responsibilities:
 
 - Sets up the Express application
 - Verifies webhook signatures using HMAC-SHA256 (required by Prismatic)
@@ -55,12 +55,13 @@ TypeScript type definitions using Zod schemas. Defines the structure of Prismati
 
 ### [`src/database.ts`](src/database.ts)
 
-SQLite database initialization and setup. Creates the `webhooks` table with columns:
+SQLite database initialization and setup, plus a small promise-based `run()` helper for executing statements. Creates the `webhooks` table with columns:
 
 - `id`: Primary key
 - `customer_id`: Customer's external ID
-- `flow_id`: Flow identifier
 - `instance_id`: Instance identifier
+- `integration_name`: Name of the integration the instance was deployed from
+- `flow_name`: Name of the flow
 - `webhook_url`: The actual webhook URL to call
 - `enabled`: Boolean flag indicating if the webhook is active
 - `created_at`: Timestamp
@@ -84,13 +85,15 @@ Event handler functions that implement business logic for each event type:
 
 ## Setup
 
+This example requires Node.js 22 or later.
+
 1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Create a `.env` file with required configuration:
+2. Create a `.env` file with required configuration (it's loaded automatically using Node's `--env-file-if-exists` flag):
 
    ```env
    SIGNING_SECRET=your_webhook_signing_secret
@@ -105,6 +108,9 @@ Event handler functions that implement business logic for each event type:
    ```bash
    npm run dev
    ```
+
+   The `dev` (watch mode) and `start` scripts fetch `PRISMATIC_API_TOKEN` using the [prism CLI](https://www.npmjs.com/package/@prismatic-io/prism) (`prism me:token`), so make sure you're logged in with `prism login`.
+   Run `npm run check` to type-check and `npm run lint` to lint the code.
 
 4. Expose your local server to the internet using a tool like [ngrok](https://ngrok.com/) to receive webhooks from Prismatic.
 

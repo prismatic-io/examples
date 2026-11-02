@@ -1,0 +1,38 @@
+{
+  "name": "handle-event-webhooks",
+  "version": "1.0.0",
+  "description": "Receive and handle Prismatic event webhooks, tracking flow webhook URLs in SQLite",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "PRISMATIC_API_TOKEN=$(prism me:token) tsx --env-file-if-exists=.env src/server.ts",
+    "dev": "PRISMATIC_API_TOKEN=$(prism me:token) tsx watch --env-file-if-exists=.env src/server.ts",
+    "check": "tsc --noEmit",
+    "lint": "eslint",
+    "format": "prettier --write src"
+  },
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "graphql": "^16.14.2",
+    "graphql-request": "^7.4.0",
+    "sqlite3": "^6.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.19.2",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0",
+    "typescript-eslint": "^8.72.1"
+  }
+}

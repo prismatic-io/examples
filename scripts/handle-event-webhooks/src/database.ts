@@ -39,4 +39,12 @@ function initializeDatabase() {
   return db;
 }
 
-export default initializeDatabase();
+const db = initializeDatabase();
+
+// Promise wrapper around db.run for use with async/await
+export const run = (sql: string, params: unknown[] = []) =>
+  new Promise<void>((resolve, reject) => {
+    db.run(sql, params, (err) => (err ? reject(err) : resolve()));
+  });
+
+export default db;
