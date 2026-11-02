@@ -4,7 +4,6 @@
 
 import { GraphQLClient } from "graphql-request";
 import fetchRetry from "fetch-retry";
-import fetch from "isomorphic-fetch";
 import {
   createAlertMonitor,
   deleteAlertMonitor,
@@ -94,8 +93,8 @@ const deleteMonitors = async () => {
   }
 };
 
-if (process.env.DELETE_MONITORS) {
-  deleteMonitors();
+if (DELETE_MONITORS) {
+  await deleteMonitors();
 } else {
-  createMonitors();
+  await createMonitors();
 }

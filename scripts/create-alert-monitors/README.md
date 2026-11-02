@@ -10,6 +10,12 @@ This script is idempotent, and will only create monitors if they do not already 
 
 ## Running this script
 
+This script requires Node.js 22 or later. Install dependencies with:
+
+```bash
+npm install
+```
+
 To run this script, you will need to supply an API key and an email address you would like to alert that matches a user in your organization.
 Those values can be shared as environment variables `PRISMATIC_API_KEY` and `ALERT_EMAIL_ADDRESS` respectively.
 If you have the [prism CLI tool](https://www.npmjs.com/package/@prismatic-io/prism) installed, you can use it to fetch a valid token:
@@ -17,6 +23,8 @@ If you have the [prism CLI tool](https://www.npmjs.com/package/@prismatic-io/pri
 ```bash
 PRISMATIC_API_KEY=$(prism me:token) ALERT_EMAIL_ADDRESS=customer-success@example.com npm run start
 ```
+
+Note that this script runs against the US Commercial stack by default. If you'd like to run it against another region (EU, AUS, CA, GovCloud, private cloud, etc.) also provide a `PRISMATIC_URL` environment variable for your region.
 
 ![Screenshot of creating alert monitors](screenshots/create-monitors.png)
 
