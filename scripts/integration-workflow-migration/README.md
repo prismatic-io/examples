@@ -172,7 +172,6 @@ This demonstrates all major migration features including configuration removal, 
 - **TypeScript**: Development language
 - **js-yaml**: YAML parsing and generation
 - **@types/node**: TypeScript definitions for Node.js
-- **@types/js-yaml**: TypeScript definitions for js-yaml
 
 ## Development
 

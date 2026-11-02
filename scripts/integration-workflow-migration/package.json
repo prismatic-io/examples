@@ -12,11 +12,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^5.5.0"
   },
   "devDependencies": {
-    "@types/js-yaml": "^4.0.9",
-    "@types/node": "^24.5.2",
-    "typescript": "^5.9.2"
+    "@types/node": "^24.19.2",
+    "typescript": "^7.0.2"
   }
 }
