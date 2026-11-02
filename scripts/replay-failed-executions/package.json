@@ -1,0 +1,26 @@
+{
+  "name": "replay-failed-executions",
+  "version": "1.0.0",
+  "description": "Replay failed executions for a Prismatic instance",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "PRISMATIC_API_KEY=$(prism me:token) tsx index.ts",
+    "check": "tsc --noEmit"
+  },
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "fetch-retry": "^6.0.0",
+    "graphql": "^16.14.2",
+    "graphql-request": "^7.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
