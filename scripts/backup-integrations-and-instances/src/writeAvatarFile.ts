@@ -7,7 +7,7 @@ async function writeAvatarFile(avatarUrl: string, filePath: string) {
   const response = await fetch(`${prismaticBaseUrl}${avatarUrl}`, {
     headers: { Authorization: `Bearer ${PRISMATIC_API_KEY}` },
   });
-  const { url } = await response.json();
+  const { url } = (await response.json()) as { url: string };
   const avatarResponse = await fetch(url);
   fs.writeFileSync(filePath, Buffer.from(await avatarResponse.arrayBuffer()));
 }

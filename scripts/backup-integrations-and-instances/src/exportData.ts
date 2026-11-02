@@ -8,7 +8,7 @@ import writeAvatarFile from "./writeAvatarFile";
 import getInstancesByIntegration from "./getInstances";
 
 async function exportData() {
-  const backupDirectory = path.join(__dirname, "..", "backups");
+  const backupDirectory = path.join(import.meta.dirname, "..", "backups");
   if (!fs.existsSync(backupDirectory)) {
     fs.mkdirSync(backupDirectory);
   }
@@ -43,7 +43,7 @@ async function exportData() {
   for (const integration of integrations) {
     const integrationDirectory = path.join(
       backupDirectory,
-      `${slugify(integration.name)} - ${integration.id}}`
+      `${slugify(integration.name)} - ${integration.id}`
     );
     if (!fs.existsSync(integrationDirectory)) {
       fs.mkdirSync(integrationDirectory);

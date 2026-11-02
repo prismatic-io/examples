@@ -5,7 +5,7 @@ import importAndPublishIntegration from "./importAndPublishIntegration";
 import deployInstance from "./deployInstance";
 
 async function restoreData() {
-  const backupDirectory = path.join(__dirname, "..", "backups");
+  const backupDirectory = path.join(import.meta.dirname, "..", "backups");
   const backupMetadata = JSON.parse(
     fs.readFileSync(path.join(backupDirectory, "metadata.json")).toString()
   );

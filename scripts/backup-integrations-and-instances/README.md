@@ -11,7 +11,22 @@ In the unlikely event that an entire region is damaged and not recoverable (we d
 
 ![Restore Screenshot](restore-screenshot.png)
 
+## Low-code vs. code-native integrations
+
+This script backs up each integration's YAML definition, and restores integrations by importing that YAML.
+That approach is intended primarily for **low-code** integrations built in Prismatic's integration designer.
+
+**Code-native** integrations are defined in TypeScript, and their source code (kept in your own version control) is the source of truth.
+To restore a code-native integration, build and import it from its source code (for example, `npm run build && prism integrations:import`) rather than relying on the backed-up YAML definition.
+Each integration's backed-up `metadata.json` includes an `isCodeNative` field so you can identify which integrations need to be restored this way.
+
 ## Running the script
+
+This script requires Node.js 22 or later. Install dependencies with:
+
+```bash
+npm install
+```
 
 To run this script, you will need to supply a Prismatic API key as an environment variable `PRISMATIC_API_KEY`.
 If you have the [prism CLI tool](https://www.npmjs.com/package/@prismatic-io/prism) installed, you can use it to fetch a valid token:

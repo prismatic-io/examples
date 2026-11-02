@@ -1,0 +1,31 @@
+{
+  "name": "backup-integrations-and-instances",
+  "version": "1.0.0",
+  "description": "Back up and restore Prismatic integrations and instances",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "backup": "tsx src/index.ts backup",
+    "restore": "tsx src/index.ts restore",
+    "check": "tsc --noEmit"
+  },
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "cli-progress": "^3.12.0",
+    "fetch-retry": "^6.0.0",
+    "graphql": "^16.14.2",
+    "graphql-request": "^7.4.0",
+    "slugify": "^1.6.9",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/cli-progress": "^3.11.6",
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
