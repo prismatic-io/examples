@@ -1,0 +1,62 @@
+[
+  {
+    "directory": "generic-mcp-example",
+    "name": "Generic MCP Example",
+    "description": "An example integration demonstrating how to create a generic (MCP) tool that can be used by AI agents to search for people in an external CRM system.",
+    "tags": ["mcp", "ai"]
+  },
+  {
+    "directory": "postgres-polling-trigger",
+    "name": "PostgreSQL Polling Trigger",
+    "description": "Monitor a PostgreSQL table for new records using cursor-based polling with state management and dynamic table selection.",
+    "tags": ["postgres", "polling", "trigger", "database"]
+  },
+  {
+    "directory": "process-large-files",
+    "name": "Process Large Files",
+    "description": "Process large files efficiently using Node.js streams.",
+    "tags": ["large-file-processing", "streams"]
+  },
+  {
+    "directory": "shared-endpoint-example",
+    "name": "Shared Endpoint Example",
+    "description": "An example integration demonstrating the use of shared webhook endpoints.",
+    "tags": ["webhooks", "shared-endpoints"]
+  },
+  {
+    "directory": "salesforce",
+    "name": "Salesforce",
+    "description": "Create a field mapping between Salesforce objects and your system and leverage Salesforce workflows to sync data bidirectionally.",
+    "tags": ["salesforce", "webhooks"]
+  },
+  {
+    "directory": "salesforce-mcp",
+    "name": "Salesforce MCP Example",
+    "description": "An example integration demonstrating how to create a Salesforce-specific (MCP) tool that can be used by AI agents to search for contacts in Salesforce.",
+    "tags": ["mcp", "ai", "salesforce"]
+  },
+  {
+    "directory": "salesforce-initial-data-sync",
+    "name": "Salesforce Initial Data Sync",
+    "description": "Sync a large Salesforce data set into a PostgreSQL database in batches when an instance is deployed, then process new records in real time via webhook.",
+    "tags": ["salesforce", "postgres", "batch", "webhooks", "initial-data-sync"]
+  },
+  {
+    "directory": "simple-initial-data-sync",
+    "name": "Simple Initial Data Sync",
+    "description": "Backfill a large data set from a paginated API in batches when an instance is deployed, then process individual records in real time via webhook, using the batchFlowTrigger pattern.",
+    "tags": ["batch", "webhooks", "initial-data-sync", "pagination"]
+  },
+  {
+    "directory": "slack",
+    "name": "Slack",
+    "description": "Send messages to Slack channels based on data from external systems, with dynamic channel selection and scheduling.",
+    "tags": ["slack", "webhooks"]
+  },
+  {
+    "directory": "large-file-transfer",
+    "name": "Large File Transfer",
+    "description": "Copy a file of any size between Dropbox folders in byte-range chunks, one chunk per batch execution, using batchFlowTrigger and a resumable upload session.",
+    "tags": ["large-file-processing", "batch", "dropbox", "upload-session"]
+  }
+]

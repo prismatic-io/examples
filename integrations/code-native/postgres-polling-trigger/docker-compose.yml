@@ -1,0 +1,11 @@
+services:
+  local-db:
+    image: postgres:18-alpine
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypass
+      POSTGRES_DB: mydb
+    volumes:
+      - ./init-post-db.sql:/docker-entrypoint-initdb.d/init-post-db.sql
