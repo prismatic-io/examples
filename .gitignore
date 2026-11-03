@@ -18,5 +18,5 @@ components/**/*.log
 
 .eslintcache
 .claude
-.spectral
+**/.spectral/prism.json
 .kiro
