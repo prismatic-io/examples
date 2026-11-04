@@ -1,7 +1,7 @@
 # Prismatic Examples
 
 This repository contains sample code for Prismatic components and integrations.
-Code contained within this repo is referenced throughout Prismatic's [website](https://www.prismatic.io), [blog](https://www.prismatic.io/blog) and [docs](https://www.prismatic.io/docs).
+Code contained within this repo is referenced throughout Prismatic's [website](https://prismatic.io), [blog](https://prismatic.io/blog) and [docs](https://prismatic.io/docs).
 
 ## What is Prismatic?
 
@@ -12,10 +12,10 @@ Prismatic significantly reduces overall integration effort and enables non-dev t
 With Prismatic, you can:
 
 - Build reusable [integrations](https://prismatic.io/docs/integrations) in a low-code integration designer that's tailored for your product
-- Use [pre-built components](https://prismatic.io/docs/components/component-catalog) to handle most of your integrations' functionality, and write [custom components](https://prismatic.io/docs/custom-components/writing-custom-components) when needed
-- Quickly add an [integration marketplace](https://prismatic.io/docs/integration-marketplace) to your product so customers can explore, activate, and monitor integrations
+- Use [pre-built components](https://prismatic.io/docs/components/) to handle most of your integrations' functionality, and write [custom components](https://prismatic.io/docs/custom-connectors/) when needed
+- Quickly add an [integration marketplace](https://prismatic.io/docs/instances/integration-marketplace/) to your product so customers can explore, activate, and monitor integrations
 - Easily deploy customer-specific integration [instances](https://prismatic.io/docs/instances) with unique configurations and credentials
-- Provide better support with tools like [logging](https://prismatic.io/docs/logging) and [alerting](https://prismatic.io/docs/monitoring-and-alerting)
+- Provide better support with tools like [logging](https://prismatic.io/docs/monitor-instances/logging/) and [alerting](https://prismatic.io/docs/monitor-instances/)
 - Run your integrations in a purpose-built environment designed for security and scalability
 - Use powerful dev tools to mold the platform to your product, industry, and the way you build software
 
@@ -40,82 +40,18 @@ For information on the Prismatic platform, check out our [website](https://prism
 
 ## Repository Contents
 
-- `ai/` contains AI agent examples using OpenAI's Agent SDK for building intelligent integrations.
-- `api/` contains sample code that interacts with Prismatic's [GraphQL API](https://prismatic.io/docs/api/api-overview/).
-- `components/` contains code for sample custom components, which are a good reference for building your own custom components.
-- `integrations/` contains sample integrations written in YAML and Code-Native Integration examples written in Typescript.
+- [`components/`](components/) contains example custom components (connectors), showing patterns like gRPC clients, on-prem agent connectivity, JSON Forms data sources and streaming large files.
+- [`integrations/code-native/`](integrations/code-native/) contains TypeScript code-native integration templates built with [Spectral](https://www.npmjs.com/package/@prismatic-io/spectral). They cover MCP tools for AI agents, data syncs, triggers, large-file handling, and building integrations with or without existing connectors.
+- [`integrations/data-enrichment-with-ai/`](integrations/data-enrichment-with-ai/) contains integrations that use LLMs to enrich data and respond to events. Many come in both code-native and low-code versions.
+- [`integrations/low-code/`](integrations/low-code/) contains low-code integrations, exported as YAML, that are referenced in the docs.
+- [`scripts/`](scripts/) contains scripts and small apps that automate Prismatic through its [GraphQL API](https://prismatic.io/docs/api/) or respond to its event webhooks.
 
-## AI Agent Examples
+Each directory has a README that describes its examples.
 
-This repository includes production-ready examples of AI-powered integrations showcasing various use cases and patterns:
+## Tooling
 
-### [OpenAI Agent Integration](ai/openai-agent/)
-
-A comprehensive reference implementation featuring 7 production-ready flows that showcase advanced agent patterns:
-
-- **Basic Chat** - Simple conversational AI without tools
-- **API Agent** - Demonstrates wrapping REST APIs as AI tools with approval flows
-- **Human Approval** - Human-in-the-loop pattern for sensitive operations
-- **Agent Routing** - Dynamic routing to specialized agents based on intent
-- **Integrations as Tools** - Dynamically discovers and uses deployed Prismatic integrations as AI tools
-- **Agent as Tools** - Composes specialized agents as reusable tools
-- **Hosted Tools** - Leverages OpenAI's built-in web search and code interpreter
-
-Includes interactive chat scripts for local testing and comprehensive state management with both file-based and Prismatic-based storage backends.
-
-### [Slack Chatbot Agent](ai/slack-chatbot-agent/)
-
-A production-ready Slack Assistant integration that demonstrates enterprise AI assistant patterns:
-
-- Implements Slack's Assistant framework with proper webhook handling and 3-second acknowledgment
-- Features approval flow UI with Slack blocks for tool execution authorization
-- Manages conversation state across message threads with execution tracking
-- Dynamically discovers customer-specific Prismatic integrations as AI tools
-- Includes robust retry handling and state persistence
-- Supports both development (file-based) and production (Prismatic-based) state storage
-
-### [Slack Incident Monitoring](ai/slack-acme-incident-monitoring/)
-
-An AI-powered incident management system that processes anomaly alerts:
-
-- Analyzes system anomalies and determines appropriate actions
-- Requests human approval through interactive Slack messages
-- Automatically creates incidents with on-call staff assignment
-
-### [Salesforce Lead Enricher and Router](ai/salesforce-lead-enricher-and-routing/)
-
-Intelligent lead processing with AI-powered enrichment and routing:
-
-- Detects and handles duplicate leads automatically
-- Enriches company data through AI web research
-- Scores leads based on business criteria
-- Creates qualified leads in Salesforce with intelligent routing
-
-### [Jira Issues from Error Logs](ai/jira-issues-from-error-logs/)
-
-Automated error log analysis and issue creation:
-
-- Analyzes system error logs using AI to identify critical problems
-- Automatically creates Jira issues for high-confidence errors
-- Reduces manual effort in error monitoring and issue tracking
-
-### [Dropbox PDF Receipt Extraction](ai/dropbox-extract-receipt-from-pdf/)
-
-Document processing and data extraction from PDFs:
-
-- Automatically processes PDF receipts from Dropbox
-- Uses AI to classify documents and extract structured data
-- Extracts items, prices, totals, and vendor information into JSON format
-
-### [Next.js AI Chatbot](ai/nextjs-chatbot/)
-
-A modern chat interface for AI-powered integrations:
-
-- Next.js application with Prismatic AI marketplace integration
-- Demonstrates building custom chat interfaces with marketplace tools
-- Shows how to embed AI capabilities in customer-facing applications
-
-All examples include comprehensive testing utilities, proper error handling, and production-ready architecture patterns for building intelligent integrations that can understand context, make decisions, and interact with various systems on behalf of users.
+[mise.toml](mise.toml) pins the Node.js version used across the repo (`mise install`).
+Each example is its own npm project: `cd` into it and run `npm install`.
 
 ## License
 

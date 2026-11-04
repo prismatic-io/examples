@@ -7,7 +7,7 @@ This repository contains an example integration for Prismatic that consists of t
 1. Create a "System" customer in your account as a place to deploy Router integrations.
 2. Deploy the Slack Router Integration to your "System" customer and make note of the webhook URLs for the Registration flow. You'll need those for deploying the Slack Interactive Post integration.
 3. Import the Slack Interactive Post integration and update the oauth credentials to match your Slack App's credentials
-4. Update Post Request step of the Registration flow with the Registration webhook URL saved in step 2 
+4. Update Post Request step of the Registration flow with the Registration webhook URL saved in step 2
 
 ## Slack Interactive Post Template
 
@@ -122,7 +122,7 @@ curl --location 'https://hooks.prismatic.io/trigger/SW5zdGFuY2VGbG93Q29uZmlnOjE0
 
 ## Slack Interactivity Router
 
-The Slack Interactivity Router takes the webhook notifications from your Slack app when someone interacts with a post that the bot posts. The reason we need a router integration is because Slack uses a single endpoint strategy for Slack bot notifications for interactivity, so every interactivity goes to one webhook. We have documentation about single endpoint webhook integrations here: [https://prismatic.io/docs/quickstarts/single-endpoint-webhook-integrations/](https://prismatic.io/docs/quickstarts/single-endpoint-webhook-integrations/)
+The Slack Interactivity Router takes the webhook notifications from your Slack app when someone interacts with a post that the bot posts. The reason we need a router integration is because Slack uses a single endpoint strategy for Slack bot notifications for interactivity, so every interactivity goes to one webhook. We have documentation about single endpoint webhook integrations here: [https://prismatic.io/docs/integrations/triggers/single-endpoint-webhook-integrations/](https://prismatic.io/docs/integrations/triggers/single-endpoint-webhook-integrations/)
 
 You'll deploy the Slack router to a "system" customer, but the Slack Interactive Post Template can be deployed to multiple customers.
 

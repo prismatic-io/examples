@@ -1,6 +1,6 @@
 # On-prem component example
 
-The [on-prem agent](https://prismatic.io/docs/on-prem-agent) is a tool that allows you to connect to services on a private network, like a database, file storage system or an API that is not internet-accessible.
+The [on-prem agent](https://prismatic.io/docs/integrations/connections/on-prem-agent/) is a tool that allows you to connect to services on a private network, like a database, file storage system or an API that is not internet-accessible.
 
 This example component demonstrates how to build an on-prem-compatible component that can access an HTTP-based service running on a private network.
 
@@ -13,7 +13,7 @@ This example component demonstrates how to build an on-prem-compatible component
 
 To run the on-prem agent or mock service, you will need [Docker](https://www.docker.com/) installed, and the ability to run `docker-compose` from your command line.
 
-First, you'll need to generate a registration token for your on-prem agent. See [on-prem agent](https://prismatic.io/docs/on-prem-agent) in the Prismatic documentation.
+First, you'll need to generate a registration token for your on-prem agent. See [on-prem agent](https://prismatic.io/docs/integrations/connections/on-prem-agent/) in the Prismatic documentation.
 Export the token you generate as an environment variable
 
 ```bash
