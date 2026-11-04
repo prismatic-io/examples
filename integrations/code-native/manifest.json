@@ -60,12 +60,6 @@
     "tags": ["large-file-processing", "batch", "dropbox", "upload-session"]
   },
   {
-    "directory": "salesforce-mcp-flows",
-    "name": "Salesforce MCP Flows",
-    "description": "Expose flows that list and update a user's Salesforce opportunities as MCP tools that AI agents can call.",
-    "tags": ["mcp", "ai", "salesforce", "agent-flows"]
-  },
-  {
     "directory": "gong-mcp-flows",
     "name": "Gong MCP Flows",
     "description": "Expose flows that list Gong calls, search a user's calls and fetch call transcripts as MCP tools that AI agents can call.",
