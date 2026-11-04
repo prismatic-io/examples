@@ -58,5 +58,35 @@
     "name": "Large File Transfer",
     "description": "Copy a file of any size between Dropbox folders in byte-range chunks, one chunk per batch execution, using batchFlowTrigger and a resumable upload session.",
     "tags": ["large-file-processing", "batch", "dropbox", "upload-session"]
+  },
+  {
+    "directory": "salesforce-mcp-flows",
+    "name": "Salesforce MCP Flows",
+    "description": "Expose flows that list and update a user's Salesforce opportunities as MCP tools that AI agents can call.",
+    "tags": ["mcp", "ai", "salesforce", "agent-flows"]
+  },
+  {
+    "directory": "gong-mcp-flows",
+    "name": "Gong MCP Flows",
+    "description": "Expose flows that list Gong calls, search a user's calls and fetch call transcripts as MCP tools that AI agents can call.",
+    "tags": ["mcp", "ai", "gong", "agent-flows"]
+  },
+  {
+    "directory": "outlook-mcp-flows",
+    "name": "Outlook MCP Flows",
+    "description": "Expose flows that search and send email and read and create calendar events in Microsoft Outlook as MCP tools that AI agents can call.",
+    "tags": ["mcp", "ai", "outlook", "microsoft", "agent-flows"]
+  },
+  {
+    "directory": "slack-with-components",
+    "name": "Slack With Components",
+    "description": "Send Slack messages on a schedule and from webhooks using the existing Slack connector for OAuth, data sources and actions. Compare with Slack Without Components.",
+    "tags": ["slack", "webhooks", "existing-components"]
+  },
+  {
+    "directory": "slack-no-components",
+    "name": "Slack Without Components",
+    "description": "The same Slack integration as Slack With Components, built without existing connectors: a custom OAuth connection, HTTP client and channel data source.",
+    "tags": ["slack", "webhooks", "oauth", "http-client"]
   }
 ]

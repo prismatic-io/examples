@@ -113,7 +113,7 @@ On deployment, the initial data sync will run automatically, querying Salesforce
 
 ### Running a local PostgreSQL database
 
-If you don't already have a PostgreSQL instance to sync into, the included [docker-compose.yml](docker-compose.yml) starts one locally, alongside a [Prismatic on-prem agent](https://prismatic.io/docs/on-prem-agent/) that lets Prismatic reach it without exposing the database to the internet.
+If you don't already have a PostgreSQL instance to sync into, the included [docker-compose.yml](docker-compose.yml) starts one locally, alongside a [Prismatic on-prem agent](https://prismatic.io/docs/integrations/connections/on-prem-agent/) that lets Prismatic reach it without exposing the database to the internet.
 
 The on-prem agent registers itself with a JWT. Generate one with the [Prism CLI](https://prismatic.io/docs/cli/) and start the services:
 

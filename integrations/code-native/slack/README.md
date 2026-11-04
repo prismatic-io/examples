@@ -103,7 +103,7 @@ The [todoAlerts.ts](src/flows/todoAlerts.ts) flow demonstrates a common integrat
 
 The schedule is configured using a `schedule` config variable in [configPages.ts](src/configPages.ts), allowing each customer to set their preferred frequency for TODO alerts.
 
-This flow is similar to the ["Build Your First Integration" tutorial](https://prismatic.io/docs/getting-started/first-integration/build-first-integration/) in the Prismatic documentation, but implemented as code-native instead of low-code.
+This flow is similar to the ["Build Your First Integration" tutorial](https://prismatic.io/docs/get-started/build-integrations/first-integration-low-code/) in the Prismatic documentation, but implemented as code-native instead of low-code.
 
 ### Send Slack Messages Flow
 
