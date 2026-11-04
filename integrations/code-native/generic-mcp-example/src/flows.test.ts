@@ -1,4 +1,4 @@
-import { invokeFlow } from "@prismatic-io/spectral/dist/testing";
+import { invokeFlow } from "@prismatic-io/spectral/testing";
 import { searchPeople } from "./flows";
 
 const acmeConnection = {

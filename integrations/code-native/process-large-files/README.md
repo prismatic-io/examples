@@ -60,7 +60,7 @@ CREATE TABLE items (
 
 ### Running tests locally
 
-If you'd like to run this flow locally using Jest, copy `.env.example` to `.env.testing` and fill in the required environment variables for connecting to your PostgreSQL database and S3 bucket.
+If you'd like to run this flow locally using Vitest, copy `.env.example` to `.env.testing` and fill in the required environment variables for connecting to your PostgreSQL database and S3 bucket.
 
 Then run:
 
@@ -68,7 +68,7 @@ Then run:
 npm run test
 ```
 
-This will run the Jest tests defined in `src/flows.test.ts`, which test processing of ZIP/CSV files.
+This will run the Vitest tests defined in `src/flows.test.ts`, which test processing of ZIP/CSV files.
 
 ### Running tests in Prismatic
 

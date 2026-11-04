@@ -1,5 +1,5 @@
 import { Connection } from "@prismatic-io/spectral";
-import { createClient } from "@prismatic-io/spectral/dist/clients/http";
+import { createClient } from "@prismatic-io/spectral/http";
 
 export const createSlackClient = (connection: Connection) => {
   return createClient({

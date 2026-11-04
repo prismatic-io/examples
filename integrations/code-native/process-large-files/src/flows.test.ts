@@ -1,4 +1,4 @@
-import { invokeFlow } from "@prismatic-io/spectral/dist/testing";
+import { invokeFlow } from "@prismatic-io/spectral/testing";
 import dotenv from "dotenv";
 import { processZipFile } from "./flows";
 
