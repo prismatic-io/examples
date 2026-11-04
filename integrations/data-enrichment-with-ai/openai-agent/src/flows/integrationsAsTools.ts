@@ -1,22 +1,20 @@
-import { flow, util } from "@prismatic-io/spectral";
 import { Agent, run, setDefaultOpenAIKey, user } from "@openai/agents";
+import { flow, util } from "@prismatic-io/spectral";
 import apiTools from "../agents/tools/api";
 import { createPrismaticTools } from "../agents/tools/prismaticHostedTools";
-import { ChatRequest } from "../types";
+import type { ChatRequest } from "../types";
 
 export const integrationsAsTools = flow({
   name: "Integrations as Tools",
   stableKey: "integrations-as-tools",
   description: "Demonstrates using deployed customer instances as tools",
-  onTrigger: async (context, payload) => {
+  onTrigger: async (_context, payload) => {
     return Promise.resolve({
       payload,
     });
   },
   onExecution: async ({ configVars, customer }, params) => {
-    const openaiKey = util.types.toString(
-      configVars.OPENAI_API_KEY.fields.apiKey,
-    );
+    const openaiKey = util.types.toString(configVars.OPENAI_API_KEY.fields.apiKey);
 
     // Set the OpenAI API key
     setDefaultOpenAIKey(openaiKey);
@@ -32,9 +30,7 @@ export const integrationsAsTools = flow({
     );
 
     if (prismaticTools.length > 0) {
-      console.log(
-        `[Integrations as Tools] Loaded ${prismaticTools.length} integration tools`,
-      );
+      console.log(`[Integrations as Tools] Loaded ${prismaticTools.length} integration tools`);
     }
 
     // Create agent with both API tools and Prismatic tools
@@ -59,8 +55,8 @@ Use these tools to help users accomplish their tasks efficiently.`,
     });
 
     // Get the message from the payload
-    const { message, conversationId, lastResponseId } = params.onTrigger.results
-      .body.data as ChatRequest;
+    const { message, conversationId, lastResponseId } = params.onTrigger.results.body
+      .data as ChatRequest;
 
     if (!message) {
       throw new Error("Message is required for integrations as tools");

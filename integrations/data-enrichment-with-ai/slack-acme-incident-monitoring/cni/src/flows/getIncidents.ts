@@ -11,8 +11,7 @@ export const getIncidents = flow({
     key: "toolFlowTrigger",
     values: {},
   },
-  onExecution: async (context, params) => {
-    const { configVars } = context;
+  onExecution: async (context) => {
     const getIncidents = await context.components.code.runCode({
       code: `/*
   Access config variables by name through the configVars object. e.g.

@@ -9,9 +9,7 @@ export const deployTool = tool({
   description: "Deploy code to production environment. Requires approval.",
   parameters: z.object({
     version: z.string().describe("Version to deploy (e.g., v1.2.3)"),
-    environment: z
-      .enum(["staging", "production"])
-      .describe("Target environment"),
+    environment: z.enum(["staging", "production"]).describe("Target environment"),
   }),
   needsApproval: true, // Always requires approval
   execute: async ({ version, environment }) => {

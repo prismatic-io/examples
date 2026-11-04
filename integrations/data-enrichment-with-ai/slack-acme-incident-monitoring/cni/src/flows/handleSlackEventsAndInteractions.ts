@@ -1,13 +1,13 @@
 import { flow, util } from "@prismatic-io/spectral";
-import { ack } from "../util";
 import type { BlockAction } from "@slack/bolt";
+import { ack } from "../util";
 import {
-  parseApprovalAction,
-  retrieveStoredAgentState,
-  findMatchingApproval,
-  createApprovalResponse,
-  resumeAgent,
   cleanupStoredState,
+  createApprovalResponse,
+  findMatchingApproval,
+  parseApprovalAction,
+  resumeAgent,
+  retrieveStoredAgentState,
   updateApprovalMessage,
 } from "../util/approvalHandler";
 import { postIncidentResult } from "../util/slackMessageBuilders";
@@ -30,13 +30,10 @@ export const handleSlackEventsAndInteractions = flow({
   description: "",
   endpointSecurityType: "customer_optional",
   onTrigger: async (context, payload) => {
-    const connection = context.configVars["slackConnection"];
+    const connection = context.configVars.slackConnection;
     const signingSecret = util.types.toString(connection.fields.signingSecret);
 
-    const { response, isRetry, retryNum, retryReason } = ack(
-      payload,
-      signingSecret,
-    );
+    const { response, isRetry, retryNum, retryReason } = ack(payload, signingSecret);
 
     // Store retry info in execution state
     context.executionState.isRetry = isRetry;
@@ -106,9 +103,7 @@ export const handleSlackEventsAndInteractions = flow({
         }
 
         const { anomalyId, functionId, approved } = approvalAction;
-        console.log(
-          `Anomaly ID: ${anomalyId}, Function ID: ${functionId}, Approved: ${approved}`,
-        );
+        console.log(`Anomaly ID: ${anomalyId}, Function ID: ${functionId}, Approved: ${approved}`);
 
         try {
           // Retrieve stored agent state
@@ -121,28 +116,17 @@ export const handleSlackEventsAndInteractions = flow({
           const pendingApprovals = storedState.pendingApprovals || [];
           console.log(`Found ${pendingApprovals.length} pending approvals`);
 
-          const matchingApproval = findMatchingApproval(
-            pendingApprovals,
-            functionId,
-          );
+          const matchingApproval = findMatchingApproval(pendingApprovals, functionId);
           if (!matchingApproval) {
             return { data: { error: "Approval not found" } };
           }
 
           // Create approval response
-          const approvalResponses = createApprovalResponse(
-            functionId,
-            approved,
-            action.action_id,
-          );
+          const approvalResponses = createApprovalResponse(functionId, approved, action.action_id);
 
           console.log("Resuming agent run...");
           // Resume the agent with approval response
-          const resumeResult = await resumeAgent(
-            context,
-            storedState,
-            approvalResponses,
-          );
+          const resumeResult = await resumeAgent(context, storedState, approvalResponses);
 
           // Handle the agent's final output
           const finalOutput = resumeResult.data.finalOutput;
@@ -150,12 +134,7 @@ export const handleSlackEventsAndInteractions = flow({
 
           console.log("Result posted to Slack, updating original message...");
           // Update the original approval message
-          await updateApprovalMessage(
-            context,
-            blockAction,
-            approved,
-            action.action_id,
-          );
+          await updateApprovalMessage(context, blockAction, approved, action.action_id);
 
           // Clean up stored state
           await cleanupStoredState(context, anomalyId);
@@ -165,8 +144,7 @@ export const handleSlackEventsAndInteractions = flow({
           responseData.finalOutput = finalOutput;
         } catch (error) {
           console.error("Error handling approval:", error);
-          responseData.error =
-            error instanceof Error ? error.message : String(error);
+          responseData.error = error instanceof Error ? error.message : String(error);
         }
 
         break;

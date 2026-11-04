@@ -1,22 +1,19 @@
-import { flow, util } from "@prismatic-io/spectral";
 import { Agent, run, setDefaultOpenAIKey, user } from "@openai/agents";
-import { ChatRequest } from "../types";
+import { flow, util } from "@prismatic-io/spectral";
+import type { ChatRequest } from "../types";
 
 export const basicChat = flow({
   name: "Basic Chat",
   stableKey: "agent-basic-chat",
-  description:
-    "Handles incoming messages and generates responses with OpenAI Assistant SDK",
+  description: "Handles incoming messages and generates responses with OpenAI Assistant SDK",
   isSynchronous: true,
-  onTrigger: async (context, payload) => {
+  onTrigger: async (_context, payload) => {
     return Promise.resolve({
       payload,
     });
   },
   onExecution: async ({ configVars }, params) => {
-    const openaiKey = util.types.toString(
-      configVars.OPENAI_API_KEY.fields.apiKey,
-    );
+    const openaiKey = util.types.toString(configVars.OPENAI_API_KEY.fields.apiKey);
     // Set the OpenAI API key
     setDefaultOpenAIKey(openaiKey);
 
@@ -27,8 +24,8 @@ export const basicChat = flow({
     });
 
     // Get the message from the payload
-    const { message, conversationId, lastResponseId } = params.onTrigger.results
-      .body.data as ChatRequest;
+    const { message, conversationId, lastResponseId } = params.onTrigger.results.body
+      .data as ChatRequest;
     if (!message) {
       throw new Error("Message is required for basic chat");
     }

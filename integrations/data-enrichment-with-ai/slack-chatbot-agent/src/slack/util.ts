@@ -1,4 +1,4 @@
-import { WebClient } from "@slack/web-api";
+import type { WebClient } from "@slack/web-api";
 
 /**
  * Find the previous execution ID from the most recent bot message in the thread

@@ -1,15 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "lib": ["es2020"],
+    "target": "es2022",
+    "lib": ["es2022"],
     "strict": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "skipLibCheck": true,
-    "types": ["vitest/globals"]
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node", "vitest/globals"],
+    "skipLibCheck": true
   },
-  "include": ["src", ".spectral/*", "vitest.config.ts"]
+  "include": ["src", "scripts", ".spectral/*"]
 }

@@ -1,5 +1,5 @@
-import { OrganizationClient } from "../types";
 import { exchangeRefreshToken } from "../auth/refresh";
+import type { OrganizationClient } from "../types";
 import { executeGraphQLQuery } from "./graphql";
 
 /**

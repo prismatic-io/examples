@@ -1,4 +1,4 @@
-import { ActionContext } from "@prismatic-io/spectral";
+import type { ActionContext } from "@prismatic-io/spectral";
 import type { IncidentResponseNotification } from "../flows/newIncidentAlert.types";
 
 export interface SlackBlock {
@@ -131,7 +131,7 @@ export async function postIncidentResult(
 
   await context.components.slack.postBlockMessage({
     channelName: context.configVars["Alert Channel"],
-    connection: context.configVars["slackConnection"],
+    connection: context.configVars.slackConnection,
     blocks: messageBlocks as any,
     message: finalOutput.summary,
     messageId: finalOutput.thread_ts,

@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { EmbeddedUserConfig } from "../types";
+import type { EmbeddedUserConfig } from "../types";
 
 /**
  * Generate an embedded user JWT for Prismatic authentication

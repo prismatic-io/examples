@@ -1,13 +1,11 @@
-import { OrganizationClient, Integration } from "../types";
+import type { Integration, OrganizationClient } from "../types";
 
 /**
  * List all integrations for an organization
  * @param client - The authenticated OrganizationClient
  * @returns Array of integrations
  */
-export async function listIntegrations(
-  client: OrganizationClient,
-): Promise<Integration[]> {
+export async function listIntegrations(client: OrganizationClient): Promise<Integration[]> {
   const query = `
     query listIntegrations {
       integrations {

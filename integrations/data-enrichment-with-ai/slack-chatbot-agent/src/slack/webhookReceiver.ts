@@ -1,5 +1,5 @@
-import { App, Receiver, ReceiverEvent, StringIndexed } from "@slack/bolt";
-import { TriggerPayload, util } from "@prismatic-io/spectral";
+import { type TriggerPayload, util } from "@prismatic-io/spectral";
+import type { App, Receiver, ReceiverEvent, StringIndexed } from "@slack/bolt";
 
 export interface PrismaticResponse {
   statusCode: number;
@@ -9,17 +9,11 @@ export interface PrismaticResponse {
 
 export class PrismaticWebhookReceiver implements Receiver {
   private app?: App;
-
-  constructor() {
-    // No configuration needed!
-  }
   init(app: App): void {
     this.app = app;
   }
 
-  public async start(): Promise<
-    (request: TriggerPayload) => Promise<PrismaticResponse>
-  > {
+  public async start(): Promise<(request: TriggerPayload) => Promise<PrismaticResponse>> {
     return this.toHandler();
   }
 

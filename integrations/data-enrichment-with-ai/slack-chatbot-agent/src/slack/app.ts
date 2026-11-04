@@ -1,8 +1,8 @@
-import { LogLevel, WebClient } from "@slack/web-api";
-import { Connection, util } from "@prismatic-io/spectral";
-import { App as SlackApp, Assistant } from "@slack/bolt";
-import { PrismaticWebhookReceiver } from "./webhookReceiver";
+import { type Connection, util } from "@prismatic-io/spectral";
+import { type Assistant, App as SlackApp } from "@slack/bolt";
+import { LogLevel, type WebClient } from "@slack/web-api";
 import filterBotMessages from "./middleware/filterBotMessage";
+import { PrismaticWebhookReceiver } from "./webhookReceiver";
 export interface ToolApprovalArgs {
   approved: boolean;
   previousExecutionId: string;
@@ -25,14 +25,9 @@ export interface AppOptions {
   actionHandlers?: ActionHandlers;
 }
 
-export function App(
-  connection: Connection,
-  options?: AppOptions,
-): PrismaticWebhookReceiver {
+export function App(connection: Connection, options?: AppOptions): PrismaticWebhookReceiver {
   if (!connection.token?.access_token) {
-    throw new Error(
-      "No valid auth token provided. Please check your connection",
-    );
+    throw new Error("No valid auth token provided. Please check your connection");
   }
 
   // Create receiver to convert webhooks to Slack Events
@@ -55,7 +50,7 @@ export function App(
   if (options?.actionHandlers?.onToolApproval) {
     const toolApprovalHandler = options.actionHandlers.onToolApproval;
 
-    app.action(/^(approve|deny)_tool_.*/, async ({ ack, body, client }) => {
+    app.action(/^(approve|deny)_tool_.*/, async ({ body, client }) => {
       // Fixme: Narrow types for the type of action we're targeting
       const actionBody = body as any;
 

@@ -1,4 +1,4 @@
-import { Block, KnownBlock } from "@slack/web-api";
+import type { Block, KnownBlock } from "@slack/web-api";
 
 /**
  * Create Slack blocks for tool approval request
@@ -87,7 +87,6 @@ export function createDecisionBlocks(
   const formattedArgs = JSON.stringify(args, null, 2);
   const emoji = approved ? "✅" : "❌";
   const status = approved ? "APPROVED" : "DENIED";
-  const color = approved ? "#36a64f" : "#ff0000";
 
   return [
     {

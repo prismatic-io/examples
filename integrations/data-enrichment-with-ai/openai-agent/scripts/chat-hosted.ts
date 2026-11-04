@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { runChatLoop, setupCleanupHandler } from "./lib/chat-utils";
 import { hostedTools } from "../src/flows/hostedTools";
+import { runChatLoop, setupCleanupHandler } from "./lib/chat-utils";
 
 // Setup cleanup handler
 setupCleanupHandler();

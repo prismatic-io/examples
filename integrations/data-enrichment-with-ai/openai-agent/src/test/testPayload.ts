@@ -1,5 +1,5 @@
-import { TriggerPayload } from "@prismatic-io/spectral";
-import { defaultTriggerPayload } from "@prismatic-io/spectral/dist/testing";
+import type { TriggerPayload } from "@prismatic-io/spectral";
+import { defaultTriggerPayload } from "@prismatic-io/spectral/testing";
 
 const testPayload: TriggerPayload = {
   ...defaultTriggerPayload(),

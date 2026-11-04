@@ -1,20 +1,18 @@
-import { flow, util } from "@prismatic-io/spectral";
 import { Agent, run, setDefaultOpenAIKey, user } from "@openai/agents";
+import { flow, util } from "@prismatic-io/spectral";
 import apiTools from "../agents/tools/api";
-import { ChatRequest, ChatResponse } from "../types";
+import type { ChatRequest } from "../types";
 export const apiAgent = flow({
   name: "API Agent",
   stableKey: "api-agent",
   description: "Demonstrates wrapping REST APIs as AI tools for interaction",
-  onTrigger: async (context, payload) => {
+  onTrigger: async (_context, payload) => {
     return Promise.resolve({
       payload,
     });
   },
   onExecution: async ({ configVars }, params) => {
-    const openaiKey = util.types.toString(
-      configVars.OPENAI_API_KEY.fields.apiKey,
-    );
+    const openaiKey = util.types.toString(configVars.OPENAI_API_KEY.fields.apiKey);
 
     // Set the OpenAI API key
     setDefaultOpenAIKey(openaiKey);
@@ -36,8 +34,8 @@ Use the available tools to fulfill user requests.`,
     });
 
     // Get the message from the payload
-    const { message, conversationId, lastResponseId } = params.onTrigger.results
-      .body.data as ChatRequest;
+    const { message, conversationId, lastResponseId } = params.onTrigger.results.body
+      .data as ChatRequest;
 
     if (!message) {
       throw new Error("Message is required for API agent");

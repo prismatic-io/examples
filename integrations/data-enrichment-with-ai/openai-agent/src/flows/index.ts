@@ -1,15 +1,8 @@
-import { basicChat } from "./basicChat";
-import { apiAgent } from "./apiAgent";
-import { agentRouting } from "./agentRouting";
-import { integrationsAsTools } from "./integrationsAsTools";
 import { agentAsTools } from "./agentAsTools";
+import { agentRouting } from "./agentRouting";
+import { apiAgent } from "./apiAgent";
+import { basicChat } from "./basicChat";
 import { hostedTools } from "./hostedTools";
+import { integrationsAsTools } from "./integrationsAsTools";
 
-export default [
-  basicChat,
-  apiAgent,
-  agentRouting,
-  integrationsAsTools,
-  agentAsTools,
-  hostedTools,
-];
+export default [basicChat, apiAgent, agentRouting, integrationsAsTools, agentAsTools, hostedTools];

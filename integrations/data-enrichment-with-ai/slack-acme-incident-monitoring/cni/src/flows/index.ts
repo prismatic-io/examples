@@ -1,8 +1,8 @@
-import { newIncidentAlert } from "./newIncidentAlert";
-import { handleSlackEventsAndInteractions } from "./handleSlackEventsAndInteractions";
-import { getIncidents } from "./getIncidents";
 import { createIncident } from "./createIncident";
+import { getIncidents } from "./getIncidents";
 import { getOnCallStaff } from "./getOnCallStaff";
+import { handleSlackEventsAndInteractions } from "./handleSlackEventsAndInteractions";
+import { newIncidentAlert } from "./newIncidentAlert";
 
 export default [
   newIncidentAlert,

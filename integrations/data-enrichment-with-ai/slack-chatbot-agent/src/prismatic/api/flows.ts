@@ -1,4 +1,4 @@
-import { CustomerClient, OrganizationClient, FlowConfig } from "../types";
+import type { CustomerClient, FlowConfig, OrganizationClient } from "../types";
 
 // Shared GraphQL query for fetching agent flows
 const AGENT_FLOWS_QUERY = `
@@ -45,8 +45,7 @@ export async function getAgentFlows(
   excludeIntegrationId?: string,
 ): Promise<FlowConfig[]> {
   // Determine the customer ID based on client type
-  const customerId =
-    "customerId" in client ? client.customerId : customerExternalId;
+  const customerId = "customerId" in client ? client.customerId : customerExternalId;
 
   if (!customerId) {
     throw new Error(
@@ -64,10 +63,7 @@ export async function getAgentFlows(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data.instances?.nodes?.forEach((instance: any) => {
     // Skip if this is the current instance (prevent self-invocation)
-    if (
-      excludeIntegrationId &&
-      instance.integration?.id === excludeIntegrationId
-    ) {
+    if (excludeIntegrationId && instance.integration?.id === excludeIntegrationId) {
       console.log(
         `[Flows] Excluding current instance: ${instance.name} (${instance.integration?.name})`,
       );
@@ -77,14 +73,11 @@ export async function getAgentFlows(
     // Process flow configs for this instance
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     instance.flowConfigs?.nodes?.forEach((flowConfig: any) => {
-      let schemas;
+      let schemas: any;
       try {
         schemas = JSON.parse(flowConfig.flow.schemas);
       } catch (e) {
-        console.warn(
-          `[Flows] Failed to parse schemas for flow ${flowConfig.flow.name}:`,
-          e,
-        );
+        console.warn(`[Flows] Failed to parse schemas for flow ${flowConfig.flow.name}:`, e);
         return;
       }
 

@@ -1,9 +1,5 @@
 import { flow } from "@prismatic-io/spectral";
-import {
-  AgentConfig,
-  AgentRunResult,
-  FlowToolResult,
-} from "./newIncidentAlert.types";
+import type { AgentConfig, AgentRunResult, FlowToolResult } from "./newIncidentAlert.types";
 
 /**
  * Agent instructions for the Acme Incident Assistant
@@ -28,16 +24,14 @@ When you receive a new alert, create an incident using the provided alert payloa
 const INCIDENT_RESPONSE_SCHEMA = {
   $schema: "http://json-schema.org/draft-07/schema#",
   title: "Incident Response Notification",
-  description:
-    "Schema for agent output after incident creation attempt (approved or rejected)",
+  description: "Schema for agent output after incident creation attempt (approved or rejected)",
   type: "object",
   required: ["message_type", "channel", "summary"],
   properties: {
     message_type: {
       type: "string",
       enum: ["incident_created", "incident_rejected"],
-      description:
-        "Type of notification message - indicates if incident was created or rejected",
+      description: "Type of notification message - indicates if incident was created or rejected",
     },
     channel: {
       type: "string",
@@ -57,16 +51,14 @@ const INCIDENT_RESPONSE_SCHEMA = {
     },
     incident_id: {
       type: "string",
-      description:
-        "The unique incident identifier (only when message_type is incident_created)",
+      description: "The unique incident identifier (only when message_type is incident_created)",
       pattern: "^INC-[A-Z0-9-]+$",
       examples: ["INC-2025-4892"],
     },
     incident_url: {
       type: "string",
       format: "uri",
-      description:
-        "Direct link to view the incident (only when message_type is incident_created)",
+      description: "Direct link to view the incident (only when message_type is incident_created)",
       examples: ["https://incidents.acme.io/incidents/INC-2025-4892"],
     },
     incident_channel: {
@@ -78,15 +70,13 @@ const INCIDENT_RESPONSE_SCHEMA = {
     },
     assignee_mention: {
       type: "string",
-      description:
-        "Slack user ID to mention (only when message_type is incident_created)",
+      description: "Slack user ID to mention (only when message_type is incident_created)",
       pattern: "^U[A-Z0-9]{8,12}$",
       examples: ["U01A5A5HU0Y"],
     },
     anomaly_id: {
       type: "string",
-      description:
-        "The original anomaly detection ID (primarily for incident_rejected)",
+      description: "The original anomaly detection ID (primarily for incident_rejected)",
       pattern: "^DET-[0-9]+$",
       examples: ["DET-892734"],
     },
@@ -101,8 +91,7 @@ const INCIDENT_RESPONSE_SCHEMA = {
         "manual_review",
         "other",
       ],
-      description:
-        "Reason for rejection (only when message_type is incident_rejected)",
+      description: "Reason for rejection (only when message_type is incident_rejected)",
     },
     details: {
       type: "object",
@@ -130,13 +119,7 @@ const INCIDENT_RESPONSE_SCHEMA = {
           items: {
             type: "string",
           },
-          examples: [
-            [
-              "Response time: 8200ms",
-              "Error rate: 15.2%",
-              "Duration: 8 minutes",
-            ],
-          ],
+          examples: [["Response time: 8200ms", "Error rate: 15.2%", "Duration: 8 minutes"]],
         },
         detected_at: {
           type: "string",
@@ -152,16 +135,8 @@ const INCIDENT_RESPONSE_SCHEMA = {
         type: "string",
       },
       examples: [
-        [
-          "Join the incident channel",
-          "Review the runbook",
-          "Check monitoring dashboard",
-        ],
-        [
-          "Continue monitoring",
-          "Check again in 15 minutes",
-          "Update alert thresholds",
-        ],
+        ["Join the incident channel", "Review the runbook", "Check monitoring dashboard"],
+        ["Continue monitoring", "Check again in 15 minutes", "Update alert thresholds"],
       ],
     },
     rejected_by: {
@@ -174,8 +149,7 @@ const INCIDENT_RESPONSE_SCHEMA = {
     rejected_at: {
       type: "string",
       format: "date-time",
-      description:
-        "Timestamp when rejected (only when message_type is incident_rejected)",
+      description: "Timestamp when rejected (only when message_type is incident_rejected)",
       examples: ["2025-08-22T22:07:05.433Z"],
     },
     thread_ts: {
@@ -334,38 +308,32 @@ export const newIncidentAlert = flow({
     const { configVars } = context;
 
     // Setup tools for the agent
-    const agentCreateIncidentTool =
-      await context.components.openai.createFlowTool<FlowToolResult>({
-        flowName: "Create Incident",
-        requiresApproval: true,
-        strictMode: false,
-        toolDescription: "Create a new incident using the provided description",
-      });
+    const agentCreateIncidentTool = await context.components.openai.createFlowTool<FlowToolResult>({
+      flowName: "Create Incident",
+      requiresApproval: true,
+      strictMode: false,
+      toolDescription: "Create a new incident using the provided description",
+    });
 
-    const agentGetOnCallStaffTool =
-      await context.components.openai.createFlowTool<FlowToolResult>({
-        flowName: "Get On Call Staff",
-        requiresApproval: false,
-        strictMode: false,
-        toolDescription: "Get On Call Staff",
-      });
+    const agentGetOnCallStaffTool = await context.components.openai.createFlowTool<FlowToolResult>({
+      flowName: "Get On Call Staff",
+      requiresApproval: false,
+      strictMode: false,
+      toolDescription: "Get On Call Staff",
+    });
 
     // Create the AI agent with our configuration
-    const agentCreateAssistantAgent =
-      await context.components.openai.createAgent<AgentConfig>({
-        handoffDescription: "",
-        instructions: AGENT_INSTRUCTIONS,
-        mcpServers: [],
-        modelName: "gpt-5-2025-08-07",
-        name: "Acme SaaS Assistant",
-        outputSchema: JSON.stringify(INCIDENT_RESPONSE_SCHEMA),
-        outputSchemaName: "output",
-        outputSchemaStrict: false,
-        tools: [
-          agentCreateIncidentTool.data as any,
-          agentGetOnCallStaffTool.data as any,
-        ],
-      });
+    const agentCreateAssistantAgent = await context.components.openai.createAgent<AgentConfig>({
+      handoffDescription: "",
+      instructions: AGENT_INSTRUCTIONS,
+      mcpServers: [],
+      modelName: "gpt-5-2025-08-07",
+      name: "Acme SaaS Assistant",
+      outputSchema: JSON.stringify(INCIDENT_RESPONSE_SCHEMA),
+      outputSchemaName: "output",
+      outputSchemaStrict: false,
+      tools: [agentCreateIncidentTool.data as any, agentGetOnCallStaffTool.data as any],
+    });
 
     // Prepare the alert input for the agent
     const setupAlertInputPrompt = `You must create a new incident from the provided alert for the on-call user. First, use a tool to get the on call staff, second create an incident using the create incident tool from the following alert. \nAlert Detected: ${JSON.stringify(
@@ -375,27 +343,25 @@ export const newIncidentAlert = flow({
       prompt: setupAlertInputPrompt,
     });
     // Run the agent to process the alert
-    const runAgentCreateIncident =
-      await context.components.openai.runAgent<AgentRunResult>({
-        agentConfig: agentCreateAssistantAgent.data as any,
-        fileIds: [],
-        handoffs: [],
-        history: "",
-        maxTurns: "10",
-        openaiConnection: configVars["OpenAI Connection"],
-        previousResponseId: "",
-        userInput: setupAlertInputPrompt,
-      });
+    const runAgentCreateIncident = await context.components.openai.runAgent<AgentRunResult>({
+      agentConfig: agentCreateAssistantAgent.data as any,
+      fileIds: [],
+      handoffs: [],
+      history: "",
+      maxTurns: "10",
+      openaiConnection: configVars["OpenAI Connection"],
+      previousResponseId: "",
+      userInput: setupAlertInputPrompt,
+    });
 
     // Handle approval interruptions
     if (runAgentCreateIncident.data.hasInterruptions) {
-      const approvalRequest =
-        runAgentCreateIncident.data.pendingApprovals?.[0].approvalRequest;
+      const approvalRequest = runAgentCreateIncident.data.pendingApprovals?.[0].approvalRequest;
 
       const approvalArgs = {
         ...JSON.parse(
-          (runAgentCreateIncident.data.pendingApprovals?.[0]
-            ?.arguments as unknown as string) || "{}",
+          (runAgentCreateIncident.data.pendingApprovals?.[0]?.arguments as unknown as string) ||
+            "{}",
         ),
         approvalRequest,
       };
@@ -411,7 +377,7 @@ export const newIncidentAlert = flow({
       // Post approval request to Slack
       await context.components.slack.postBlockMessage({
         channelName: configVars["Alert Channel"],
-        connection: configVars["slackConnection"],
+        connection: configVars.slackConnection,
         blocks: createApprovalBlocks as any,
         message: "An approval is required to create a new incident",
       });
@@ -435,9 +401,7 @@ export const newIncidentAlert = flow({
         crossFlowState,
       };
     } else {
-      context.logger.debug(
-        "No approval required - incident processed automatically",
-      );
+      context.logger.debug("No approval required - incident processed automatically");
     }
     return { data: {} };
   },

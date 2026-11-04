@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { runChatLoop, setupCleanupHandler } from "./lib/chat-utils";
 import { integrationsAsTools } from "../src/flows/integrationsAsTools";
+import { runChatLoop, setupCleanupHandler } from "./lib/chat-utils";
 
 // Setup cleanup handler
 setupCleanupHandler();

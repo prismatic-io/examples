@@ -1,25 +1,19 @@
+import { existsSync, readFileSync } from "node:fs";
+import { parseEnv } from "node:util";
 import { defineConfig } from "vitest/config";
-import { loadEnv } from "vite";
+
+// Make values from .env (if present) available to tests via process.env
+const env = existsSync(".env")
+  ? (parseEnv(readFileSync(".env", "utf8")) as Record<string, string>)
+  : {};
+
 export default defineConfig({
   test: {
     globals: true,
     environment: "node",
     include: ["src/**/*.test.ts"],
-    // Handle both CommonJS and ESM modules
-    env: loadEnv("", process.cwd(), ""),
-
-    deps: {
-      interopDefault: true,
-    },
-  },
-  resolve: {
-    alias: {
-      // Remove .js extensions in imports
-      "@": "/src",
-    },
-  },
-  // Ensure TypeScript files are processed
-  esbuild: {
-    target: "node18",
+    env,
+    // Tests call the live OpenAI API, so allow plenty of time
+    testTimeout: 300000,
   },
 });

@@ -1,37 +1,23 @@
-import { CustomerAttributes, flow, util } from "@prismatic-io/spectral";
+import { Agent, RunState, run, setDefaultOpenAIKey, type Tool, user } from "@openai/agents";
+import { type CustomerAttributes, flow, util } from "@prismatic-io/spectral";
 import { Assistant } from "@slack/bolt";
-import {
-  Agent,
-  run,
-  RunState,
-  setDefaultOpenAIKey,
-  user,
-  Tool,
-} from "@openai/agents";
-import { ack } from "../slack/acknowledge";
-import { App, ActionHandlers } from "../slack/app";
-import { createApprovalBlocks } from "../slack/blocks/approvalBlocks";
-import { createOrganizationClient, getAgentFlows } from "../prismatic";
-import {
-  createFlowTools,
-  getApprovalTools,
-} from "../agents/tools/prismaticTools";
 import { createHostedTools } from "../agents/tools/openaiHostedTools";
-import { ConversationState } from "../types";
+import { createFlowTools, getApprovalTools } from "../agents/tools/prismaticTools";
+import { createOrganizationClient, getAgentFlows } from "../prismatic";
+import { ack } from "../slack/acknowledge";
+import { type ActionHandlers, App } from "../slack/app";
+import { createApprovalBlocks } from "../slack/blocks/approvalBlocks";
+import type { ConversationState } from "../types";
 
 export const eventHandler = flow({
   name: "Slack Message Handler",
   stableKey: "slack-event-handler",
-  description:
-    "Handles Slack Events and generates responses with OpenAI Assistant SDK",
+  description: "Handles Slack Events and generates responses with OpenAI Assistant SDK",
   onTrigger: async (context, payload) => {
     const connection = context.configVars["Slack Connection"];
     const signingSecret = util.types.toString(connection.fields.signingSecret);
 
-    const { response, isRetry, retryNum, retryReason } = ack(
-      payload,
-      signingSecret,
-    );
+    const { response, isRetry, retryNum, retryReason } = ack(payload, signingSecret);
 
     // Store retry info in execution state
     context.executionState.isRetry = isRetry;
@@ -61,12 +47,8 @@ export const eventHandler = flow({
     }
 
     const connection = configVars["Slack Connection"];
-    const openaiKey = util.types.toString(
-      configVars.OPENAI_API_KEY.fields.apiKey,
-    );
-    const prismaticRefreshToken = util.types.toString(
-      configVars.PRISMATIC_REFRESH_TOKEN,
-    );
+    const openaiKey = util.types.toString(configVars.OPENAI_API_KEY.fields.apiKey);
+    const prismaticRefreshToken = util.types.toString(configVars.PRISMATIC_REFRESH_TOKEN);
 
     // Set OpenAI API key globally
     setDefaultOpenAIKey(openaiKey);
@@ -107,8 +89,7 @@ export const eventHandler = flow({
 
         try {
           // Get stored state for this conversation
-          const convState = (instanceState[conversationId] ||
-            {}) as ConversationState;
+          const convState = (instanceState[conversationId] || {}) as ConversationState;
           const lastResponseId = convState.lastResponseId;
 
           // Run the agent with the message
@@ -125,9 +106,9 @@ export const eventHandler = flow({
               state: result.state.toString(),
               lastResponseId: result.lastResponseId,
               pendingInterruption: {
-                functionId: firstInterruption.rawItem.id!,
-                name: firstInterruption.rawItem.name,
-                arguments: firstInterruption.rawItem.arguments,
+                functionId: firstInterruption.rawItem.id ?? "",
+                name: firstInterruption.name,
+                arguments: firstInterruption.arguments,
               },
             } as ConversationState;
 
@@ -136,11 +117,11 @@ export const eventHandler = flow({
               channel: message.channel,
               thread_ts: message.thread_ts,
               blocks: createApprovalBlocks(
-                firstInterruption.rawItem.name,
-                firstInterruption.rawItem.arguments,
+                firstInterruption.name ?? "unknown",
+                firstInterruption.arguments,
                 executionId,
               ),
-              text: `Approval required for tool: ${firstInterruption.rawItem.name}`,
+              text: `Approval required for tool: ${firstInterruption.name}`,
               metadata: {
                 event_type: "tool_approval",
                 event_payload: { conversationId },
@@ -180,7 +161,6 @@ export const eventHandler = flow({
     const actionHandlers: ActionHandlers = {
       onToolApproval: async ({
         approved,
-        previousExecutionId,
         userId,
         conversationId,
         channelId,
@@ -191,14 +171,12 @@ export const eventHandler = flow({
           // Get stored state for this conversation
           const convState = instanceState[conversationId] as ConversationState;
           if (!convState?.state) {
-            await updateMessage(
-              "❌ Approval state expired. Please start over.",
-            );
+            await updateMessage("❌ Approval state expired. Please start over.");
             return;
           }
 
           // Deserialize and apply decision
-          let agentState = await RunState.fromString(agent, convState.state);
+          const agentState = await RunState.fromString(agent, convState.state);
           const interrupts = agentState.getInterruptions();
           const interrupt = interrupts[0];
 
@@ -232,9 +210,9 @@ export const eventHandler = flow({
               state: result.state.toString(),
               lastResponseId: result.lastResponseId,
               pendingInterruption: {
-                functionId: nextInterruption.rawItem.id!,
-                name: nextInterruption.rawItem.name,
-                arguments: nextInterruption.rawItem.arguments,
+                functionId: nextInterruption.rawItem.id ?? "",
+                name: nextInterruption.name,
+                arguments: nextInterruption.arguments,
               },
             } as ConversationState;
 
@@ -243,11 +221,11 @@ export const eventHandler = flow({
               channel: channelId,
               thread_ts: conversationId,
               blocks: createApprovalBlocks(
-                nextInterruption.rawItem.name,
-                nextInterruption.rawItem.arguments,
+                nextInterruption.name ?? "unknown",
+                nextInterruption.arguments,
                 executionId,
               ),
-              text: `Another approval required: ${nextInterruption.rawItem.name}`,
+              text: `Another approval required: ${nextInterruption.name}`,
               metadata: {
                 event_type: "tool_approval",
                 event_payload: { conversationId },
@@ -307,17 +285,10 @@ async function buildTools(
 
   // Add Prismatic tools if configured
   if (customer?.externalId && prismaticRefreshToken) {
-    console.log(
-      "[Tools] Setting up Prismatic tools for Customer",
-      customer.externalId,
-    );
+    console.log("[Tools] Setting up Prismatic tools for Customer", customer.externalId);
 
     const orgClient = await createOrganizationClient(prismaticRefreshToken);
-    const flows = await getAgentFlows(
-      orgClient,
-      customer.externalId,
-      excludeIntegrationId,
-    );
+    const flows = await getAgentFlows(orgClient, customer.externalId, excludeIntegrationId);
     tools = createFlowTools(flows);
   }
 

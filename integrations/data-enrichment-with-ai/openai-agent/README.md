@@ -242,8 +242,8 @@ export const myFlow = flow({
     });
 
     // 3. Get input
-    const { message, conversationId, lastResponseId } = params.onTrigger.results
-      .body.data as ChatRequest;
+    const { message, conversationId, lastResponseId } = params.onTrigger.results.body
+      .data as ChatRequest;
 
     // 4. Run agent
     const result = await run(agent, [user(message)], {
@@ -266,41 +266,51 @@ export const myFlow = flow({
 
 ```
 openai-agent/
+├── assets/                       # Integration icon (copied to dist/ on build)
 ├── scripts/                      # Interactive chat scripts
 │   ├── lib/
 │   │   └── chat-utils.ts        # Shared chat utilities
 │   ├── chat.ts                  # Basic chat
 │   ├── chat-api.ts              # API tools chat
+│   ├── chat-approvals.ts        # Human-in-the-loop approvals chat
 │   ├── chat-routing.ts          # Agent routing chat
 │   ├── chat-tools.ts            # Agent as tools chat
 │   ├── chat-hosted.ts           # Hosted tools chat
 │   └── chat-integrations.ts     # Integrations chat
 ├── src/
+│   ├── index.ts                 # Integration definition
+│   ├── configPages.ts           # Config wizard (OpenAI connection, system prompt)
+│   ├── componentRegistry.ts     # Component manifests used by the integration
 │   ├── flows/                   # Prismatic flows
 │   │   ├── basicChat.ts
 │   │   ├── apiAgent.ts
 │   │   ├── agentRouting.ts
+│   │   ├── agentWithApprovals.ts
+│   │   ├── agentStructuredOutput.ts
 │   │   ├── integrationsAsTools.ts
 │   │   ├── agentAsTools.ts
-│   │   ├── hostedTools.ts
-│   │   └── utils/
-│   │       └── flowHelpers.ts   # Flow utilities
+│   │   └── hostedTools.ts
 │   ├── agents/                  # Agent tools
 │   │   └── tools/               # Tool definitions
 │   │       ├── api.ts           # API tools
 │   │       ├── agents.ts        # Agent tools
 │   │       ├── hosted.ts        # Hosted tools
-│   │       ├── prismaticHostedTools.ts # Prismatic hosted tools
-│   │       └── prismaticTools.ts # Prismatic integration tools
+│   │       ├── openaiHostedTools.ts    # OpenAI hosted tools
+│   │       └── prismaticHostedTools.ts # Prismatic integrations as tools
 │   ├── prismatic/               # Prismatic API client
 │   │   ├── api/                # API functions
 │   │   ├── auth/               # Authentication
 │   │   ├── client/             # Client setup
 │   │   └── types.ts            # Type definitions
 │   ├── types.ts                 # Core types (ChatRequest, ChatResponse)
-│   └── test/                    # Tests
+│   └── test/                    # Vitest tests
 ├── .spectral/                   # Prismatic config
-│   └── prism.json              # Integration ID
+│   ├── index.ts                # Type augmentation for config pages / component registry
+│   └── prism.json              # Integration ID (gitignored, written by `npm run import`)
+├── biome.json                   # Biome lint/format config
+├── tsdown.config.mts            # Build config (bundles to dist/index.js)
+├── tsconfig.json
+├── vitest.config.ts
 ├── package.json
 └── README.md
 ```
@@ -373,8 +383,8 @@ export const myFlow = flow({
     });
 
     // Get input
-    const { message, conversationId, lastResponseId } = params.onTrigger.results
-      .body.data as ChatRequest;
+    const { message, conversationId, lastResponseId } = params.onTrigger.results.body
+      .data as ChatRequest;
 
     // Run agent
     const result = await run(agent, [user(message)], {
@@ -460,6 +470,25 @@ npm run chat:api
 npm run chat:routing
 # ... etc
 ```
+
+### Unit Tests
+
+```bash
+npm test             # vitest run
+```
+
+The flow tests in `src/test/` call the live OpenAI API. They read `OPENAI_API_KEY` from `.env` (or your shell) and are skipped when it is not set.
+
+### Build, Typecheck and Lint
+
+```bash
+npm run build        # Bundle with tsdown into dist/
+npm run typecheck    # tsc --noEmit
+npm run lint         # biome lint .
+npx biome format --write .   # Format code
+```
+
+`npm run build` inlines any `PRISMATIC_*` values found in `.env` (such as `PRISMATIC_REFRESH_TOKEN`) into the bundle. Leave them out of `.env` if you do not want them baked into the build.
 
 ### Webhook Testing
 

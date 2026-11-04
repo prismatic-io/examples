@@ -1,4 +1,4 @@
-import { webSearchTool, codeInterpreterTool } from "@openai/agents";
+import { codeInterpreterTool, webSearchTool } from "@openai/agents";
 
 const hostedTools = () => [webSearchTool(), codeInterpreterTool()];
 

@@ -1,10 +1,5 @@
-import {
-  OrganizationClient,
-  CustomerClient,
-  ExecutionResult,
-  StepResult,
-} from "../types";
 import { decode } from "@msgpack/msgpack";
+import type { CustomerClient, ExecutionResult, OrganizationClient, StepResult } from "../types";
 
 /**
  * Get execution result details
@@ -62,9 +57,7 @@ export async function getStepResult(
   const stepResult = data.executionResult?.stepResults?.nodes?.[0];
 
   if (!stepResult?.resultsUrl) {
-    throw new Error(
-      `No results found for step "${stepName}" in execution ${executionId}`,
-    );
+    throw new Error(`No results found for step "${stepName}" in execution ${executionId}`);
   }
 
   // Fetch the msgpack-encoded data from the presigned S3 URL
@@ -131,10 +124,7 @@ export async function getAllStepResults(
           data: decoded,
         };
       } catch (error) {
-        console.error(
-          `Error fetching results for step ${step.stepName}:`,
-          error,
-        );
+        console.error(`Error fetching results for step ${step.stepName}:`, error);
         return {
           stepName: step.stepName,
           data: null,

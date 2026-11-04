@@ -56,8 +56,7 @@ const SALESFORCE_API_VERSION = "63.0";
  * Classification branches for duplicate detection
  */
 const CLASSIFICATION_BRANCHES = {
-  Duplicate:
-    "The name, domain, or firmographics suggest it is a duplicate (>75% confidence)",
+  Duplicate: "The name, domain, or firmographics suggest it is a duplicate (>75% confidence)",
   "Not a Duplicate": "The account appears to be unique (>75% confidence)",
 };
 
@@ -76,8 +75,7 @@ const CLASSIFICATION_INSTRUCTIONS =
 export const checkForDuplicates = flow({
   name: "Check for Duplicates",
   stableKey: "check-for-duplicates",
-  description:
-    "Prevent duplicate lead creation by checking against existing Salesforce accounts",
+  description: "Prevent duplicate lead creation by checking against existing Salesforce accounts",
   endpointSecurityType: "customer_optional",
   onExecution: async (context, params) => {
     const { configVars } = context;
@@ -92,66 +90,57 @@ export const checkForDuplicates = flow({
 
     // Step 1: Query Salesforce for potential duplicate accounts
     context.logger.debug("Querying Salesforce for potential duplicates");
-    const findAccounts =
-      await context.components.salesforce.query<SalesforceQueryResult>({
-        connection: configVars["Salesforce Connection"],
-        queryString: `SELECT Id, Name, Website FROM Account
+    const findAccounts = await context.components.salesforce.query<SalesforceQueryResult>({
+      connection: configVars["Salesforce Connection"],
+      queryString: `SELECT Id, Name, Website FROM Account
                     WHERE Name like '${incomingLead.company}%'`,
-        version: SALESFORCE_API_VERSION,
-      });
+      version: SALESFORCE_API_VERSION,
+    });
 
-    context.logger.info(
-      `Found ${findAccounts.data.records.length} potential duplicate accounts`,
-    );
+    context.logger.info(`Found ${findAccounts.data.records.length} potential duplicate accounts`);
 
     // Step 2: Use AI to classify if the lead is a duplicate
     context.logger.debug("Running AI classification for duplicate detection");
-    const classification =
-      await context.components.openai.classifyAndBranch<ClassificationResult>({
-        openaiConnection: configVars["OpenAI Connection"],
-        model: MODEL,
-        branches: CLASSIFICATION_BRANCHES,
-        classificationInstructions: CLASSIFICATION_INSTRUCTIONS,
-        inputText: `New Account: ${JSON.stringify(incomingLead)}
-                  Existing Accounts: ${JSON.stringify(
-                    findAccounts.data.records,
-                  )}`,
-      });
+    const classification = await context.components.openai.classifyAndBranch<ClassificationResult>({
+      openaiConnection: configVars["OpenAI Connection"],
+      model: MODEL,
+      branches: CLASSIFICATION_BRANCHES,
+      classificationInstructions: CLASSIFICATION_INSTRUCTIONS,
+      inputText: `New Account: ${JSON.stringify(incomingLead)}
+                  Existing Accounts: ${JSON.stringify(findAccounts.data.records)}`,
+    });
 
-    context.logger.info(
-      `Classification result: ${classification.data.selectedBranch}`,
-      {
-        confidence: classification.data.confidence,
-        reasoning: classification.data.reasoning,
-      },
-    );
+    context.logger.info(`Classification result: ${classification.data.selectedBranch}`, {
+      confidence: classification.data.confidence,
+      reasoning: classification.data.reasoning,
+    });
 
     // Step 3: Route based on classification result
     if (classification.data.selectedBranch === "Not a Duplicate") {
       // Create new lead in Salesforce
       context.logger.info("Creating new lead in Salesforce");
-      const createLead =
-        await context.components.salesforce.createLead<CreateLeadResult>({
-          connection: configVars["Salesforce Connection"],
-          company: incomingLead.company,
-          email: incomingLead.email,
+      const createLead = await context.components.salesforce.createLead<CreateLeadResult>({
+        connection: configVars["Salesforce Connection"],
+        company: incomingLead.company,
+        email: incomingLead.email,
+        nameAndContact: {
           firstName: incomingLead.firstName,
           lastName: incomingLead.lastName,
-          leadStatus: "Open",
-          version: SALESFORCE_API_VERSION,
-        });
+          phone: "",
+          website: "",
+        },
+        leadStatus: "Open",
+        version: SALESFORCE_API_VERSION,
+      });
 
       context.logger.info("Lead created successfully");
       return { data: createLead };
     } else {
       // Duplicate detected - skip lead creation
-      context.logger.warn(
-        `Duplicate detected for company: ${incomingLead.company}`,
-        {
-          email: incomingLead.email,
-          existingAccounts: findAccounts.data.records.map((acc) => acc.Name),
-        },
-      );
+      context.logger.warn(`Duplicate detected for company: ${incomingLead.company}`, {
+        email: incomingLead.email,
+        existingAccounts: findAccounts.data.records.map((acc) => acc.Name),
+      });
       return { data: null };
     }
   },

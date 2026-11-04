@@ -105,28 +105,26 @@ export const enrichIncomingLead = flow({
 
     // Step 2: Create lead research agent
     context.logger.debug("Creating lead research agent");
-    const createLeadResearchAgent =
-      await context.components.openai.createAgent<CreateAgentResult>({
-        instructions: LEAD_RESEARCHER_INSTRUCTIONS,
-        modelName: MODEL,
-        name: "Lead Researcher",
-        outputSchema: JSON.stringify(LEAD_ENRICHMENT_SCHEMA),
-        outputSchemaName: "output",
-        outputSchemaStrict: false,
-        tools: [setupWebResearchTool.data],
-      });
+    const createLeadResearchAgent = await context.components.openai.createAgent<CreateAgentResult>({
+      instructions: LEAD_RESEARCHER_INSTRUCTIONS,
+      modelName: MODEL,
+      name: "Lead Researcher",
+      outputSchema: JSON.stringify(LEAD_ENRICHMENT_SCHEMA),
+      outputSchemaName: "output",
+      outputSchemaStrict: false,
+      tools: [setupWebResearchTool.data],
+    });
 
     // Step 3: Research and enrich the lead
-    const researchAndEnrichLead =
-      await context.components.openai.runAgent<AgentExecutionResult>({
-        agentConfig: createLeadResearchAgent.data,
-        maxTurns: "10",
-        openaiConnection: configVars["OpenAI Connection"],
-        userInput: `Research this lead on the web:
+    const researchAndEnrichLead = await context.components.openai.runAgent<AgentExecutionResult>({
+      agentConfig: createLeadResearchAgent.data,
+      maxTurns: "10",
+      openaiConnection: configVars["OpenAI Connection"],
+      userInput: `Research this lead on the web:
 Company: ${triggerPayload.data.company}
 Email: ${triggerPayload.data.email}
 Name: ${triggerPayload.data.firstName} ${triggerPayload.data.lastName}`,
-      });
+    });
 
     const enrichedData = researchAndEnrichLead.data.finalOutput;
     context.logger.info(
@@ -146,11 +144,21 @@ Name: ${triggerPayload.data.firstName} ${triggerPayload.data.lastName}`,
     const createLead = await context.components.salesforce.createLead({
       company: triggerPayload.data.company,
       connection: configVars["Salesforce Connection"],
-      description: enrichedData.companyDescription,
       email: triggerPayload.data.email,
-      employeeCount: enrichedData.employeeCount.toString(),
-      firstName: triggerPayload.data.firstName,
-      lastName: triggerPayload.data.lastName,
+      nameAndContact: {
+        firstName: triggerPayload.data.firstName,
+        lastName: triggerPayload.data.lastName,
+        phone: "",
+        website: "",
+      },
+      additionalFields: {
+        title: "",
+        leadSource: "",
+        rating: "none",
+        employeeCount: enrichedData.employeeCount.toString(),
+        description: enrichedData.companyDescription,
+        revenue: "",
+      },
       leadStatus: "Open",
       version: SALESFORCE_API_VERSION,
     });

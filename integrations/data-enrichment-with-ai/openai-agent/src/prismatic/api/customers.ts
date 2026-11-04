@@ -1,13 +1,11 @@
-import { OrganizationClient, Customer } from "../types";
+import type { Customer, OrganizationClient } from "../types";
 
 /**
  * List all customers for an organization
  * @param client - The authenticated OrganizationClient
  * @returns Array of customers
  */
-export async function listCustomers(
-  client: OrganizationClient,
-): Promise<Customer[]> {
+export async function listCustomers(client: OrganizationClient): Promise<Customer[]> {
   const query = `
     query listCustomers {
       customers {

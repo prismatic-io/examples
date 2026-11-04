@@ -1,8 +1,4 @@
-import {
-  configPage,
-  connectionConfigVar,
-  dataSourceConfigVar,
-} from "@prismatic-io/spectral";
+import { configPage, connectionConfigVar, dataSourceConfigVar } from "@prismatic-io/spectral";
 
 export const configPages = {
   Configuration: configPage({

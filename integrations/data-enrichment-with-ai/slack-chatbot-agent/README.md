@@ -129,7 +129,9 @@ interface ConversationState {
 instanceState[conversationId] = {
   state: result.state.toString(),
   lastResponseId: result.lastResponseId,
-  pendingInterruption: { /* ... */ }
+  pendingInterruption: {
+    /* ... */
+  },
 } as ConversationState;
 ```
 
@@ -188,13 +190,19 @@ slack-chatbot-agent/
 │   ├── types.ts                  # Core type definitions
 │   ├── configPages.ts            # Integration config
 │   ├── componentRegistry.ts      # Component setup
+│   ├── index.test.ts             # Unit tests
 │   └── index.ts                  # Entry point
 ├── assets/
 │   └── icon.png                  # Integration icon
+├── .spectral/
+│   ├── index.ts                  # Type augmentation for config pages / component registry
+│   └── prism.json                # Integration ID (gitignored, written by `npm run import`)
 ├── package.json
+├── biome.json                    # Biome lint/format config
 ├── tsconfig.json
+├── tsdown.config.mts             # Build config (bundles to dist/index.js)
 ├── vitest.config.ts
-├── esbuild.config.js
+├── test.sh                       # Run tests with a real Slack connection from Prismatic
 ├── CLAUDE.md                      # AI development guide
 └── README.md
 ```
@@ -219,10 +227,11 @@ PRISMATIC_REFRESH_TOKEN=your-refresh-token
 SYSTEM_PROMPT="You are a helpful assistant"
 ```
 
+`npm run build` inlines the `SLACK_*`, `OPENAI_*` and `PRISMATIC_*` values from `.env` into the bundle as the default values of the config wizard inputs. Leave them out of `.env` if you do not want them baked into the build.
+
 ### Slack App Setup
 
 1. **Create Slack App**:
-
    - Go to [api.slack.com/apps](https://api.slack.com/apps)
    - Click "Create New App" → "From scratch"
    - Name your app and select workspace
@@ -238,7 +247,6 @@ SYSTEM_PROMPT="You are a helpful assistant"
    ```
 
 3. **Enable Assistant**:
-
    - Navigate to "Assistant" in sidebar
    - Enable Assistant capabilities
    - Configure Assistant settings
@@ -258,14 +266,12 @@ npm run import
 ```
 
 2. **Deploy Instance**:
-
    - Navigate to Prismatic UI
    - Create system instance
    - Configure connections and variables
    - Deploy and activate
 
 3. **Configure Webhook**:
-
    - Copy webhook URL from deployed instance
    - Add to Slack app's Event Subscriptions
    - Verify endpoint
@@ -371,10 +377,14 @@ const result = await run(agent, agentState);
 ### Development
 
 ```bash
-npm run lint       # ESLint
-npm run format     # Prettier
-npm run build      # Build the integration
+npm test                     # Run unit tests (vitest run)
+npm run build                # Bundle the integration with tsdown into dist/
+npm run typecheck            # Type-check with tsc --noEmit
+npm run lint                 # Lint with Biome
+npx biome format --write .   # Format with Biome
 ```
+
+Unit tests live in `src/index.test.ts` and cover Slack signature verification, retry detection and the approval Block Kit UI. They do not require Slack or OpenAI credentials.
 
 ### Slack Testing
 

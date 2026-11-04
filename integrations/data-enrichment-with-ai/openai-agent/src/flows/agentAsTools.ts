@@ -1,22 +1,19 @@
-import { flow, util } from "@prismatic-io/spectral";
 import { Agent, run, setDefaultOpenAIKey, user } from "@openai/agents";
+import { flow, util } from "@prismatic-io/spectral";
 import agentTools from "../agents/tools/agents";
-import { ChatRequest } from "../types";
+import type { ChatRequest } from "../types";
 
 export const agentAsTools = flow({
   name: "Agent as Tools",
   stableKey: "agent-as-tools",
-  description:
-    "Demonstrates using specialized agents as tools within a primary agent",
-  onTrigger: async (context, payload) => {
+  description: "Demonstrates using specialized agents as tools within a primary agent",
+  onTrigger: async (_context, payload) => {
     return Promise.resolve({
       payload,
     });
   },
   onExecution: async ({ configVars }, params) => {
-    const openaiKey = util.types.toString(
-      configVars.OPENAI_API_KEY.fields.apiKey,
-    );
+    const openaiKey = util.types.toString(configVars.OPENAI_API_KEY.fields.apiKey);
 
     // Set the OpenAI API key
     setDefaultOpenAIKey(openaiKey);
@@ -33,8 +30,8 @@ Use the summarizer tool when requested by the user to summarize text.`,
     });
 
     // Get the message from the payload
-    const { conversationId, message, lastResponseId } = params.onTrigger.results
-      .body.data as ChatRequest;
+    const { conversationId, message, lastResponseId } = params.onTrigger.results.body
+      .data as ChatRequest;
 
     if (!message) {
       throw new Error("Message is required for agent tools");

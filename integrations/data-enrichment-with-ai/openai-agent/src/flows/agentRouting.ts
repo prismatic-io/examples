@@ -1,15 +1,8 @@
-import { flow, util } from "@prismatic-io/spectral";
-import {
-  Agent,
-  handoff,
-  run,
-  tool,
-  setDefaultOpenAIKey,
-  user,
-} from "@openai/agents";
+import { Agent, handoff, run, setDefaultOpenAIKey, tool, user } from "@openai/agents";
 import { RECOMMENDED_PROMPT_PREFIX } from "@openai/agents-core/extensions";
+import { flow, util } from "@prismatic-io/spectral";
 import { z } from "zod";
-import { ChatRequest } from "../types";
+import type { ChatRequest } from "../types";
 
 const mockOrders: Record<string, any> = {
   "ORD-12345": {
@@ -83,22 +76,20 @@ export const agentRouting = flow({
   stableKey: "agent-routing",
   description:
     "Demonstrates agent handoff pattern for routing customer inquiries to specialized agents",
-  onTrigger: async (context, payload) => {
+  onTrigger: async (_context, payload) => {
     return Promise.resolve({
       payload,
     });
   },
   onExecution: async ({ configVars }, params) => {
-    const openaiKey = util.types.toString(
-      configVars.OPENAI_API_KEY.fields.apiKey,
-    );
+    const openaiKey = util.types.toString(configVars.OPENAI_API_KEY.fields.apiKey);
 
     // Set the OpenAI API key
     setDefaultOpenAIKey(openaiKey);
 
     // Get the message from the payload
-    const { message, lastResponseId, conversationId } = params.onTrigger.results
-      .body.data as ChatRequest;
+    const { message, lastResponseId, conversationId } = params.onTrigger.results.body
+      .data as ChatRequest;
 
     if (!message) {
       throw new Error("Message is required for agent routing");

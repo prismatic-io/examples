@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { runChatLoop, setupCleanupHandler } from "./lib/chat-utils";
 import { approvalFlow } from "../src/flows/agentWithApprovals";
+import { runChatLoop, setupCleanupHandler } from "./lib/chat-utils";
 
 // Setup cleanup handler
 setupCleanupHandler();
@@ -11,8 +11,7 @@ runChatLoop({
   flow: approvalFlow,
   flowName: "Approval Flow",
   stableKey: "API-Agent-Approval-Flow",
-  description:
-    "Chat with an agent that requires approval for sensitive tool execution",
+  description: "Chat with an agent that requires approval for sensitive tool execution",
   features: [
     "Available tools:",
     "  • get_current_user_info",

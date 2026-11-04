@@ -1,27 +1,25 @@
-import { flow, util } from "@prismatic-io/spectral";
 import {
   Agent,
-  run,
   RunState,
-  RunToolApprovalItem,
+  type RunToolApprovalItem,
+  run,
   setDefaultOpenAIKey,
   user,
 } from "@openai/agents";
+import { flow, util } from "@prismatic-io/spectral";
 import apiTools from "../agents/tools/api";
-import { ChatRequest, Interruption } from "../types";
+import type { ChatRequest, Interruption } from "../types";
 export const approvalFlow = flow({
   name: "Approval Flow",
   stableKey: "api-agent-approvals",
   description: "Demonstrates wrapping REST APIs as AI tools for interaction",
-  onTrigger: async (context, payload) => {
+  onTrigger: async (_context, payload) => {
     return Promise.resolve({
       payload,
     });
   },
   onExecution: async ({ configVars }, params) => {
-    const openaiKey = util.types.toString(
-      configVars.OPENAI_API_KEY.fields.apiKey,
-    );
+    const openaiKey = util.types.toString(configVars.OPENAI_API_KEY.fields.apiKey);
 
     // Set the OpenAI API key
     setDefaultOpenAIKey(openaiKey);
@@ -64,9 +62,7 @@ Use the available tools to fulfill user requests.`,
       );
 
       const result = await run(agent, agentState);
-      const interruptions: Interruption[] = handleInterrupt(
-        result.interruptions,
-      );
+      const interruptions: Interruption[] = handleInterrupt(result.interruptions);
       return {
         data: {
           response: interruptions.length > 0 ? undefined : result.finalOutput,
@@ -86,9 +82,7 @@ Use the available tools to fulfill user requests.`,
         previousResponseId: lastResponseId,
       });
 
-      const interruptions: Interruption[] = handleInterrupt(
-        result.interruptions,
-      );
+      const interruptions: Interruption[] = handleInterrupt(result.interruptions);
       return {
         data: {
           response: interruptions.length > 0 ? undefined : result.finalOutput,
@@ -108,9 +102,7 @@ function updateStateWithUserResponse(
   userResponses: Interruption[],
 ) {
   for (const userResponse of userResponses) {
-    const interrupt = interrupts.find(
-      (i) => i.rawItem.id === userResponse.functionId,
-    );
+    const interrupt = interrupts.find((i) => i.rawItem.id === userResponse.functionId);
     if (interrupt) {
       if (userResponse.approved) {
         state.approve(interrupt);
@@ -127,10 +119,10 @@ function handleInterrupt(interrupts: RunToolApprovalItem[]): Interruption[] {
     return [];
   }
   const userApprovalItems = interrupts.map((intr) => ({
-    functionId: intr.rawItem.id!,
-    name: intr.rawItem.name,
+    functionId: intr.rawItem.id ?? "",
+    name: intr.name ?? "",
     approved: false,
-    arguments: intr.rawItem.arguments,
+    arguments: intr.arguments,
   }));
   return userApprovalItems;
 }

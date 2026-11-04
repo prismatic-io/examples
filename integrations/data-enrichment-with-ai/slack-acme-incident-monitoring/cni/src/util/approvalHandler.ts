@@ -40,10 +40,7 @@ export function parseApprovalAction(action: any): ApprovalAction | null {
 /**
  * Retrieve stored agent state from cross-flow storage
  */
-export function retrieveStoredAgentState(
-  context: any,
-  anomalyId: string,
-): StoredAgentState | null {
+export function retrieveStoredAgentState(context: any, anomalyId: string): StoredAgentState | null {
   const storedState = context.crossFlowState[anomalyId] as StoredAgentState;
 
   console.log("Stored State: ", storedState);
@@ -58,10 +55,7 @@ export function retrieveStoredAgentState(
 /**
  * Find matching approval request in pending approvals
  */
-export function findMatchingApproval(
-  pendingApprovals: any[],
-  functionId: string,
-): any | null {
+export function findMatchingApproval(pendingApprovals: any[], functionId: string): any | null {
   const matchingApproval = pendingApprovals.find(
     (approval: any) => approval.approvalRequest?.functionId === functionId,
   );
@@ -124,10 +118,7 @@ export async function resumeAgent(
 /**
  * Clean up stored state after processing
  */
-export async function cleanupStoredState(
-  context: any,
-  anomalyId: string,
-): Promise<void> {
+export async function cleanupStoredState(context: any, anomalyId: string): Promise<void> {
   await context.components.persistData.removeCrossFlowValue({
     keyInput: anomalyId,
   });
@@ -149,7 +140,7 @@ export async function updateApprovalMessage(
       : `🔕 Ignored by <@${blockAction.user.id}>`;
 
   await context.components.slack.updateMessage({
-    connection: context.configVars["slackConnection"],
+    connection: context.configVars.slackConnection,
     messageId: blockAction.container.message_ts,
     channelId: blockAction.container.channel_id,
     message: updateText,

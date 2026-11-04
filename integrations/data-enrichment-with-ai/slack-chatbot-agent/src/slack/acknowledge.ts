@@ -1,12 +1,8 @@
-import { TriggerPayload, util, HttpResponse } from "@prismatic-io/spectral";
-import { SlackWebhookRequestBody } from "./types";
-import crypto from "crypto";
+import crypto from "node:crypto";
+import { type HttpResponse, type TriggerPayload, util } from "@prismatic-io/spectral";
+import type { SlackWebhookRequestBody } from "./types";
 
-export const computeSignature = (
-  requestBody: string,
-  signingSecret: string,
-  timestamp: number,
-) => {
+export const computeSignature = (requestBody: string, signingSecret: string, timestamp: number) => {
   const signatureBaseString = `v0:${timestamp}:${requestBody}`;
   const signature = crypto
     .createHmac("sha256", signingSecret)
@@ -25,16 +21,12 @@ export function ack(
   retryReason?: string;
 } {
   const requestBody = util.types.toString(payload.rawBody.data);
-  const timestamp = util.types.toInt(
-    payload.headers["X-Slack-Request-Timestamp"],
-  );
+  const timestamp = util.types.toInt(payload.headers["X-Slack-Request-Timestamp"]);
 
   // Check for retry headers
   const retryNumHeader = payload.headers["X-Slack-Retry-Num"];
   const retryReason = payload.headers["X-Slack-Retry-Reason"];
-  const retryNum = retryNumHeader
-    ? parseInt(util.types.toString(retryNumHeader))
-    : undefined;
+  const retryNum = retryNumHeader ? parseInt(util.types.toString(retryNumHeader), 10) : undefined;
   const isRetry = retryNum !== undefined && retryNum > 0;
 
   if (isRetry) {
@@ -59,14 +51,8 @@ export function ack(
       retryReason: retryReason ? util.types.toString(retryReason) : undefined,
     };
   }
-  const computedSignature = computeSignature(
-    requestBody,
-    signingSecret,
-    timestamp,
-  );
-  const payloadSignature = util.types.toString(
-    payload.headers["X-Slack-Signature"],
-  );
+  const computedSignature = computeSignature(requestBody, signingSecret, timestamp);
+  const payloadSignature = util.types.toString(payload.headers["X-Slack-Signature"]);
 
   if (payloadSignature !== computedSignature) {
     throw new Error(

@@ -1,7 +1,7 @@
-import { Tool, tool } from "@openai/agents";
-import { FlowConfig } from "../../prismatic/types";
-import { invokeFlow } from "../../prismatic/api";
+import { type Tool, tool } from "@openai/agents";
 import { z } from "zod";
+import { invokeFlow } from "../../prismatic/api";
+import type { FlowConfig } from "../../prismatic/types";
 
 /**
  * Create OpenAI agent tools from Prismatic flows
@@ -13,8 +13,7 @@ export function createFlowTools(flows: FlowConfig[]): Tool[] {
     tool({
       name: flow.name.replace(/\s+/g, "_").toLowerCase(),
       strict: false,
-      description:
-        flow.description || `Execute the ${flow.name} Prismatic flow`,
+      description: flow.description || `Execute the ${flow.name} Prismatic flow`,
       parameters: flow.inputSchema || {
         type: "object",
         properties: {},
@@ -35,9 +34,7 @@ export const deployTool = tool({
   description: "Deploy code to production environment. Requires approval.",
   parameters: z.object({
     version: z.string().describe("Version to deploy (e.g., v1.2.3)"),
-    environment: z
-      .enum(["staging", "production"])
-      .describe("Target environment"),
+    environment: z.enum(["staging", "production"]).describe("Target environment"),
   }),
   needsApproval: true, // Always requires approval
   execute: async ({ version, environment }) => {

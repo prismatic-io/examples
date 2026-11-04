@@ -1,6 +1,6 @@
-import { CustomerClient, EmbeddedUserConfig } from "../types";
-import { generateEmbeddedUserJWT } from "../auth/jwt";
 import { authenticateEmbeddedUser } from "../auth/embedded";
+import { generateEmbeddedUserJWT } from "../auth/jwt";
+import type { CustomerClient, EmbeddedUserConfig } from "../types";
 import { executeGraphQLQuery } from "./graphql";
 
 /**

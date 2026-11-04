@@ -165,12 +165,10 @@ export const importReceiptsFromPdFs = flow({
 
     // Step 1: List all files in the import folder
     context.logger.info("Listing files in Dropbox import folder");
-    const listImportFolder =
-      await context.components.dropbox.listFolder<ListImportFolderResult>({
-        debug: false,
-        dropboxConnection: configVars["Dropbox Connection"],
-        path: String(configVars["Import Folder"]),
-      });
+    const listImportFolder = await context.components.dropbox.listFolder<ListImportFolderResult>({
+      dropboxConnection: configVars["Dropbox Connection"],
+      path: String(configVars["Import Folder"]),
+    });
 
     if (!listImportFolder?.data?.result?.entries?.length) {
       context.logger.info("No files found in import folder");
@@ -179,9 +177,7 @@ export const importReceiptsFromPdFs = flow({
       };
     }
 
-    context.logger.info(
-      `Found ${listImportFolder.data.result.entries.length} files to process`,
-    );
+    context.logger.info(`Found ${listImportFolder.data.result.entries.length} files to process`);
 
     // Process each file
     for (const file of listImportFolder.data.result.entries) {
@@ -206,30 +202,26 @@ export const importReceiptsFromPdFs = flow({
 
       // Step 3: Upload file to OpenAI for processing
       context.logger.debug(`Uploading ${file.name} to OpenAI`);
-      const uploadFile =
-        await context.components.openai.uploadFile<OpenAIFileUploadResult>({
-          connection: configVars["OpenAI Connection"],
-          file: downloadFile.data as any,
-          filename: file.name,
-          purpose: "assistants",
-          timeout: String(UPLOAD_TIMEOUT_MS),
-        });
+      const uploadFile = await context.components.openai.uploadFile<OpenAIFileUploadResult>({
+        connection: configVars["OpenAI Connection"],
+        file: downloadFile.data as any,
+        filename: file.name,
+        purpose: "assistants",
+        timeout: String(UPLOAD_TIMEOUT_MS),
+      });
 
-      context.logger.debug(
-        `File uploaded successfully. ID: ${uploadFile.data.id}`,
-      );
+      context.logger.debug(`File uploaded successfully. ID: ${uploadFile.data.id}`);
 
       // Step 4: Classify the document to determine if it's a receipt/invoice
       const agentClassifyAndBranch =
-        await context.components.openai.classifyAndBranch<ClassificationResult>(
-          {
-            agentMcpServers: [],
-            agentTools: [],
-            branches: {
-              "Needs Processing":
-                "The analyzed file is an invoice or receipt that contains transaction data.",
-            },
-            classificationInstructions: `Analyze the provided file carefully. Determine if it is an invoice or receipt that should be processed.
+        await context.components.openai.classifyAndBranch<ClassificationResult>({
+          agentMcpServers: [],
+          agentTools: [],
+          branches: {
+            "Needs Processing":
+              "The analyzed file is an invoice or receipt that contains transaction data.",
+          },
+          classificationInstructions: `Analyze the provided file carefully. Determine if it is an invoice or receipt that should be processed.
 
 A document should be classified as "Needs Processing" if it contains:
 - Transaction details (items, prices, totals)
@@ -239,12 +231,11 @@ A document should be classified as "Needs Processing" if it contains:
 
 If the document doesn't contain these elements or you cannot determine its type, return the "Else" branch.
 Always return the required output schema with confidence and reasoning.`,
-            fileIds: [uploadFile.data.id],
-            inputText: `Analyze this PDF file and determine if it's a receipt or invoice that contains extractable transaction data.`,
-            model: MODELS.CLASSIFICATION,
-            openaiConnection: configVars["OpenAI Connection"],
-          },
-        );
+          fileIds: [uploadFile.data.id],
+          inputText: `Analyze this PDF file and determine if it's a receipt or invoice that contains extractable transaction data.`,
+          model: MODELS.CLASSIFICATION,
+          openaiConnection: configVars["OpenAI Connection"],
+        });
 
       context.logger.info(
         `Classification result for ${file.name}: ${agentClassifyAndBranch.branch}`,
@@ -256,10 +247,9 @@ Always return the required output schema with confidence and reasoning.`,
         context.logger.info(`Extracting receipt data from ${file.name}`);
 
         // Create a specialized agent for PDF data extraction
-        const pdfExtractionAgent =
-          await context.components.openai.createAgent<any>({
-            handoffDescription: "",
-            instructions: `You are an expert at analyzing PDFs and extracting receipt and invoice information.
+        const pdfExtractionAgent = await context.components.openai.createAgent<any>({
+          handoffDescription: "",
+          instructions: `You are an expert at analyzing PDFs and extracting receipt and invoice information.
 
               Your task is to:
               1. Carefully read and analyze the entire document
@@ -270,14 +260,14 @@ Always return the required output schema with confidence and reasoning.`,
               6. If a receipt ID is not visible, generate one based on the store name and date
 
               Be thorough and accurate in your extraction.`,
-            mcpServers: [],
-            modelName: MODELS.EXTRACTION,
-            name: "PDF Receipt Data Extractor",
-            outputSchema: JSON.stringify(RECEIPT_SCHEMA),
-            outputSchemaName: "receipt_data",
-            outputSchemaStrict: false,
-            tools: [],
-          });
+          mcpServers: [],
+          modelName: MODELS.EXTRACTION,
+          name: "PDF Receipt Data Extractor",
+          outputSchema: JSON.stringify(RECEIPT_SCHEMA),
+          outputSchemaName: "receipt_data",
+          outputSchemaStrict: false,
+          tools: [],
+        });
 
         // Run the extraction agent
         const extractedReceipt = await context.components.openai.runAgent<{
@@ -293,21 +283,16 @@ Always return the required output schema with confidence and reasoning.`,
         });
 
         if (extractedReceipt?.data?.finalOutput) {
-          context.logger.info(
-            `Successfully extracted receipt data from ${file.name}`,
-            { receiptId: extractedReceipt.data.finalOutput.receiptId },
-          );
+          context.logger.info(`Successfully extracted receipt data from ${file.name}`, {
+            receiptId: extractedReceipt.data.finalOutput.receiptId,
+          });
           processedReceipts.push(extractedReceipt.data.finalOutput);
 
           // Optional: Move processed file to a different folder or add a processed marker
           // This prevents reprocessing the same file
-          context.logger.debug(
-            `Consider moving ${file.name} to processed folder`,
-          );
+          context.logger.debug(`Consider moving ${file.name} to processed folder`);
         } else {
-          context.logger.warn(
-            `Failed to extract valid receipt data from ${file.name}`,
-          );
+          context.logger.warn(`Failed to extract valid receipt data from ${file.name}`);
         }
       } else {
         context.logger.info(`Skipping ${file.name} - not a receipt/invoice`, {

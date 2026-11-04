@@ -1,5 +1,4 @@
 import { flow } from "@prismatic-io/spectral";
-import { config } from "dotenv";
 
 /**
  * Jira issue data structure for error logs
@@ -72,14 +71,7 @@ const JIRA_ISSUE_SCHEMA = {
   $schema: "http://json-schema.org/draft-07/schema#",
   title: "JiraIssueOutput",
   type: "object",
-  required: [
-    "title",
-    "description",
-    "priority",
-    "issue_type",
-    "severity",
-    "confidence",
-  ],
+  required: ["title", "description", "priority", "issue_type", "severity", "confidence"],
   properties: {
     title: {
       type: "string",
@@ -88,8 +80,7 @@ const JIRA_ISSUE_SCHEMA = {
     },
     description: {
       type: "string",
-      description:
-        "Detailed description including what happened, when, and error details",
+      description: "Detailed description including what happened, when, and error details",
     },
     priority: {
       type: "string",
@@ -184,33 +175,31 @@ export const createJiraIssueForErrorLogs = flow({
 
     // Step 1: Create AI agent for log analysis
     context.logger.debug("Creating log analyzer agent");
-    const createLogAnalyzer =
-      await context.components.openai.createAgent<AgentCreationResult>({
-        instructions: LOG_ANALYZER_INSTRUCTIONS,
-        mcpServers: [],
-        modelName: MODELS.LOG_ANALYZER,
-        name: "Log Analysis Expert",
-        outputSchema: JSON.stringify(JIRA_ISSUE_SCHEMA),
-        outputSchemaName: "jira_issue_output",
-        outputSchemaStrict: false,
-        tools: [],
-      });
+    const createLogAnalyzer = await context.components.openai.createAgent<AgentCreationResult>({
+      instructions: LOG_ANALYZER_INSTRUCTIONS,
+      mcpServers: [],
+      modelName: MODELS.LOG_ANALYZER,
+      name: "Log Analysis Expert",
+      outputSchema: JSON.stringify(JIRA_ISSUE_SCHEMA),
+      outputSchemaName: "jira_issue_output",
+      outputSchemaStrict: false,
+      tools: [],
+    });
 
     // Step 2: Analyze logs and extract Jira issue data
     context.logger.info(
       "Running log analysis to extract issue details for",
       JSON.stringify(logData),
     );
-    const extractJiraIssueInputs =
-      await context.components.openai.runAgent<AgentExecutionResult>({
-        agentConfig: createLogAnalyzer.data,
-        maxTurns: "10",
-        openaiConnection: configVars["OpenAI Connection"],
-        previousResponseId: "",
-        userInput: `Analyze the following logs and attempt to extract the necessary fields to create a Jira issue:\n\n${JSON.stringify(
-          logData,
-        )}`,
-      });
+    const extractJiraIssueInputs = await context.components.openai.runAgent<AgentExecutionResult>({
+      agentConfig: createLogAnalyzer.data,
+      maxTurns: "10",
+      openaiConnection: configVars["OpenAI Connection"],
+      previousResponseId: "",
+      userInput: `Analyze the following logs and attempt to extract the necessary fields to create a Jira issue:\n\n${JSON.stringify(
+        logData,
+      )}`,
+    });
 
     const issueData = extractJiraIssueInputs.data.finalOutput;
 
@@ -238,17 +227,16 @@ export const createJiraIssueForErrorLogs = flow({
     });
 
     // Step 4: Create Jira issue
-    const createIssue =
-      await context.components.atlassianJira.createIssue<JiraIssueCreationResult>(
-        {
-          issueTypeId: configVars["Issue Type"],
-          projectId: configVars["Project"],
-          summary: issueData.title,
-          description: issueData.description,
-          jiraConnection: configVars["Jira Connection"],
-          ADFdescription: "", // FIXME: Required by action
-        },
-      );
+    const createIssue = await context.components.atlassianJira.createIssue<JiraIssueCreationResult>(
+      {
+        issueTypeId: configVars["Issue Type"],
+        projectId: configVars.Project,
+        summary: issueData.title,
+        description: issueData.description,
+        jiraConnection: configVars["Jira Connection"],
+        ADFdescription: "", // FIXME: Required by action
+      },
+    );
 
     context.logger.info("Jira issue created successfully", {
       issueKey: createIssue.data?.key,

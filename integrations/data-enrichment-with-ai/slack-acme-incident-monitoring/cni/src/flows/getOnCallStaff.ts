@@ -19,7 +19,7 @@ export const getOnCallStaff = flow({
       type: "object",
     },
   },
-  onExecution: async (context, params) => {
+  onExecution: async (context) => {
     const { configVars } = context;
     const codeBlock = (await context.components.code.runCode({
       code: `/*
@@ -44,7 +44,7 @@ module.exports = async ({ logger, configVars }, stepResults) => {
 `,
     })) as any;
     const getUserByEmail = await context.components.slack.getUser({
-      connection: configVars["slackConnection"],
+      connection: configVars.slackConnection,
       email: codeBlock.data.email,
     });
     return { data: getUserByEmail };

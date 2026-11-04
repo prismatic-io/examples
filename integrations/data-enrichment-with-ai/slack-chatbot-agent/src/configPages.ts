@@ -1,8 +1,4 @@
-import {
-  configPage,
-  configVar,
-  connectionConfigVar,
-} from "@prismatic-io/spectral";
+import { configPage, configVar, connectionConfigVar } from "@prismatic-io/spectral";
 
 export const configPages = {
   Configuration: configPage({
@@ -41,8 +37,7 @@ export const configPages = {
               visibleToOrgDeployer: false,
             },
             scopes: {
-              value:
-                "app_mentions:read commands chat:write im:history assistant:write",
+              value: "app_mentions:read commands chat:write im:history assistant:write",
               permissionAndVisibilityType: "organization",
               visibleToOrgDeployer: false,
             },

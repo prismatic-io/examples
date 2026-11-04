@@ -1,9 +1,4 @@
-import {
-  webSearchTool,
-  codeInterpreterTool,
-  fileSearchTool,
-  Tool,
-} from "@openai/agents";
+import { type Tool, webSearchTool } from "@openai/agents";
 
 export function createHostedTools(): Tool[] {
   // Setup hosted tools from openai

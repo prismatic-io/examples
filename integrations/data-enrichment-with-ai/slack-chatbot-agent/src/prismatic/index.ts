@@ -1,11 +1,11 @@
 // Types
-export * from "./types";
+
+// API
+export * from "./api";
 
 // Auth
 export * from "./auth";
 
 // Client
 export * from "./client";
-
-// API
-export * from "./api";
+export * from "./types";

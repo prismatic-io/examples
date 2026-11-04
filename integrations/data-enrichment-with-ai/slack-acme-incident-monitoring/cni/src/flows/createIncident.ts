@@ -57,8 +57,7 @@ export const createIncident = flow({
           type: "object",
         },
         description: {
-          description:
-            "Detailed description of the incident including key metrics and impact",
+          description: "Detailed description of the incident including key metrics and impact",
           examples: [
             "Payment Gateway Critical Latency - Payment processing experiencing severe delays. P95 response time: 8200ms (baseline: 500ms), Error rate: 15.2%, 2341 transactions affected over 8 minutes",
           ],
@@ -118,12 +117,7 @@ export const createIncident = flow({
         },
         service: {
           description: "The affected service identifier",
-          examples: [
-            "payment-gateway",
-            "auth-service",
-            "api-gateway",
-            "database-cluster",
-          ],
+          examples: ["payment-gateway", "auth-service", "api-gateway", "database-cluster"],
           maxLength: 100,
           minLength: 1,
           type: "string",
@@ -134,21 +128,12 @@ export const createIncident = flow({
           type: "string",
         },
       },
-      required: [
-        "description",
-        "priority",
-        "service",
-        "scope",
-        "assignee",
-        "reported_by",
-      ],
+      required: ["description", "priority", "service", "scope", "assignee", "reported_by"],
       title: "Create Incident Arguments",
       type: "object",
     },
   },
-  onExecution: async (context, params) => {
-    const { configVars } = context;
-
+  onExecution: async (_context, params) => {
     function remapToIncidentCreated(prismaticPayload: any) {
       const data = prismaticPayload.results.body.data;
       const now = new Date().toISOString();

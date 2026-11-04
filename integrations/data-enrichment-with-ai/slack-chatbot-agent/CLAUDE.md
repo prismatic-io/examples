@@ -12,9 +12,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Testing & Quality
 
-- Run linting: `npm run lint`
-- Fix linting issues: `npm run lint-fix`
-- Format code: `npm run format`
+- Run unit tests: `npm test` (vitest run)
+- Type-check: `npm run typecheck` (tsc --noEmit)
+- Run linting: `npm run lint` (Biome)
+- Apply safe lint fixes and organize imports: `npx biome check --write .`
+- Format code: `npx biome format --write .`
 
 ### Local Development
 
@@ -33,7 +35,6 @@ This is a Prismatic Code-Native Integration (CNI) that implements a Slack AI ass
 ### Key Integration Patterns
 
 1. **Webhook Flow Pattern**: The integration uses a two-phase execution model:
-
    - `onTrigger`: Immediately acknowledges Slack's webhook (3-second requirement) and validates signatures
    - `onExecution`: Performs the actual AI processing asynchronously
 
@@ -70,12 +71,11 @@ All configuration is managed through `src/configPages.ts` and accessed via `conf
 
 ### Testing Approach
 
-The integration is tested through deployment and direct Slack interaction. Use the following commands:
+Unit tests in `src/index.test.ts` cover Slack signature verification, retry detection and the approval Block Kit UI; run them with `npm test`. End-to-end behavior is tested through deployment and direct Slack interaction:
 
 - Build and deploy: `npm run import`
-- Lint code: `npm run lint`
-- Format code: `npm run format`
+- Run tests with a real Slack connection from a deployed instance: `./test.sh`
 
 ### Deployment Notes
 
-This integration is designed to be deployed to Prismatic's platform using the Prism CLI. The build process uses esbuild (`esbuild.config.js`) to bundle all dependencies into a single CommonJS module that Prismatic can execute.
+This integration is designed to be deployed to Prismatic's platform using the Prism CLI. The build process uses tsdown (`tsdown.config.mts`) to bundle all dependencies into a single CommonJS module (`dist/index.js`) that Prismatic can execute. At build time, `SLACK_*`, `OPENAI_*` and `PRISMATIC_*` values from `.env` are inlined as config wizard defaults.

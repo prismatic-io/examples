@@ -1,7 +1,7 @@
-import { flow, util } from "@prismatic-io/spectral";
 import { Agent, run, setDefaultOpenAIKey, user } from "@openai/agents";
-import { ChatRequest } from "../types";
+import { flow, util } from "@prismatic-io/spectral";
 import z from "zod";
+import type { ChatRequest } from "../types";
 
 export const structuredOutput = flow({
   name: "Structured Output",
@@ -9,15 +9,13 @@ export const structuredOutput = flow({
   description:
     "Handles incoming messages and generates responses with a structured output based on JSON schema",
   isSynchronous: true,
-  onTrigger: async (context, payload) => {
+  onTrigger: async (_context, payload) => {
     return Promise.resolve({
       payload,
     });
   },
   onExecution: async ({ configVars }, params) => {
-    const openaiKey = util.types.toString(
-      configVars.OPENAI_API_KEY.fields.apiKey,
-    );
+    const openaiKey = util.types.toString(configVars.OPENAI_API_KEY.fields.apiKey);
     // Set the OpenAI API key
     setDefaultOpenAIKey(openaiKey);
 
@@ -26,16 +24,14 @@ export const structuredOutput = flow({
       name: "Assistant",
       instructions: configVars.SYSTEM_PROMPT,
       outputType: z.object({
-        response: z
-          .string()
-          .describe("The response to the users original question"),
+        response: z.string().describe("The response to the users original question"),
         sentiment: z.string().describe("The sentiment of the users message"),
       }),
     });
 
     // Get the message from the payload
-    const { message, conversationId, lastResponseId } = params.onTrigger.results
-      .body.data as ChatRequest;
+    const { message, conversationId, lastResponseId } = params.onTrigger.results.body
+      .data as ChatRequest;
     if (!message) {
       throw new Error("Message is required for basic chat");
     }

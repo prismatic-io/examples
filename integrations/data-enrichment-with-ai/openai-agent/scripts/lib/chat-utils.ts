@@ -3,17 +3,13 @@
  * Simple, functional approach for easy understanding and reuse
  */
 
-import readline from "readline/promises";
-import { stdin as input, stdout as output } from "process";
-import { v4 as uuidv4 } from "uuid";
-import fs from "fs";
-import { invokeFlow } from "@prismatic-io/spectral/dist/testing";
-import { defaultTriggerPayload } from "@prismatic-io/spectral/dist/testing";
-import {
-  createOrganizationClient,
-  getIntegrationWithSystemInstance,
-} from "../../src/prismatic";
-import { ChatRequest, ChatResponse, Interruption } from "../../src/types";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs";
+import { stdin as input, stdout as output } from "node:process";
+import readline from "node:readline/promises";
+import { defaultTriggerPayload, invokeFlow } from "@prismatic-io/spectral/testing";
+import { createOrganizationClient, getIntegrationWithSystemInstance } from "../../src/prismatic";
+import type { ChatRequest, ChatResponse, Interruption } from "../../src/types";
 // Suppress Node.js deprecation warnings
 export function suppressWarnings() {
   process.removeAllListeners("warning");
@@ -56,11 +52,15 @@ export async function runChatLoop(config: ChatConfig): Promise<void> {
   }
 
   if (config.features && config.features.length > 0) {
-    config.features.forEach((feature) => console.log(feature));
+    for (const feature of config.features) {
+      console.log(feature);
+    }
   }
 
   if (config.extraInfo && config.extraInfo.length > 0) {
-    config.extraInfo.forEach((info) => console.log(info));
+    for (const info of config.extraInfo) {
+      console.log(info);
+    }
   }
 
   console.log(`----------------------------\n`);
@@ -75,9 +75,7 @@ export async function runChatLoop(config: ChatConfig): Promise<void> {
   } else {
     // Check for OpenAI API key in local mode
     if (!process.env.OPENAI_API_KEY) {
-      console.error(
-        "❌ Error: OPENAI_API_KEY environment variable is required",
-      );
+      console.error("❌ Error: OPENAI_API_KEY environment variable is required");
       console.error("Please set it in your .env file or environment");
       process.exit(1);
     }
@@ -86,7 +84,9 @@ export async function runChatLoop(config: ChatConfig): Promise<void> {
   // Print examples if provided
   if (config.examplePrompts && config.examplePrompts.length > 0) {
     console.log("💡 Example prompts:");
-    config.examplePrompts.forEach((prompt) => console.log(`  - '${prompt}'`));
+    for (const prompt of config.examplePrompts) {
+      console.log(`  - '${prompt}'`);
+    }
     console.log();
   }
 
@@ -95,7 +95,7 @@ export async function runChatLoop(config: ChatConfig): Promise<void> {
 
   // Start conversation loop
   const rl = readline.createInterface({ input, output });
-  const conversationId = `chat-${uuidv4()}`;
+  const conversationId = `chat-${randomUUID()}`;
   let lastResponseId: string | undefined;
   let currentState: string | undefined;
 
@@ -122,13 +122,7 @@ export async function runChatLoop(config: ChatConfig): Promise<void> {
       // Invoke the flow (local or prismatic)
       const result =
         mode === "local"
-          ? await invokeLocal(
-              config.flow,
-              message,
-              conversationId,
-              lastResponseId,
-              currentState,
-            )
+          ? await invokeLocal(config.flow, message, conversationId, lastResponseId, currentState)
           : await invokePrismatic(
               webhookUrl!,
               message,
@@ -138,11 +132,7 @@ export async function runChatLoop(config: ChatConfig): Promise<void> {
             );
 
       // Handle interruptions if present
-      if (
-        result.interruptions &&
-        result.interruptions.length > 0 &&
-        result.state
-      ) {
+      if (result.interruptions && result.interruptions.length > 0 && result.state) {
         const approvalResult = await handleInterruptions(
           result.interruptions,
           result.state,
@@ -155,10 +145,7 @@ export async function runChatLoop(config: ChatConfig): Promise<void> {
         );
 
         // Handle the result after approvals
-        if (
-          approvalResult.interruptions &&
-          approvalResult.interruptions.length > 0
-        ) {
+        if (approvalResult.interruptions && approvalResult.interruptions.length > 0) {
           // More approvals needed
           console.log("Additional approvals required. Continuing...\n");
           lastResponseId = approvalResult.lastResponseId;
@@ -204,6 +191,7 @@ export async function invokeLocal(
 ): Promise<ChatResponse> {
   const configVars = {
     OPENAI_API_KEY: {
+      key: "OPENAI_API_KEY",
       fields: { apiKey: process.env.OPENAI_API_KEY },
     },
     SYSTEM_PROMPT: process.env.SYSTEM_PROMPT || "You are a helpful assistant.",
@@ -274,9 +262,7 @@ export async function invokePrismatic(
 /**
  * Get webhook URL for a flow from Prismatic
  */
-export async function getPrismaticWebhookUrl(
-  stableKey: string,
-): Promise<string | null> {
+export async function getPrismaticWebhookUrl(stableKey: string): Promise<string | null> {
   // Check for integration ID file
   const prismJsonPath = ".spectral/prism.json";
   if (!fs.existsSync(prismJsonPath)) {
@@ -299,15 +285,10 @@ export async function getPrismaticWebhookUrl(
   console.log("Fetching system instance details...\n");
 
   // Create Prismatic client
-  const client = await createOrganizationClient(
-    process.env.PRISMATIC_REFRESH_TOKEN!,
-  );
+  const client = await createOrganizationClient(process.env.PRISMATIC_REFRESH_TOKEN!);
 
   // Get integration with system instance
-  const integration = await getIntegrationWithSystemInstance(
-    client,
-    integrationId,
-  );
+  const integration = await getIntegrationWithSystemInstance(client, integrationId);
 
   if (!integration.instances?.nodes?.length) {
     console.error(
@@ -320,14 +301,10 @@ export async function getPrismaticWebhookUrl(
   console.log(`✅ Found system instance: ${systemInstance.name}`);
 
   // Find the flow by stableKey
-  const flowConfig = systemInstance.flowConfigs.nodes.find(
-    (fc) => fc.flow.stableKey === stableKey,
-  );
+  const flowConfig = systemInstance.flowConfigs.nodes.find((fc) => fc.flow.stableKey === stableKey);
 
   if (!flowConfig) {
-    console.error(
-      `❌ Error: Flow with stableKey '${stableKey}' not found in system instance.`,
-    );
+    console.error(`❌ Error: Flow with stableKey '${stableKey}' not found in system instance.`);
     process.exit(1);
   }
 
@@ -362,11 +339,8 @@ export async function handleInterruptions(
 
     // Ask for approval
     console.log(); // Empty line
-    const approval = await rl.question(
-      `✅ Approve ${interruption.name}? (yes/no): `,
-    );
-    const approved =
-      approval.toLowerCase() === "yes" || approval.toLowerCase() === "y";
+    const approval = await rl.question(`✅ Approve ${interruption.name}? (yes/no): `);
+    const approved = approval.toLowerCase() === "yes" || approval.toLowerCase() === "y";
 
     approvedInterruptions.push({
       ...interruption,
@@ -407,10 +381,8 @@ export function displayApproval(toolName: string, rawArgs: any): void {
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
   // Parse and display arguments
-  let displayContent: string;
-
   const parsed = JSON.parse(rawArgs);
-  displayContent = Object.entries(parsed)
+  const displayContent = Object.entries(parsed)
     .map(([k, v]) => `${k}: ${v}`)
     .join("\n");
 
