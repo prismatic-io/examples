@@ -1,5 +1,5 @@
 import { DescribeRegionsCommand } from "@aws-sdk/client-ec2";
-import { ListBucketsCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import awsS3 from "@prismatic-io/components-aws-s3";
 import {
   configPage,
   configVar,
@@ -7,37 +7,15 @@ import {
   connectionConfigVar,
   dataSourceConfigVar,
 } from "@prismatic-io/spectral";
-import { createEc2Client, createS3Client } from "./awsClient";
+import { createEc2Client } from "./awsClient";
 
 export const configPages = {
   Connections: configPage({
     elements: {
-      "S3 Connection": connectionConfigVar({
+      // The Amazon S3 component's access key connection, from its npm package.
+      // Its accessKeyId and secretAccessKey fields are what src/awsClient.ts reads.
+      "S3 Connection": awsS3.connections.apiKeySecret({
         stableKey: "s3-connection",
-        dataType: "connection",
-        icons: {
-          avatarPath: "s3.png",
-        },
-        inputs: {
-          accessKeyId: {
-            label: "Access Key ID",
-            placeholder: "Access Key ID",
-            type: "string",
-            required: true,
-            shown: true,
-            comments: "An AWS IAM Access Key ID",
-            example: "AKIAIOSFODNN7EXAMPLE",
-          },
-          secretAccessKey: {
-            label: "Secret Access Key",
-            placeholder: "Secret Access Key",
-            type: "password",
-            required: true,
-            shown: true,
-            comments: "An AWS IAM Secret Access Key",
-            example: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-          },
-        },
       }),
       "PostgreSQL Connection": connectionConfigVar({
         stableKey: "postgres-connection",
@@ -101,6 +79,7 @@ export const configPages = {
   }),
   "AWS Region": configPage({
     elements: {
+      // The regions enabled for the connection's AWS account, rather than every region.
       "AWS Region": dataSourceConfigVar({
         stableKey: "aws-region",
         dataSourceType: "picklist",
@@ -122,20 +101,17 @@ export const configPages = {
   }),
   "AWS S3 Bucket": configPage({
     elements: {
+      // The Amazon S3 package lists the account's buckets; sorted by name here, as
+      // the picker always has been.
       "S3 Bucket Name": dataSourceConfigVar({
         stableKey: "s3-bucket",
         dataSourceType: "picklist",
         perform: async (context) => {
-          const s3Client = createS3Client(
-            context.configVars["S3 Connection"] as Connection,
-            `${context.configVars["AWS Region"]}`,
-          );
-          const listBucketsCommand = new ListBucketsCommand({});
-          const response = await s3Client.send(listBucketsCommand);
-          const bucketNames = (response.Buckets || [])
-            .map((bucket) => bucket.Name)
-            .filter((val) => typeof val === "string")
-            .filter(Boolean)
+          const { result } = await awsS3.dataSources.selectBucket.perform({
+            accessKey: context.configVars["S3 Connection"] as Connection,
+          });
+          const bucketNames = result
+            .map((bucket) => (typeof bucket === "string" ? bucket : bucket.key))
             .sort();
           return { result: bucketNames };
         },

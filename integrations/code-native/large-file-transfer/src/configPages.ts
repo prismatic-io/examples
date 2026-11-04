@@ -1,5 +1,5 @@
+import dropbox from "@prismatic-io/components-dropbox";
 import { configPage, configVar } from "@prismatic-io/spectral";
-import { dropboxOauth } from "./manifests/dropbox/connections/oauth";
 
 export const configPages = {
   Connections: configPage({
@@ -7,11 +7,14 @@ export const configPages = {
       // Dropbox app key and secret are read from .env at build time (see .env.example).
       // For production use, consider a customer-activated connection instead:
       // https://prismatic.io/docs/integrations/connections/integration-agnostic-connections/customer-activated/
-      "Dropbox Connection": dropboxOauth("dropbox-connection", {
-        clientId: { value: process.env.DROPBOX_CLIENT_ID ?? "" },
-        clientSecret: {
-          value: process.env.DROPBOX_CLIENT_SECRET ?? "",
-          writeOnly: true,
+      "Dropbox Connection": dropbox.connections.oauth({
+        stableKey: "dropbox-connection",
+        values: {
+          clientId: { value: process.env.DROPBOX_CLIENT_ID ?? "" },
+          clientSecret: {
+            value: process.env.DROPBOX_CLIENT_SECRET ?? "",
+            writeOnly: true,
+          },
         },
       }),
     },
