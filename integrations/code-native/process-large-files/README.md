@@ -10,7 +10,7 @@ Beyond the standard integration files, this integration contains the following k
 
 - `src/awsClient.ts` - Creates and exports an AWS S3 client using the AWS SDK v3.
 - `src/pgClient.ts` - Creates and exports a PostgreSQL client using the `pg` library.
-- `src/configPages.ts` - Adds connection configuration fields for PostgreSQL and Amazon S3, and several data sources for selecting AWS region and bucket.
+- `src/configPages.ts` - Adds the PostgreSQL connection, the AWS region picker, which lists the regions enabled for the connection's account, and the Amazon S3 connection and bucket picker from the Amazon S3 component's npm package, [`@prismatic-io/components-aws-s3`](https://www.npmjs.com/package/@prismatic-io/components-aws-s3). The download itself uses the AWS SDK directly, since streaming needs the response body as a stream.
 
 ## Node.js streams
 
