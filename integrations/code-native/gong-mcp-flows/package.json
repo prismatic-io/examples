@@ -1,0 +1,24 @@
+{
+  "name": "gong-mcp-flows",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "tsdown",
+    "import": "npm run build && prism integrations:import",
+    "test": "vitest run",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "^10.38.5",
+    "axios": "^1.21.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.1",
+    "@types/node": "^22.20.5",
+    "tsdown": "^0.22.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

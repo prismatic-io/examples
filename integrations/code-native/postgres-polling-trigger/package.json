@@ -1,0 +1,24 @@
+{
+  "name": "postgres-polling-trigger",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "tsdown",
+    "import": "npm run build && prism integrations:import",
+    "test": "vitest run",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "^10.38.5",
+    "pg": "^8.21.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.1",
+    "@types/pg": "^8.20.0",
+    "tsdown": "^0.22.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

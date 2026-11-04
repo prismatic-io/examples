@@ -1,0 +1,29 @@
+{
+  "name": "salesforce-initial-data-sync",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "tsdown",
+    "import": "npm run build && prism integrations:import",
+    "test": "vitest run",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prismatic-io/spectral": "^10.38.5",
+    "fast-xml-parser": "^5.9.3",
+    "jsforce": "^3.10.16",
+    "pg": "^8.22.0",
+    "pg-format": "^1.0.4",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.1",
+    "@types/pg": "^8.20.0",
+    "@types/pg-format": "^1.0.5",
+    "tsdown": "^0.22.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

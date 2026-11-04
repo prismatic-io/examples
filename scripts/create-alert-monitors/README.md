@@ -1,7 +1,7 @@
 # Programmatically Create Alert Monitors
 
 This script demonstrates how to programmatically add alert monitors to your instances through Prismatic's GraphQL API.
-Documentation for the API can be found at [prismatic.io/docs](https://prismatic.io/docs/api/api-overview/).
+Documentation for the API can be found at [prismatic.io/docs](https://prismatic.io/docs/api/).
 
 `index.ts` creates an authenticated GraphQL client and uses that client to make requests to the Prismatic API.
 Files in the `queries/` directory wrap various GraphQL queries and mutations to do things like list instances or create new alert monitors.

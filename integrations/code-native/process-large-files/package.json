@@ -1,0 +1,32 @@
+{
+  "name": "process-large-files",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "tsdown",
+    "import": "npm run build && prism integrations:import",
+    "test": "vitest run",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ec2": "^3.1071.0",
+    "@aws-sdk/client-s3": "^3.1071.0",
+    "@prismatic-io/spectral": "^10.38.5",
+    "pg": "^8.21.0",
+    "pg-copy-streams": "^7.0.0",
+    "unzip-stream": "^0.3.4"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.1",
+    "@types/pg": "^8.20.0",
+    "@types/pg-copy-streams": "^1.2.5",
+    "@types/unzip-stream": "^0.3.4",
+    "archiver": "^8.0.0",
+    "dotenv": "^17.4.2",
+    "tsdown": "^0.22.3",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

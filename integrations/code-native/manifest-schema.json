@@ -1,0 +1,17 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "directory": { "type": "string" },
+      "name": { "type": "string" },
+      "description": { "type": "string" },
+      "tags": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "required": ["directory", "name", "description", "tags"],
+    "additionalProperties": false
+  }
+}

@@ -1,0 +1,71 @@
+import { connectionConfigVar, OAuth2Type } from "@prismatic-io/spectral";
+import { SLACK_CLIENT_ID, SLACK_CLIENT_SECRET, SLACK_SIGNING_SECRET } from "./slackConfig";
+
+export const slackConnectionConfigVar = connectionConfigVar({
+  stableKey: "slack-oauth-connection",
+  dataType: "connection",
+  oauth2Type: OAuth2Type.AuthorizationCode,
+  inputs: {
+    authorizeUrl: {
+      label: "Authorize URL",
+      placeholder: "Authorize URL",
+      type: "string",
+      default: "https://slack.com/oauth/v2/authorize",
+      required: true,
+      shown: false,
+      comments: "The OAuth 2.0 Authorization URL for the API",
+    },
+    tokenUrl: {
+      label: "Token URL",
+      placeholder: "Token URL",
+      type: "string",
+      default: "https://slack.com/api/oauth.v2.access",
+      required: true,
+      shown: false,
+      comments: "The OAuth 2.0 Token URL for the API",
+    },
+    revokeUrl: {
+      label: "Revoke URL",
+      placeholder: "Revoke URL",
+      type: "string",
+      required: true,
+      shown: false,
+      comments: "The OAuth 2.0 Revocation URL for Slack",
+      default: "https://slack.com/api/auth.revoke",
+    },
+    scopes: {
+      label: "Scopes",
+      placeholder: "Scopes",
+      type: "string",
+      required: false,
+      shown: false,
+      comments: "Space separated OAuth 2.0 permission scopes for the API",
+      default: "chat:write chat:write.public channels:read",
+    },
+    clientId: {
+      label: "Client ID",
+      placeholder: "Client ID",
+      type: "string",
+      required: true,
+      shown: false,
+      comments: "Client Identifier of your app for the API",
+      default: SLACK_CLIENT_ID,
+    },
+    clientSecret: {
+      label: "Client Secret",
+      placeholder: "Client Secret",
+      type: "password",
+      required: true,
+      shown: false,
+      comments: "Client Secret of your app for the API",
+      default: SLACK_CLIENT_SECRET,
+    },
+    signingSecret: {
+      label: "Signing Secret",
+      type: "password",
+      required: true,
+      shown: false,
+      default: SLACK_SIGNING_SECRET,
+    },
+  },
+});

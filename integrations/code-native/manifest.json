@@ -1,0 +1,92 @@
+[
+  {
+    "directory": "generic-mcp-example",
+    "name": "Generic MCP Example",
+    "description": "An example integration demonstrating how to create a generic (MCP) tool that can be used by AI agents to search for people in an external CRM system.",
+    "tags": ["mcp", "ai"]
+  },
+  {
+    "directory": "postgres-polling-trigger",
+    "name": "PostgreSQL Polling Trigger",
+    "description": "Monitor a PostgreSQL table for new records using cursor-based polling with state management and dynamic table selection.",
+    "tags": ["postgres", "polling", "trigger", "database"]
+  },
+  {
+    "directory": "process-large-files",
+    "name": "Process Large Files",
+    "description": "Process large files efficiently using Node.js streams.",
+    "tags": ["large-file-processing", "streams"]
+  },
+  {
+    "directory": "shared-endpoint-example",
+    "name": "Shared Endpoint Example",
+    "description": "An example integration demonstrating the use of shared webhook endpoints.",
+    "tags": ["webhooks", "shared-endpoints"]
+  },
+  {
+    "directory": "salesforce",
+    "name": "Salesforce",
+    "description": "Create a field mapping between Salesforce objects and your system and leverage Salesforce workflows to sync data bidirectionally.",
+    "tags": ["salesforce", "webhooks"]
+  },
+  {
+    "directory": "salesforce-mcp",
+    "name": "Salesforce MCP Example",
+    "description": "An example integration demonstrating how to create a Salesforce-specific (MCP) tool that can be used by AI agents to search for contacts in Salesforce.",
+    "tags": ["mcp", "ai", "salesforce"]
+  },
+  {
+    "directory": "salesforce-initial-data-sync",
+    "name": "Salesforce Initial Data Sync",
+    "description": "Sync a large Salesforce data set into a PostgreSQL database in batches when an instance is deployed, then process new records in real time via webhook.",
+    "tags": ["salesforce", "postgres", "batch", "webhooks", "initial-data-sync"]
+  },
+  {
+    "directory": "simple-initial-data-sync",
+    "name": "Simple Initial Data Sync",
+    "description": "Backfill a large data set from a paginated API in batches when an instance is deployed, then process individual records in real time via webhook, using the batchFlowTrigger pattern.",
+    "tags": ["batch", "webhooks", "initial-data-sync", "pagination"]
+  },
+  {
+    "directory": "slack",
+    "name": "Slack",
+    "description": "Send messages to Slack channels based on data from external systems, with dynamic channel selection and scheduling.",
+    "tags": ["slack", "webhooks"]
+  },
+  {
+    "directory": "large-file-transfer",
+    "name": "Large File Transfer",
+    "description": "Copy a file of any size between Dropbox folders in byte-range chunks, one chunk per batch execution, using batchFlowTrigger and a resumable upload session.",
+    "tags": ["large-file-processing", "batch", "dropbox", "upload-session"]
+  },
+  {
+    "directory": "salesforce-mcp-flows",
+    "name": "Salesforce MCP Flows",
+    "description": "Expose flows that list and update a user's Salesforce opportunities as MCP tools that AI agents can call.",
+    "tags": ["mcp", "ai", "salesforce", "agent-flows"]
+  },
+  {
+    "directory": "gong-mcp-flows",
+    "name": "Gong MCP Flows",
+    "description": "Expose flows that list Gong calls, search a user's calls and fetch call transcripts as MCP tools that AI agents can call.",
+    "tags": ["mcp", "ai", "gong", "agent-flows"]
+  },
+  {
+    "directory": "outlook-mcp-flows",
+    "name": "Outlook MCP Flows",
+    "description": "Expose flows that search and send email and read and create calendar events in Microsoft Outlook as MCP tools that AI agents can call.",
+    "tags": ["mcp", "ai", "outlook", "microsoft", "agent-flows"]
+  },
+  {
+    "directory": "slack-with-components",
+    "name": "Slack With Components",
+    "description": "Send Slack messages on a schedule and from webhooks using the existing Slack connector for OAuth, data sources and actions. Compare with Slack Without Components.",
+    "tags": ["slack", "webhooks", "existing-components"]
+  },
+  {
+    "directory": "slack-no-components",
+    "name": "Slack Without Components",
+    "description": "The same Slack integration as Slack With Components, built without existing connectors: a custom OAuth connection, HTTP client and channel data source.",
+    "tags": ["slack", "webhooks", "oauth", "http-client"]
+  }
+]

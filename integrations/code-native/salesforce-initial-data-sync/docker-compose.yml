@@ -1,0 +1,19 @@
+services:
+  local-psql-db:
+    image: postgres:18.4
+    environment:
+      - POSTGRES_DB=my-db
+      - POSTGRES_USER=my-user
+      - POSTGRES_PASSWORD=my-pass
+    ports:
+      - 5432:5432
+    command: ["postgres", "-c", "log_statement=all"]
+  onprem:
+    image: prismaticio/on-prem-agent:latest
+    environment:
+      PRISMATIC_URL: https://app.prismatic.io
+      APP_PORT: 5432
+      APP_HOST: local-psql-db
+      NAME: Example PSQL Server
+      REGISTRATION_JWT: ${PRISMATIC_ONPREM_REGISTRATION_JWT}
+    restart: always # Use "always" to start this service when the Docker engine starts
