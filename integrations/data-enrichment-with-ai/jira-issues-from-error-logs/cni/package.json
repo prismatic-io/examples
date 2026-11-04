@@ -15,8 +15,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
-    "@component-manifests/atlassian-jira": "*",
-    "@component-manifests/openai": "*",
     "tsdown": "^0.22.3",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9"

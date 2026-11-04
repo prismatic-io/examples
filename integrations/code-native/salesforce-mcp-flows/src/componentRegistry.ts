@@ -1,4 +1,4 @@
-import salesforce from "@component-manifests/salesforce";
+import salesforce from "./manifests/salesforce";
 import { componentManifests } from "@prismatic-io/spectral";
 
 export const componentRegistry = componentManifests({

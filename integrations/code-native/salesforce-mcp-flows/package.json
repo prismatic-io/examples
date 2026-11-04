@@ -16,7 +16,6 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
-    "@component-manifests/salesforce": "2026.8.19-t-17.53.16",
     "@types/node": "^22.20.5",
     "tsdown": "^0.22.3",
     "typescript": "^6.0.3",
