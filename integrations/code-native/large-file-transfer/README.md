@@ -81,7 +81,7 @@ Beyond the standard integration files, this integration contains the following k
 - [src/dropboxTransfer.ts](src/dropboxTransfer.ts) - Chunk planning, the Dropbox content hash algorithm, range downloads, and a small client for Dropbox's upload session endpoints.
 - [src/generateTestFile.ts](src/generateTestFile.ts) - The **Generate Test File** flow, with [src/zipBuilder.ts](src/zipBuilder.ts) providing a minimal zip writer.
 - [src/configPages.ts](src/configPages.ts) - The Dropbox OAuth connection and folder and chunk size settings.
-- [src/manifests/dropbox](src/manifests/dropbox) - The generated manifest for the Dropbox component.
+- The Dropbox component comes from its npm package, [`@prismatic-io/components-dropbox`](https://www.npmjs.com/package/@prismatic-io/components-dropbox), which supplies the OAuth connection in [src/configPages.ts](src/configPages.ts) and the actions [src/dropboxTransfer.ts](src/dropboxTransfer.ts) calls.
 
 ## Flow details
 

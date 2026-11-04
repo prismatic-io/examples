@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
+import dropbox from "@prismatic-io/components-dropbox";
 import type { ActionContext, Connection } from "@prismatic-io/spectral";
 
-// Batched-trigger callbacks receive component invokers on `context` but are
-// not wrapped in Spectral's ActionContext storage, so the generated manifest
-// `.perform()` helpers throw there. `context.components.dropbox.*` works in
-// both the trigger and onExecution, so this file uses that form throughout.
+// Dropbox's actions come from its npm package and run in this integration's
+// process. They need Spectral's execution context, which Spectral 10.36 and
+// later provide in the batched trigger as well as in onExecution.
 
 /** Dropbox content-hash block size. Also the alignment concurrent upload sessions require. */
 export const DROPBOX_BLOCK_BYTES = 4 * 1024 * 1024;
@@ -184,7 +184,7 @@ export const readMetadata = async (
   path: string,
 ): Promise<DropboxFileMetadata> =>
   unwrap<DropboxFileMetadata>(
-    await context.components.dropbox.getMetadata({
+    await dropbox.actions.getMetadata({
       dropboxConnection: dropboxConnection(context),
       path,
     }),
@@ -201,7 +201,7 @@ const ensureFolder = async (
     if (!isNotFound(error)) throw error;
   }
   try {
-    await context.components.dropbox.createFolder({
+    await dropbox.actions.createFolder({
       dropboxConnection: dropboxConnection(context),
       path,
     });
@@ -230,7 +230,7 @@ export const findOldestFile = async (
   folder: string,
 ): Promise<DropboxFileMetadata | undefined> => {
   const listed = unwrap<ListFolderResult>(
-    await context.components.dropbox.listFolder({
+    await dropbox.actions.listFolder({
       dropboxConnection: dropboxConnection(context),
       path: folder,
       fetchAll: true,
@@ -262,7 +262,7 @@ export const downloadRange = async (
   >,
 ): Promise<Buffer> => {
   const temporary = unwrap<TemporaryLinkResult>(
-    await context.components.dropbox.getTemporaryLink({
+    await dropbox.actions.getTemporaryLink({
       dropboxConnection: dropboxConnection(context),
       path: chunk.sourcePath,
     }),
@@ -459,7 +459,7 @@ export const archiveSource = async (
   toPath: string,
 ): Promise<void> => {
   try {
-    await context.components.dropbox.moveObject({
+    await dropbox.actions.moveObject({
       dropboxConnection: dropboxConnection(context),
       fromPath,
       toPath,
