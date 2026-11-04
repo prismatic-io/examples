@@ -8,7 +8,6 @@ They are listed in [manifest.json](./manifest.json), and CI validates and builds
 | **AI and MCP**                                                  |                                                                                                          |
 | [generic-mcp-example](./generic-mcp-example/)                   | A minimal MCP tool that searches for people in an external CRM.                                          |
 | [salesforce-mcp](./salesforce-mcp/)                             | A Salesforce MCP tool that searches contacts.                                                            |
-| [salesforce-mcp-flows](./salesforce-mcp-flows/)                 | MCP tools that list and update a user's Salesforce opportunities.                                        |
 | [gong-mcp-flows](./gong-mcp-flows/)                             | MCP tools that list Gong calls, search a user's calls and fetch transcripts.                             |
 | [outlook-mcp-flows](./outlook-mcp-flows/)                       | MCP tools that search and send Outlook email and read and create calendar events.                        |
 | **Data sync and triggers**                                      |                                                                                                          |
