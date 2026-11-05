@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "^10.38.5",
+    "@prismatic-io/spectral": "^10.39.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

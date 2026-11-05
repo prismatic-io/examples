@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "^10.38.5",
+    "@prismatic-io/spectral": "^10.39.0",
     "jsforce": "^3.10.16",
     "zod": "^4.4.3"
   },

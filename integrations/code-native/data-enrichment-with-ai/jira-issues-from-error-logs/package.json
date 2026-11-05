@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@prismatic-io/spectral": "^10.38.5"
+    "@prismatic-io/spectral": "^10.39.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
