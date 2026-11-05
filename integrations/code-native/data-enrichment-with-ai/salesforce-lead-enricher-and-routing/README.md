@@ -104,20 +104,9 @@ The lead enrichment flow (`src/flows/enrichIncomingLead.ts`) implements comprehe
    - Skips creation for leads with score of 0
    - Includes company description and employee count
 
-## Implementation Options
-
-This integration is available in two formats:
-
-### 1. Code-Native Implementation (TypeScript)
-
-The `cni/` directory contains the full TypeScript implementation for developers who prefer code-based configuration.
-
-#### Building and Importing the Code-Native Version
+## Building and Importing
 
 ```bash
-# Navigate to the cni directory
-cd cni
-
 # Install dependencies
 npm install
 
@@ -130,50 +119,20 @@ prism integrations:import --open
 
 The `--open` flag will automatically open the integration in the Prismatic designer after import.
 
-### 2. Low-Code Visual Builder
-
-The `low-code/` directory contains a YAML definition that can be imported directly into Prismatic's visual builder.
-
-![Duplicate Detection Flow](detect-duplicate-salesforce.png)
-
-![Lead Enrichment Flow](lead-enrichment-salesforce.png)
-
-#### Importing the Low-Code Version
-
-##### Through the UI
-
-1. Open the Integration Designer in your Prismatic organization
-2. Click on Integration details modal
-3. Select Import
-4. Upload the `low-code/lead-enrich-salesforce.yml` file
-
-##### Using Prism CLI
-
-```bash
-prism integrations:import --path ./low-code/lead-enrich-salesforce.yml
-```
-
-The visual flows will be created automatically with all the AI components configured.
-
 ## Project Structure
 
 ```text
 salesforce-lead-enricher-and-routing/
-├── cni/                         # Code-native implementation
-│   ├── src/
-│   │   ├── flows/
-│   │   │   ├── checkForDuplicates.ts  # Duplicate detection flow
-│   │   │   ├── enrichIncomingLead.ts  # Lead enrichment flow
-│   │   │   └── index.ts               # Flow exports
-│   │   ├── index.ts            # Integration export
-│   │   ├── componentRegistry.ts # Component configuration
-│   │   └── configPages.ts      # UI configuration
-│   ├── package.json            # Dependencies
-│   └── tsconfig.json           # TypeScript config
-├── low-code/                    # Low-code alternative
-│   └── lead-enrich-salesforce.yml  # YAML configuration for visual import
-├── detect-duplicate-salesforce.png  # Duplicate detection flow screenshot
-└── lead-enrichment-salesforce.png   # Lead enrichment flow screenshot
+├── src/
+│   ├── flows/
+│   │   ├── checkForDuplicates.ts  # Duplicate detection flow
+│   │   ├── enrichIncomingLead.ts  # Lead enrichment flow
+│   │   └── index.ts               # Flow exports
+│   ├── index.ts            # Integration export
+│   ├── componentRegistry.ts # Component configuration
+│   └── configPages.ts      # UI configuration
+├── package.json            # Dependencies
+└── tsconfig.json           # TypeScript config
 ```
 
 ## Configuration

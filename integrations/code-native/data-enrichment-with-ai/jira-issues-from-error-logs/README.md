@@ -90,20 +90,9 @@ The primary flow (`src/flows/createJiraIssueForErrorLogs.ts`) implements a compl
    - Only creates Jira tickets for high-confidence errors
    - Returns analysis results for all processed logs
 
-## Implementation Options
-
-This integration is available in two formats:
-
-### 1. Code-Native Implementation (TypeScript)
-
-The `cni/` directory contains the full TypeScript implementation for developers who prefer code-based configuration.
-
-#### Building and Importing the Code-Native Version
+## Building and Importing
 
 ```bash
-# Navigate to the cni directory
-cd cni
-
 # Install dependencies
 npm install
 
@@ -116,45 +105,19 @@ prism integrations:import --open
 
 The `--open` flag will automatically open the integration in the Prismatic designer after import.
 
-### 2. Low-Code Visual Builder
-
-The `low-code/` directory contains a YAML definition that can be imported directly into Prismatic's visual builder.
-
-![Low-Code Visual Flow](low-code.png)
-
-#### Importing the Low-Code Version
-
-##### Through the UI
-
-1. Open the Integration Designer in your Prismatic organization
-2. Click on Integration details modal
-3. Select Import
-4. Upload the `low-code/jira-issues-from-error-logs.yml` file
-
-##### Using Prism CLI
-
-```bash
-prism integrations:import --path ./low-code/jira-issues-from-error-logs.yml
-```
-
-The visual flow will be created automatically with all the AI components configured.
-
 ## Project Structure
 
 ```text
 jira-issues-from-error-logs/
-├── cni/                         # Code-native implementation
-│   ├── src/
-│   │   ├── flows/
-│   │   │   └── createJiraIssueForErrorLogs.ts  # Main AI error analysis flow
-│   │   ├── index.ts            # Integration export
-│   │   ├── componentRegistry.ts # Component configuration
-│   │   └── configPages.ts      # UI configuration
-│   ├── package.json            # Dependencies
-│   └── tsconfig.json           # TypeScript config
-├── low-code/                    # Low-code alternative
-│   └── jira-issues-from-error-logs.yml  # YAML configuration for visual import
-└── test-payload.json            # Example log payload for testing
+├── src/
+│   ├── flows/
+│   │   └── createJiraIssueForErrorLogs.ts  # Main AI error analysis flow
+│   ├── index.ts            # Integration export
+│   ├── componentRegistry.ts # Component configuration
+│   └── configPages.ts      # UI configuration
+├── package.json            # Dependencies
+├── tsconfig.json           # TypeScript config
+└── test-payload.json       # Example log payload for testing
 ```
 
 ## Configuration
@@ -261,9 +224,9 @@ Modify the confidence thresholds to control issue creation sensitivity:
 
 ```typescript
 const CONFIDENCE_THRESHOLDS = {
-  HIGH: 0.8,   // Only critical errors
+  HIGH: 0.8, // Only critical errors
   MEDIUM: 0.6, // Include moderate issues
-  LOW: 0.3,    // More inclusive
+  LOW: 0.3, // More inclusive
 };
 ```
 

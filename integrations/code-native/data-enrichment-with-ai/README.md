@@ -3,7 +3,7 @@
 These examples use LLMs to enrich data with extra context and insights, and to respond intelligently to events from other systems: incoming leads, error logs, alerts, chat messages and uploaded files.
 See [Data Enrichment with AI](https://prismatic.io/docs/ai/data-enrichment/) for more information.
 
-Several examples include both a code-native version (`cni/`) and an equivalent low-code version (`low-code/`), so you can compare the two approaches.
+Each example is a self-contained code-native integration: `cd` into its directory, run `npm install` and `npm run build`, then `prism integrations:import`.
 
 | Example                                                                        | Responds to              | What it does                                                                                                                                            |
 | ------------------------------------------------------------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -24,6 +24,10 @@ They are listed in [manifest.json](./manifest.json), and CI validates and builds
 | [slack-with-components](./slack-with-components/)               | A Slack integration built on the existing Slack connector.                                               |
 | [slack-no-components](./slack-no-components/)                   | The same Slack integration built without existing connectors, for comparison.                            |
 
+## Data enrichment with AI
+
+[data-enrichment-with-ai/](./data-enrichment-with-ai/) contains integrations that use LLMs to enrich data and respond to events: receipt extraction from Dropbox PDFs, Jira issues from error logs, Salesforce lead enrichment and routing, Slack incident monitoring with human approval, and two agent examples built on the OpenAI Agents SDK.
+
 ## Working with a template
 
 ```bash

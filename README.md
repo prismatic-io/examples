@@ -42,7 +42,7 @@ For information on the Prismatic platform, check out our [website](https://prism
 
 - [`components/`](components/) contains example custom components (connectors), showing patterns like gRPC clients, on-prem agent connectivity, JSON Forms data sources and streaming large files.
 - [`integrations/code-native/`](integrations/code-native/) contains TypeScript code-native integration templates built with [Spectral](https://www.npmjs.com/package/@prismatic-io/spectral). They cover MCP tools for AI agents, data syncs, triggers, large-file handling, and building integrations with or without existing connectors.
-- [`integrations/data-enrichment-with-ai/`](integrations/data-enrichment-with-ai/) contains integrations that use LLMs to enrich data and respond to events. Many come in both code-native and low-code versions.
+- [`integrations/code-native/data-enrichment-with-ai/`](integrations/code-native/data-enrichment-with-ai/) contains code-native integrations that use LLMs to enrich data and respond to events.
 - [`integrations/low-code/`](integrations/low-code/) contains low-code integrations, exported as YAML, that are referenced in the docs.
 - [`scripts/`](scripts/) contains scripts and small apps that automate Prismatic through its [GraphQL API](https://prismatic.io/docs/api/) or respond to its event webhooks.
 

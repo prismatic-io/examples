@@ -96,20 +96,9 @@ The primary flow (`src/flows/importReceiptsFromPdFs.ts`) implements a complete r
    - Returns all successfully extracted receipts
    - Provides summary statistics
 
-## Implementation Options
-
-This integration is available in two formats:
-
-### 1. Code-Native Implementation (TypeScript)
-
-The `cni/` directory contains the full TypeScript implementation for developers who prefer code-based configuration.
-
-#### Building and Importing the Code-Native Version
+## Building and Importing
 
 ```bash
-# Navigate to the cni directory
-cd cni
-
 # Install dependencies
 npm install
 
@@ -122,44 +111,18 @@ prism integrations:import --open
 
 The `--open` flag will automatically open the integration in the Prismatic designer after import.
 
-### 2. Low-Code Visual Builder
-
-The `low-code/` directory contains a YAML definition that can be imported directly into Prismatic's visual builder.
-
-![Low-Code Visual Flow](low-code.png)
-
-#### Importing the Low-Code Version
-
-##### Through the UI
-
-1. Open the Integration Designer in your Prismatic organization
-2. Click on Integration details modal
-3. Select Import
-4. Upload the `low-code/integration.yml` file
-
-##### Using Prism CLI
-
-```bash
-prism integrations:import --path ./low-code/integration.yml
-```
-
-The visual flow will be created automatically with all the AI components configured.
-
 ## Project Structure
 
 ```text
 dropbox-extract-receipt-from-pdf/
-├── cni/                         # Code-native implementation
-│   ├── src/
-│   │   ├── flows/
-│   │   │   └── importReceiptsFromPdFs.ts  # Main AI receipt processing flow
-│   │   ├── index.ts            # Integration export
-│   │   ├── componentRegistry.ts # Component configuration
-│   │   └── configPages.ts      # UI configuration
-│   ├── package.json            # Dependencies
-│   └── tsconfig.json           # TypeScript config
-└── low-code/                    # Low-code alternative
-    └── integration.yml          # YAML configuration for visual import
+├── src/
+│   ├── flows/
+│   │   └── importReceiptsFromPdFs.ts  # Main AI receipt processing flow
+│   ├── index.ts            # Integration export
+│   ├── componentRegistry.ts # Component configuration
+│   └── configPages.ts      # UI configuration
+├── package.json            # Dependencies
+└── tsconfig.json           # TypeScript config
 ```
 
 ## Configuration

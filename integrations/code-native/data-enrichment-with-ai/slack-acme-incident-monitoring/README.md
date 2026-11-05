@@ -85,8 +85,6 @@ The primary flow (`src/flows/newIncidentAlert.ts`) implements a complete inciden
 
 The interaction handler (`src/flows/handleSlackEventsAndInteractions.ts`) manages Slack button clicks:
 
-![Flow Handler](flow-handler.png)
-
 1. **Event Reception**
 
    - Receives Slack interaction payloads
@@ -150,20 +148,9 @@ interface IncidentCreation {
 
 Queries existing incidents for deduplication and context.
 
-## Implementation Options
-
-This integration is available in two formats:
-
-### 1. Code-Native Implementation (TypeScript)
-
-The `cni/` directory contains the full TypeScript implementation for developers who prefer code-based configuration.
-
-#### Building and Importing the Code-Native Version
+## Building and Importing
 
 ```bash
-# Navigate to the cni directory
-cd cni
-
 # Install dependencies
 npm install
 
@@ -176,50 +163,26 @@ prism integrations:import --open
 
 The `--open` flag will automatically open the integration in the Prismatic designer after import.
 
-### 2. Low-Code Visual Builder
-
-The `low-code/` directory contains a YAML definition that can be imported directly into Prismatic's visual builder.
-
-#### Importing the Low-Code Version
-
-##### Through the UI
-
-1. Open the Integration Designer in your Prismatic organization
-2. Click on Integration details modal
-3. Select Import
-4. Upload the `low-code/integration.yml` file
-
-##### Using Prism CLI
-
-```bash
-prism integrations:import --path ./low-code/integration.yml
-```
-
-The visual flow will be created automatically with all the AI components configured.
-
 ## Project Structure
 
 ```text
 slack-acme-incident-monitoring/
-├── cni/                         # Code-native implementation
-│   ├── src/
-│   │   ├── flows/
-│   │   │   ├── newIncidentAlert.ts         # Main AI incident flow
-│   │   │   ├── handleSlackEventsAndInteractions.ts  # Slack handler
-│   │   │   ├── createIncident.ts           # Incident creation tool
-│   │   │   ├── getOnCallStaff.ts          # On-call lookup tool
-│   │   │   └── getIncidents.ts            # Incident query tool
-│   │   ├── util/
-│   │   │   ├── approvalHandler.ts         # Approval state management
-│   │   │   └── slackMessageBuilders.ts    # Slack message formatting
-│   │   ├── index.ts            # Integration export
-│   │   ├── componentRegistry.ts # Component configuration
-│   │   └── configPages.ts      # UI configuration
-│   ├── package.json            # Dependencies
-│   └── tsconfig.json           # TypeScript config
-├── low-code/                    # Low-code alternative
-│   └── integration.yml          # YAML configuration for visual import
-├── flow-handler.png            # Flow diagram
+├── src/
+│   ├── flows/
+│   │   ├── newIncidentAlert.ts         # Main AI incident flow
+│   │   ├── handleSlackEventsAndInteractions.ts  # Slack handler
+│   │   ├── createIncident.ts           # Incident creation tool
+│   │   ├── getOnCallStaff.ts          # On-call lookup tool
+│   │   └── getIncidents.ts            # Incident query tool
+│   ├── util/
+│   │   ├── approvalHandler.ts         # Approval state management
+│   │   └── slackMessageBuilders.ts    # Slack message formatting
+│   ├── index.ts            # Integration export
+│   ├── componentRegistry.ts # Component configuration
+│   └── configPages.ts      # UI configuration
+├── package.json            # Dependencies
+├── tsconfig.json           # TypeScript config
+├── test-incident-payload.json  # Example anomaly alert payload
 └── slack-approval-message.png  # UI example
 ```
 
