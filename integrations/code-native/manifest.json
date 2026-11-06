@@ -6,6 +6,24 @@
     "tags": ["mcp", "ai"]
   },
   {
+    "directory": "gong-mcp-flows",
+    "name": "Gong MCP Flows",
+    "description": "Expose flows that list Gong calls, search a user's calls and fetch call transcripts as MCP tools that AI agents can call.",
+    "tags": ["mcp", "ai", "gong", "agent-flows"]
+  },
+  {
+    "directory": "large-file-transfer",
+    "name": "Large File Transfer",
+    "description": "Copy a file of any size between Dropbox folders in byte-range chunks, one chunk per batch execution, using batchFlowTrigger and a resumable upload session.",
+    "tags": ["large-file-processing", "batch", "dropbox", "upload-session"]
+  },
+  {
+    "directory": "outlook-mcp-flows",
+    "name": "Outlook MCP Flows",
+    "description": "Expose flows that search and send email and read and create calendar events in Microsoft Outlook as MCP tools that AI agents can call.",
+    "tags": ["mcp", "ai", "outlook", "microsoft", "agent-flows"]
+  },
+  {
     "directory": "postgres-polling-trigger",
     "name": "PostgreSQL Polling Trigger",
     "description": "Monitor a PostgreSQL table for new records using cursor-based polling with state management and dynamic table selection.",
@@ -18,22 +36,10 @@
     "tags": ["large-file-processing", "streams"]
   },
   {
-    "directory": "shared-endpoint-example",
-    "name": "Shared Endpoint Example",
-    "description": "An example integration demonstrating the use of shared webhook endpoints.",
-    "tags": ["webhooks", "shared-endpoints"]
-  },
-  {
     "directory": "salesforce",
     "name": "Salesforce",
     "description": "Create a field mapping between Salesforce objects and your system and leverage Salesforce workflows to sync data bidirectionally.",
     "tags": ["salesforce", "webhooks"]
-  },
-  {
-    "directory": "salesforce-mcp",
-    "name": "Salesforce MCP Example",
-    "description": "An example integration demonstrating how to create a Salesforce-specific (MCP) tool that can be used by AI agents to search for contacts in Salesforce.",
-    "tags": ["mcp", "ai", "salesforce"]
   },
   {
     "directory": "salesforce-initial-data-sync",
@@ -42,28 +48,22 @@
     "tags": ["salesforce", "postgres", "batch", "webhooks", "initial-data-sync"]
   },
   {
+    "directory": "salesforce-mcp",
+    "name": "Salesforce MCP Example",
+    "description": "An example integration demonstrating how to create a Salesforce-specific (MCP) tool that can be used by AI agents to search for contacts in Salesforce.",
+    "tags": ["mcp", "ai", "salesforce"]
+  },
+  {
+    "directory": "shared-endpoint-example",
+    "name": "Shared Endpoint Example",
+    "description": "An example integration demonstrating the use of shared webhook endpoints.",
+    "tags": ["webhooks", "shared-endpoints"]
+  },
+  {
     "directory": "simple-initial-data-sync",
     "name": "Simple Initial Data Sync",
     "description": "Backfill a large data set from a paginated API in batches when an instance is deployed, then process individual records in real time via webhook, using the batchFlowTrigger pattern.",
     "tags": ["batch", "webhooks", "initial-data-sync", "pagination"]
-  },
-  {
-    "directory": "large-file-transfer",
-    "name": "Large File Transfer",
-    "description": "Copy a file of any size between Dropbox folders in byte-range chunks, one chunk per batch execution, using batchFlowTrigger and a resumable upload session.",
-    "tags": ["large-file-processing", "batch", "dropbox", "upload-session"]
-  },
-  {
-    "directory": "gong-mcp-flows",
-    "name": "Gong MCP Flows",
-    "description": "Expose flows that list Gong calls, search a user's calls and fetch call transcripts as MCP tools that AI agents can call.",
-    "tags": ["mcp", "ai", "gong", "agent-flows"]
-  },
-  {
-    "directory": "outlook-mcp-flows",
-    "name": "Outlook MCP Flows",
-    "description": "Expose flows that search and send email and read and create calendar events in Microsoft Outlook as MCP tools that AI agents can call.",
-    "tags": ["mcp", "ai", "outlook", "microsoft", "agent-flows"]
   },
   {
     "directory": "slack-with-components",
