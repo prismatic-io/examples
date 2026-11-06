@@ -48,12 +48,6 @@
     "tags": ["batch", "webhooks", "initial-data-sync", "pagination"]
   },
   {
-    "directory": "slack",
-    "name": "Slack",
-    "description": "Send messages to Slack channels based on data from external systems, with dynamic channel selection and scheduling.",
-    "tags": ["slack", "webhooks"]
-  },
-  {
     "directory": "large-file-transfer",
     "name": "Large File Transfer",
     "description": "Copy a file of any size between Dropbox folders in byte-range chunks, one chunk per batch execution, using batchFlowTrigger and a resumable upload session.",
