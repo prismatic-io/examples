@@ -13,7 +13,7 @@ import { createSlackClient } from "../slackClient";
 interface TodoItem {
   id: number;
   completed: boolean;
-  task: string;
+  title: string;
 }
 
 export const todoAlertsFlow = flow({
@@ -45,7 +45,7 @@ export const todoAlertsFlow = flow({
         try {
           await slackClient.post("chat.postMessage", {
             channel: configVars["Select Slack Channel"],
-            text: `Incomplete task: ${item.task}`,
+            text: `Incomplete task: ${item.title}`,
           });
         } catch (e) {
           throw new Error(`Failed to send message for item ${item.id}: ${e}`);
