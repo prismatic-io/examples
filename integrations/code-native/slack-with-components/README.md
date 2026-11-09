@@ -23,7 +23,21 @@ Code-native integrations can use existing Prismatic components through generated
 | Channel dropdown  | `slackSelectChannels` data source                                      | [src/configPages.ts](src/configPages.ts) |
 | Posting a message | `postMessage` action, called with `slackActions.postMessage.perform()` | [src/flows](src/flows)                   |
 
-The connection's client ID, client secret and signing secret come from [src/slackConfig.ts](src/slackConfig.ts). Replace the `REPLACE_ME` values with your Slack app's credentials before you import.
+### Environment variables
+
+The connection's client ID, client secret and signing secret come from environment variables. Copy [.env.example](.env.example) to `.env.local` and fill in your Slack app's credentials before you build:
+
+```bash
+cp .env.example .env.local
+```
+
+```bash
+SLACK_CLIENT_ID=your-client-id
+SLACK_CLIENT_SECRET=your-client-secret
+SLACK_SIGNING_SECRET=your-signing-secret
+```
+
+tsdown reads `.env.local` at build time and inlines the `SLACK_*` values into the bundle (see [tsdown.config.mts](tsdown.config.mts)). `.env.local` is gitignored, so your credentials stay out of source control.
 
 ## With or without components?
 

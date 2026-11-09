@@ -8,12 +8,12 @@
 
 import { flow, util } from "@prismatic-io/spectral";
 import axios from "axios";
-import slackActions from "../manifests/slack/actions";
+import slack from "@prismatic-io/components-slack";
 
 interface TodoItem {
   id: number;
   completed: boolean;
-  task: string;
+  title: string;
 }
 
 export const todoAlertsFlow = flow({
@@ -25,7 +25,9 @@ export const todoAlertsFlow = flow({
     // Config variables are accessed using the context object
     const { logger, configVars } = context;
 
-    const { data: todoItems } = await axios.get<TodoItem[]>(configVars["Acme API Endpoint"]);
+    const { data: todoItems } = await axios.get<TodoItem[]>(
+      configVars["Acme API Endpoint"],
+    );
 
     for (const item of todoItems) {
       if (item.completed) {
@@ -33,10 +35,12 @@ export const todoAlertsFlow = flow({
       } else {
         logger.info(`Sending message for item ${item.id}`);
         try {
-          await slackActions.postMessage.perform({
-            channelName: util.types.toString(configVars["Select Slack Channel"]),
+          await slack.actions.postMessage({
             connection: configVars["Slack OAuth Connection"],
-            message: `Incomplete task: ${item.task}`,
+            channelName: util.types.toString(
+              configVars["Select Slack Channel"],
+            ),
+            message: `Incomplete task: ${item.title}`,
           });
         } catch (e) {
           throw new Error(`Failed to send message for item ${item.id}: ${e}`);
