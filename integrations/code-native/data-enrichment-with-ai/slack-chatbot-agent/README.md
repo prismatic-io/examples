@@ -201,7 +201,7 @@ slack-chatbot-agent/
 ├── biome.json                    # Biome lint/format config
 ├── tsconfig.json
 ├── tsdown.config.mts             # Build config (bundles to dist/index.js)
-├── vitest.config.ts
+├── vitest.config.mts
 ├── test.sh                       # Run tests with a real Slack connection from Prismatic
 ├── CLAUDE.md                      # AI development guide
 └── README.md

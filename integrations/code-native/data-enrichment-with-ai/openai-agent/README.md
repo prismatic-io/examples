@@ -310,7 +310,7 @@ openai-agent/
 ├── biome.json                   # Biome lint/format config
 ├── tsdown.config.mts            # Build config (bundles to dist/index.js)
 ├── tsconfig.json
-├── vitest.config.ts
+├── vitest.config.mts
 ├── package.json
 └── README.md
 ```

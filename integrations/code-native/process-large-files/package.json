@@ -11,8 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-ec2": "^3.1071.0",
-    "@aws-sdk/client-s3": "^3.1071.0",
+    "@aws-sdk/client-ec2": "^3.1168.0",
+    "@aws-sdk/client-s3": "^3.1168.0",
     "@prismatic-io/spectral": "^10.39.0",
     "pg": "^8.21.0",
     "pg-copy-streams": "^7.0.0",
@@ -27,6 +27,6 @@
     "dotenv": "^17.4.2",
     "tsdown": "^0.22.3",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.9"
+    "vitest": "^5.1.0"
   }
 }
