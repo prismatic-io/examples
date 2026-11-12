@@ -90,7 +90,7 @@ Beyond the standard integration files, this integration contains the following k
 
 - [src/flows.ts](src/flows.ts) - Defines the "Import Posts" flow, including the `batchFlowTrigger` with `onDeploy` (initial sync), `onTrigger` (real-time webhook), and `onExecution` (unified processing), along with the `Post` and `PostCursor` types
 
-This integration requires no special configuration, so [src/configPages.ts](src/configPages.ts) and [src/componentRegistry.ts](src/componentRegistry.ts) are intentionally minimal.
+This integration requires no special configuration, so [src/configPages.ts](src/configPages.ts) is intentionally minimal.
 
 ## Flow details
 

@@ -81,7 +81,6 @@ Beyond the standard integration files, this integration contains the following k
 - [src/dataSources/fieldMapperValidator.ts](src/dataSources/fieldMapperValidator.ts) - Data source that validates field mappings before activation
 - [src/flows/fromSalesforce.ts](src/flows/fromSalesforce.ts) - Flow that syncs data from Salesforce to Acme using a webhook trigger
 - [src/flows/toSalesforce.ts](src/flows/toSalesforce.ts) - Flow that syncs data from Acme to Salesforce with payload validation using Zod
-- [src/componentRegistry.ts](src/componentRegistry.ts) - Registers the Salesforce component for use in the integration
 
 ## Using jsforce
 

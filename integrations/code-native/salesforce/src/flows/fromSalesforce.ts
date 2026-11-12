@@ -4,6 +4,7 @@
  * Subscribe to changes in Salesforce using Salesforce Flows, and send those changes to Acme's API.
  */
 
+import salesforce from "@prismatic-io/components-salesforce";
 import { flow } from "@prismatic-io/spectral";
 import { createSalesforceClient } from "../salesforceClient";
 import { FieldMapping } from "../dataSources/fieldMapperValidator";
@@ -18,18 +19,14 @@ export const fromSalesforce = flow({
   stableKey: "from-salesforce",
   name: "From Salesforce",
   description: "Sync Salesforce data to Acme.",
-  // Use the existing Flow Outbound Message trigger from the built-in Salesforce component
+  // Use the Flow Outbound Message trigger from the Salesforce component
   // https://prismatic.io/docs/components/salesforce/#flow-outbound-message-webhook
   // This trigger will establish a webhook and send updated records to this flow
-  onTrigger: {
-    component: "salesforce",
-    key: "flowOutboundMessageTrigger",
-    values: {
-      connection: { configVar: "Salesforce Connection" },
-      prefix: { value: "acme" },
-      triggerObject: { configVar: "Salesforce Record Type" },
-    },
-  },
+  onTrigger: salesforce.triggers.flowOutboundMessageTrigger({
+    connection: { configVar: "Salesforce Connection" },
+    prefix: { value: "acme" },
+    triggerObject: { configVar: "Salesforce Record Type" },
+  }),
   onExecution: async (context, trigger) => {
     // Create an authenticated Salesforce client
     const sfdcClient = createSalesforceClient(

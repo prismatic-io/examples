@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@microsoft/microsoft-graph-client": "^3.0.7",
+    "@prismatic-io/components-ms-outlook": "0.3.0",
     "@prismatic-io/spectral": "^10.39.0",
     "zod": "^4.6.7"
   },

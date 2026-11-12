@@ -7,7 +7,7 @@
     "forceConsistentCasingInFileNames": true,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "types": ["vitest/globals"],
+    "types": ["node", "vitest/globals"],
     "skipLibCheck": true
   },
   "include": ["src", ".spectral/*"]

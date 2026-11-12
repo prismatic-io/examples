@@ -21,7 +21,7 @@ export const configPages = {
         stableKey: "acme-api-endpoint",
         dataType: "string",
         description: "The endpoint to fetch TODO items from Acme",
-        defaultValue: "https://my-json-server.typicode.com/prismatic-io/placeholder-data/todo",
+        defaultValue: "https://jsonplaceholder.typicode.com/todos?_limit=10",
       }),
       "Webhook Config Endpoint": configVar({
         stableKey: "webhook-config-endpoint",
