@@ -71,4 +71,8 @@ jobs:
           npm run build
         env:
           integration: ${{ matrix.integration }}
+          # Placeholder credentials so integrations that require them can compile
+          SLACK_CLIENT_ID: ci-placeholder
+          SLACK_CLIENT_SECRET: ci-placeholder
+          SLACK_SIGNING_SECRET: ci-placeholder
         working-directory: ./integrations/code-native/${{ matrix.integration}}
